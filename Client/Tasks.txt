@@ -1,0 +1,5 @@
+> Tasks for our multiplatform client, add when you want
+
+Java client to handle server connections, friendly and easy to use GUI
+Saves address to Pi through the install directory
+Low-intensity program, background if possible

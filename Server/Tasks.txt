@@ -1,0 +1,6 @@
+> Tasks for our Pi-bound server, add when you want
+
+
+Node.js server to handle simple, one-time connections
+Connections from GPIO pins to handle a light sensor
+Handles crashes and restarts
