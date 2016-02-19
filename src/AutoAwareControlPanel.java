@@ -59,7 +59,7 @@ public class AutoAwareControlPanel extends JFrame {
         		configure.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent event) {
-                       System.out.println("Open configure menu for sensor" + num);
+                       System.out.println("Open configure menu for sensor " + num);
                        createConfigureMenu(num);
                     }
                 });
@@ -71,7 +71,7 @@ public class AutoAwareControlPanel extends JFrame {
         		remove.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent event) {
-                       System.out.println("Remove sensor" + num);
+                       System.out.println("Remove sensor " + num);
                     }
                 });
         		remove.setOpaque( true );
@@ -85,7 +85,7 @@ public class AutoAwareControlPanel extends JFrame {
         		toggle.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent event) {
-                        System.out.println("Enable/disable sensor" + num);
+                        System.out.println("Enable/disable sensor " + num);
                         
                     }
                 });
@@ -96,7 +96,7 @@ public class AutoAwareControlPanel extends JFrame {
         		icon.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent event) {
-                        System.out.println("Open audio stream for mic" + num);
+                        System.out.println("Open audio stream for mic " + num);
                     }
                 });
         		JLabel title = new JLabel("   Sensor " + i, JLabel.CENTER);

@@ -1,3 +1,10 @@
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
@@ -9,6 +16,34 @@ public class ConfigureMenu extends JFrame {
 	 * 		DesktopNot(bool), MagicMirror(bool), Text(bool), Email(bool), Phone#(string), EmailAddress(s)
 	 */
 	private static final long serialVersionUID = 2L;
+	private JTextField name;
+	private JButton colorChooser;
+	private JCheckBox scheduledTimes;
+	private JTextField startH, startM, endH, endM;
+	private JLabel startTH, endTH, startTM, endTM;
+	private JRadioButton light, sound, motion;
+	private JTextPane leftThreshold, rightThreshold;
+	private JSlider threshold;
+	private JCheckBox desktop, magicMirror, text, email;
+	private JTextField phoneNum, emailAddress;
+	
+	private SensorType type;
+	private boolean desktopBool, magicMirrorBool, textBool, emailBool;
+	private boolean usesScheduledTimes;
+
+	
+	
+	
+	private static String leftThresholdLight = "Ember";
+	private static String rightThresholdLight = "Laser Pointer";
+	
+	private static String leftThresholdMotion = "Ant Crawling";
+	private static String rightThresholdMotion = "Person Running";
+	
+	private static String leftThresholdSound = "Falling Leaf";
+	private static String rightThresholdSound = "Gunshot";
+	
+	private Color c;
 	public boolean inUse; //because none of the vars I am trying to use are working
 	public ConfigureMenu(int sensorID) {
 		InitUI();
@@ -16,16 +51,205 @@ public class ConfigureMenu extends JFrame {
 	}
 	private void InitUI() {
 	    	
-	        setTitle("AutoAware Configure Panel");
-	        setSize(600, 600);
-	       // setAlwaysOnTop(true);
+	        setSize(600, 400);
+	        setResizable(false);
 	        setLocationRelativeTo(null);
 	        setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+	        setLayout(new GridLayout(4,1));
+	        JPanel nameAndSchedule = new JPanel(new GridBagLayout());
+	        GridBagConstraints gbc = new GridBagConstraints();
+	        JTextArea nameText = new JTextArea("Name: ");
+		    nameText.setBackground(nameAndSchedule.getBackground());
+	        nameText.setEditable(false);
 	        
+	        name = new JTextField();
+		    name.setPreferredSize(new Dimension(100, 25));
+	        colorChooser = new JButton("Color");
+	        colorChooser.setBackground(c);
+	        colorChooser.setPreferredSize(new Dimension(90, 30));
+	        colorChooser.addActionListener(new ButtonListener());
+	        c = Color.white;
+	        scheduledTimes = new JCheckBox();
+	        scheduledTimes.setText("Scheduled Times");
+	        scheduledTimes.addActionListener(new ScheduledSwitch());
 	        
-	        addWindowListener(CloseListener());
+	        JPanel timeTextH = new JPanel(new GridLayout(2, 1, 5, 5));
+	        JPanel timeFieldsH = new JPanel(new GridLayout(2,3,5,5));
+	        
+	       // JPanel timeTextM = new JPanel(new GridLayout(2, 1, 5, 5));
+	       // JPanel timeFieldsM = new JPanel(new GridLayout(2,6,5,5));
+	        
 	       
 	        
+	        startTH = new JLabel();
+	        startTH.setText("Turn on at     ");
+	        startTH.setBackground(nameAndSchedule.getBackground());
+	        
+	        startTM = new JLabel();
+	        startTM.setText("   :");
+	        startTM.setBackground(nameAndSchedule.getBackground());
+		    
+	        endTH = new JLabel();
+		    endTH.setText("Turn off at     ");
+		    endTH.setBackground(nameAndSchedule.getBackground());
+		    //startT
+		    endTM = new JLabel();
+		    endTM.setText("   :");
+		    endTM.setBackground(nameAndSchedule.getBackground());
+	        
+	        startH = new JTextField();
+	        endH = new JTextField();
+	        startM = new JTextField();
+	        endM = new JTextField();
+	        
+	        
+	        startH.setPreferredSize(new Dimension(25, 20));
+	        endH.setPreferredSize(new Dimension(25, 20));
+	        startM.setPreferredSize(new Dimension(25, 20));
+	        endM.setPreferredSize(new Dimension(25, 20));
+	        
+	        usesScheduledTimes = false; //get usesscheduledtimes here
+	        
+		    startH.setEnabled(usesScheduledTimes);
+		    endH.setEnabled(usesScheduledTimes);
+		    startM.setEnabled(usesScheduledTimes);
+		    endM.setEnabled(usesScheduledTimes);
+		    startTH.setEnabled(usesScheduledTimes);
+		    endTH.setEnabled(usesScheduledTimes);
+		    startTM.setEnabled(usesScheduledTimes);
+		    endTM.setEnabled(usesScheduledTimes);
+		    
+	        timeTextH.add(startTH);
+	        timeTextH.add(endTH);
+		    timeFieldsH.add(startH);
+	        timeFieldsH.add(startTM);
+	        timeFieldsH.add(startM);
+	        timeFieldsH.add(endH);
+	        timeFieldsH.add(endTM);
+	        timeFieldsH.add(endM);
+	        
+	        nameAndSchedule.add(nameText, gbc);
+	        nameAndSchedule.add(name, gbc);
+	        nameAndSchedule.add(new JPanel(), gbc);
+	        nameAndSchedule.add(colorChooser, gbc);
+	        nameAndSchedule.add(new JPanel(), gbc);
+	        nameAndSchedule.add(scheduledTimes, gbc);
+	        nameAndSchedule.add(timeTextH, gbc);
+	        nameAndSchedule.add(timeFieldsH, gbc);
+	        //nameAndSchedule.add(timeTextM);
+	        //nameAndSchedule.add(timeFieldsM);
+	        
+	        JPanel sensorFields = new JPanel();
+	        
+	        JPanel gridRadio = new JPanel(new GridLayout(4,1));
+		    
+		    
+		    light = new JRadioButton("Light Sensor");
+		    light.setActionCommand("light");
+		    light.setSelected(true);
+		    type = SensorType.LIGHT;
+		    sound = new JRadioButton("Sound Sensor");
+		    sound.setActionCommand("sound");
+		    motion = new JRadioButton("Motion Sensor");
+		    motion.setActionCommand("motion");
+		    
+		    light.addActionListener(new RadioListener());
+		    sound.addActionListener(new RadioListener());
+		    motion.addActionListener(new RadioListener());
+		    
+		    ButtonGroup group = new ButtonGroup();
+		    group.add(light);
+		    group.add(sound);
+		    group.add(motion);
+		    
+		    JLabel radioName = new JLabel("Sensor Type");
+		    gridRadio.add(radioName);
+		    gridRadio.add(light);
+		    gridRadio.add(sound);
+		    gridRadio.add(motion);
+		    
+		    
+	        sensorFields.add(gridRadio);
+	        
+	        
+		    threshold = new JSlider(JSlider.HORIZONTAL, 0, 100, 50);
+
+		    leftThreshold = new JTextPane();
+		    leftThreshold.setText(leftThresholdLight);
+		    leftThreshold.setEditable(false);
+		    leftThreshold.setBackground(sensorFields.getBackground());
+		    
+		    rightThreshold = new JTextPane();
+		    rightThreshold.setText(rightThresholdLight);
+		    rightThreshold.setEditable(false);
+		    rightThreshold.setBackground(sensorFields.getBackground());
+		    
+		    sensorFields.add(leftThreshold);
+		    sensorFields.add(threshold);
+		    sensorFields.add(rightThreshold);
+		    
+		    
+		    JPanel notificationLevel = new JPanel(new GridBagLayout());
+	        GridBagConstraints gbcNotification = new GridBagConstraints();
+		    
+		    JPanel notificationMethod = new JPanel(new GridLayout(3,2,5,5));
+		    JLabel notificationLabel = new JLabel("Notification Method");
+		    
+		    desktop = new JCheckBox("Desktop notification");
+		    desktop.addActionListener(new CheckboxListener());
+		    desktop.setActionCommand("desktop");
+		    magicMirror = new JCheckBox("Magic Mirror");
+		    magicMirror.addActionListener(new CheckboxListener());
+		    magicMirror.setActionCommand("magicMirror");
+		    text = new JCheckBox("Text");
+		    text.addActionListener(new CheckboxListener());
+		    text.setActionCommand("text");
+		    email = new JCheckBox("Email");
+		    email.addActionListener(new CheckboxListener());
+		    email.setActionCommand("email");
+		    
+		  
+		    
+		    
+		    
+		    phoneNum = new JTextField("(765)-XXX-XXXX");
+		    emailAddress = new JTextField("someone@purdue.edu");
+		    
+			phoneNum.setEnabled(textBool);
+			emailAddress.setEnabled(emailBool);
+			
+			notificationMethod.add(notificationLabel);
+			notificationMethod.add(new JPanel());
+			notificationMethod.add(new JPanel());
+			notificationMethod.add(desktop);
+			notificationMethod.add(text);
+			notificationMethod.add(phoneNum);
+			notificationMethod.add(magicMirror);
+			notificationMethod.add(email);
+			notificationMethod.add(emailAddress);
+			
+		   
+		    notificationLevel.add(notificationMethod, gbcNotification);
+		    
+		    
+		    
+		    JPanel applyLevel = new JPanel(new GridBagLayout());
+	        GridBagConstraints gbcApply = new GridBagConstraints();
+	        
+	        JButton applyButton = new JButton("Apply");
+	        applyButton.setPreferredSize(new Dimension(100, 40));
+	        applyButton.addActionListener(new ApplyListener());
+	        applyLevel.add(applyButton, gbcApply);
+	        
+	        add(nameAndSchedule);
+	        add(sensorFields);
+	        add(notificationLevel);
+	        add(applyLevel);
+	        
+
+	        setTitle("Configuration Menu");
+	        setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
+	        addWindowListener(CloseListener());
 	        setVisible(true);
 	}
 	private WindowListener CloseListener() {
@@ -37,12 +261,13 @@ public class ConfigureMenu extends JFrame {
                      null, "Close without saving?", 
                      "Exit Confirmation", JOptionPane.YES_NO_OPTION, 
                      JOptionPane.QUESTION_MESSAGE, null, null, null);
+                System.out.println(confirm);
                 if (confirm == 0) {
                 	//close menu, do not close application
                    dispose();
                    inUse = false;
                 } else {
-                	
+                	setVisible(true);
                 	//setAlwaysOnTop(true);
                 }
             }
@@ -51,7 +276,94 @@ public class ConfigureMenu extends JFrame {
 		
 	
 	}
+	private class ButtonListener implements ActionListener {
+		@SuppressWarnings("unused")
+	    public void actionPerformed(ActionEvent e) {
+	      Color newC = JColorChooser.showDialog(null, "Choose a Color", c);
+	      if (newC!= null)
+	        c = newC;
+	      colorChooser.setBackground(c);
+	    }
+	}
+	private class ApplyListener implements ActionListener {
+		@SuppressWarnings("unused")
+	    public void actionPerformed(ActionEvent e) {
+	      SubmitValues();
+	    }
+	}
+	private class ScheduledSwitch implements ActionListener {
+		@SuppressWarnings("unused")
+	    public void actionPerformed(ActionEvent e) {
+		  usesScheduledTimes = !usesScheduledTimes;
+	      startH.setEnabled(usesScheduledTimes);
+	      endH.setEnabled(usesScheduledTimes);
+	      startM.setEnabled(usesScheduledTimes);
+	      endM.setEnabled(usesScheduledTimes);
+	      startTH.setEnabled(usesScheduledTimes);
+		  endTH.setEnabled(usesScheduledTimes);
+		  startTM.setEnabled(usesScheduledTimes);
+		  endTM.setEnabled(usesScheduledTimes);
+	    }
+	}
+	private class RadioListener implements ActionListener {
+		@SuppressWarnings("unused")
+		public void actionPerformed(ActionEvent e) {
+			
+			if (e.getActionCommand().equals("light")) {
+				leftThreshold.setText(leftThresholdLight);
+				rightThreshold.setText(rightThresholdLight);
+				type = SensorType.LIGHT;
+			} else if (e.getActionCommand().equals("sound")) {
+				leftThreshold.setText(leftThresholdSound);
+				rightThreshold.setText(rightThresholdSound);
+				type = SensorType.AUDIO;
+			} else if (e.getActionCommand().equals("motion")) {
+				leftThreshold.setText(leftThresholdMotion);
+				rightThreshold.setText(rightThresholdMotion);
+				type = SensorType.VIDEO;
+			}
+		}
+	}
+	private class CheckboxListener implements ActionListener {
+		@SuppressWarnings("unused")
+	    public void actionPerformed(ActionEvent e) {
+			if (e.getActionCommand().equals("text")) {
+				textBool = !textBool;
+				phoneNum.setEnabled(textBool);
+			} else if (e.getActionCommand().equals("email")) {
+				emailBool = !emailBool;
+				emailAddress.setEnabled(emailBool);
+			} else if (e.getActionCommand().equals("desktop")) {
+				desktopBool = !desktopBool;
+			} else if (e.getActionCommand().equals("magicMirror")) {
+				magicMirrorBool = !magicMirrorBool;
+			}
+	    }
+	}
 	private void SubmitValues() {
+		System.out.println(phoneNum.getText() + " " + emailAddress.getText() + " " + startH.getText() + "|");
+		if (startH.getText().compareTo("") == 0 || startM.getText().compareTo("") == 0 || endH.getText().compareTo("") == 0 || endM.getText().compareTo("") == 0) {
+			//It's all or nothing, baby.
+			startH.setText("00");
+			startM.setText("00");
+			endH.setText("00");
+			endM.setText("00");
+		}
+		ClientConfig toSubmit = new ClientConfig( 
+				startH.getText() + ":" + startM.getText(), 
+				endH.getText() + ":" + endM.getText(), 
+				true, 
+				type, 
+				threshold.getValue() * .01f, 
+				name.getText(),
+				c,
+				desktopBool,
+				magicMirrorBool,
+				textBool,
+				emailBool, 
+				phoneNum.getText(), emailAddress.getText()
+		);
+		System.out.println(toSubmit);
     	inUse = false;
     	dispose();
     }

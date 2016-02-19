@@ -160,7 +160,7 @@ public class BaseConfig {
 				+	"[SENSOR SETTINGS]\n"
 				+	"SENSOR TYPE=" + sensor_type + "\n"
 				+	"CURRENTLY SENSING=" + is_sensing + "\n"
-				+	"THRESHOLD=" + sensing_threshold;
+				+	"THRESHOLD=" + sensing_threshold + "%";
 	}
 	
 	
