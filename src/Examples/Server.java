@@ -66,7 +66,7 @@ public class Server {
 				
 				System.out.println("Recieved: " + tmp.getString() + " from client");
 				
-				server.setMessage(new Message("FUCKED UP THE MESSAGE"));
+				server.setMessage(new Message("F*#@ED UP THE MESSAGE"));
 				
 				server.sendMessage();
 				
