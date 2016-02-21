@@ -2,7 +2,7 @@ import java.util.Calendar;
 import javax.net.ssl.SSLServerSocket;
 import javax.net.ssl.SSLSocket;
 
-public class RasberryPi {
+public class RaspberryPi {
 	BaseSensor sensor;
 	SSLServerSocket receiveSocket;
 	SSLSocket sendSocket;
