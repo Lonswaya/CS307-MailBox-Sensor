@@ -20,7 +20,9 @@ public class VideoSensor extends BaseSensor {
 		return false;
 	}
 
-	//public MESSAGE_TYPE form_message(){}
+	public Message form_message(){
+		return null;
+	}
 	
 	//public VIDEO_CLIP_TYPE record_video(){}
 	

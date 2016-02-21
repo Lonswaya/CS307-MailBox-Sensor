@@ -2,10 +2,10 @@
 public abstract class BaseSensor{
 	
 	//config shit
-	public BaseConfig config;
-	public SensorType sType;
-	public float upperBound; //some meaningful boundary values used to calculate percentage
-	public float lowerBound;
+	protected BaseConfig config;
+	protected SensorType sType;
+	protected float upperBound; //some meaningful boundary values used to calculate percentage
+	protected float lowerBound;
 	
 	public BaseSensor(BaseConfig config){
 		this.config = config;
@@ -32,6 +32,6 @@ public abstract class BaseSensor{
 	public abstract void sense();
 	
 	public abstract boolean check_threshold();
-	//public abstract MESSAGE_TYPE form_message();
+	public abstract Message form_message();
 	
 }

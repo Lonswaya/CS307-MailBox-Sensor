@@ -8,7 +8,7 @@ import javax.imageio.ImageIO;
 public class LightSensor extends BaseSensor {
 
 	private float light_intensity;
-	BufferedImage image;
+	private BufferedImage image;
 	
 	public LightSensor(BaseConfig config){
 		super(config);
@@ -18,11 +18,11 @@ public class LightSensor extends BaseSensor {
 	public void sense() {
 		take_picture();
 		this.light_intensity = get_reading(this.image);
-		if(check_threshold()){}
-			//form_message();
 	}
 	
-	//public MESSAGE_TYPE form_message(){};
+	public Message form_message(){
+		return new Message("Above threshold");
+	}
 
 	public void set_webcam_state(boolean state){
 		

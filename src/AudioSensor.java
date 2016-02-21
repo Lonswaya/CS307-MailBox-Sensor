@@ -16,6 +16,8 @@ public class AudioSensor extends BaseSensor{
 		return false;
 	}
 	
-	//public MESSAGE_TYPE form_message() {} 
+	public Message form_message() {
+		return null;
+	} 
 	//public AUDIO_CLIP_TYPE record_audio() {}
 }
