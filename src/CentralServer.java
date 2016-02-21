@@ -1,6 +1,5 @@
 import java.io.*;
 import java.net.*;
-import java.util.vector;
 
 import javax.net.ssl.SSLServerSocket;
 import javax.net.ssl.SSLServerSocketFactory;
@@ -23,7 +22,7 @@ public class CentralServer {
 	
 	//private Vector<User> userVector;
 	
-	public Server(ServerSocket ss) {
+	public CentralServer(ServerSocket ss) {
 		this.m_serverSocket = ss;
 	}
 	
@@ -76,7 +75,7 @@ public class CentralServer {
 			SSLServerSocketFactory f = (SSLServerSocketFactory)SSLServerSocketFactory.getDefault();
 			ServerSocket ss = f.createServerSocket(9999);
 			
-			Server server = new Server(ss);
+			CentralServer server = new CentralServer(ss);
 			do {
 				
 				server.recieveMessage();
