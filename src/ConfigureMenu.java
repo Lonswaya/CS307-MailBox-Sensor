@@ -3,11 +3,13 @@ import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
+import java.util.ArrayList;
 
 import javax.swing.*;
 public class ConfigureMenu extends JFrame {
@@ -44,13 +46,21 @@ public class ConfigureMenu extends JFrame {
 	private static String rightThresholdSound = "Gunshot";
 	
 	private Color c;
+	private int inputNum;
+	private ArrayList<ClientConfig> configs;
 	public boolean inUse; //because none of the vars I am trying to use are working
-	public ConfigureMenu(int sensorID) {
+	
+	public ConfigureMenu(int inputNum, ArrayList<ClientConfig> clientConfigs) {
+		//System.out.println("bullshit");
+		this.configs = clientConfigs;
+		this.inputNum = inputNum;
 		InitUI();
 		inUse = true;
 	}
+	
 	private void InitUI() {
-	    	
+    		this.setIconImage(Toolkit.getDefaultToolkit().getImage("resources/icon.png"));
+
 	        setSize(600, 400);
 	        setResizable(false);
 	        setLocationRelativeTo(null);
@@ -61,16 +71,21 @@ public class ConfigureMenu extends JFrame {
 	        JTextArea nameText = new JTextArea("Name: ");
 		    nameText.setBackground(nameAndSchedule.getBackground());
 	        nameText.setEditable(false);
-	        
-	        name = new JTextField();
+	        //System.out.println(configs);
+	        ClientConfig input = configs.get(inputNum);
+	        name = new JTextField(input.name);
 		    name.setPreferredSize(new Dimension(100, 25));
+		    c = input.color;
 	        colorChooser = new JButton("Color");
 	        colorChooser.setBackground(c);
 	        colorChooser.setPreferredSize(new Dimension(90, 30));
 	        colorChooser.addActionListener(new ButtonListener());
-	        c = Color.white;
+	       
+	        usesScheduledTimes = (input.start_hours != -1); //get usesscheduledtimes here
+
 	        scheduledTimes = new JCheckBox();
 	        scheduledTimes.setText("Scheduled Times");
+	        scheduledTimes.setSelected(usesScheduledTimes);
 	        scheduledTimes.addActionListener(new ScheduledSwitch());
 	        
 	        JPanel timeTextH = new JPanel(new GridLayout(2, 1, 5, 5));
@@ -97,10 +112,10 @@ public class ConfigureMenu extends JFrame {
 		    endTM.setText("   :");
 		    endTM.setBackground(nameAndSchedule.getBackground());
 	        
-	        startH = new JTextField();
-	        endH = new JTextField();
-	        startM = new JTextField();
-	        endM = new JTextField();
+	        startH = new JTextField(Integer.toString(input.start_hours));
+	        endH = new JTextField(Integer.toString(input.stop_hours));
+	        startM = new JTextField(Integer.toString(input.start_minutes));
+	        endM = new JTextField(Integer.toString(input.stop_minutes));
 	        
 	        
 	        startH.setPreferredSize(new Dimension(25, 20));
@@ -108,7 +123,6 @@ public class ConfigureMenu extends JFrame {
 	        startM.setPreferredSize(new Dimension(25, 20));
 	        endM.setPreferredSize(new Dimension(25, 20));
 	        
-	        usesScheduledTimes = false; //get usesscheduledtimes here
 	        
 		    startH.setEnabled(usesScheduledTimes);
 		    endH.setEnabled(usesScheduledTimes);
@@ -146,12 +160,15 @@ public class ConfigureMenu extends JFrame {
 		    
 		    light = new JRadioButton("Light Sensor");
 		    light.setActionCommand("light");
-		    light.setSelected(true);
-		    type = SensorType.LIGHT;
+		    if (input.sensor_type == SensorType.LIGHT) light.setSelected(true);
+		    type = input.sensor_type;
 		    sound = new JRadioButton("Sound Sensor");
 		    sound.setActionCommand("sound");
+		    if (input.sensor_type == SensorType.AUDIO) sound.setSelected(true);
 		    motion = new JRadioButton("Motion Sensor");
 		    motion.setActionCommand("motion");
+		    if (input.sensor_type == SensorType.VIDEO) motion.setSelected(true);
+
 		    
 		    light.addActionListener(new RadioListener());
 		    sound.addActionListener(new RadioListener());
@@ -171,18 +188,32 @@ public class ConfigureMenu extends JFrame {
 		    
 	        sensorFields.add(gridRadio);
 	        
-	        
-		    threshold = new JSlider(JSlider.HORIZONTAL, 0, 100, 50);
+	       // System.out.println((input.sensing_threshold));
+		    threshold = new JSlider(JSlider.HORIZONTAL, 0, 100, Math.round(input.sensing_threshold * 100));
 
 		    leftThreshold = new JTextPane();
-		    leftThreshold.setText(leftThresholdLight);
+		    //leftThreshold.setText(leftThresholdLight);
 		    leftThreshold.setEditable(false);
 		    leftThreshold.setBackground(sensorFields.getBackground());
 		    
 		    rightThreshold = new JTextPane();
-		    rightThreshold.setText(rightThresholdLight);
+		    //rightThreshold.setText(rightThresholdLight);
 		    rightThreshold.setEditable(false);
 		    rightThreshold.setBackground(sensorFields.getBackground());
+		    
+		    if (input.sensor_type == SensorType.LIGHT) {
+				leftThreshold.setText(leftThresholdLight);
+				rightThreshold.setText(rightThresholdLight);
+				type = SensorType.LIGHT;
+			} else if (input.sensor_type == SensorType.AUDIO) {
+				leftThreshold.setText(leftThresholdSound);
+				rightThreshold.setText(rightThresholdSound);
+				type = SensorType.AUDIO;
+			} else if (input.sensor_type == SensorType.VIDEO) {
+				leftThreshold.setText(leftThresholdMotion);
+				rightThreshold.setText(rightThresholdMotion);
+				type = SensorType.VIDEO;
+			}
 		    
 		    sensorFields.add(leftThreshold);
 		    sensorFields.add(threshold);
@@ -198,22 +229,26 @@ public class ConfigureMenu extends JFrame {
 		    desktop = new JCheckBox("Desktop notification");
 		    desktop.addActionListener(new CheckboxListener());
 		    desktop.setActionCommand("desktop");
+		    desktop.setSelected(input.desktopNotification);
 		    magicMirror = new JCheckBox("Magic Mirror");
 		    magicMirror.addActionListener(new CheckboxListener());
 		    magicMirror.setActionCommand("magicMirror");
+		    magicMirror.setSelected(input.magicMirrorNotification);
 		    text = new JCheckBox("Text");
 		    text.addActionListener(new CheckboxListener());
 		    text.setActionCommand("text");
+		    text.setSelected(input.textNotification);
 		    email = new JCheckBox("Email");
 		    email.addActionListener(new CheckboxListener());
 		    email.setActionCommand("email");
+		    email.setSelected(input.emailNotification);
 		    
 		  
 		    
 		    
 		    
-		    phoneNum = new JTextField("(765)-XXX-XXXX");
-		    emailAddress = new JTextField("someone@purdue.edu");
+		    phoneNum = new JTextField(input.phoneNumber);
+		    emailAddress = new JTextField(input.emailAddress);
 		    
 			phoneNum.setEnabled(textBool);
 			emailAddress.setEnabled(emailBool);
@@ -261,7 +296,6 @@ public class ConfigureMenu extends JFrame {
                      null, "Close without saving?", 
                      "Exit Confirmation", JOptionPane.YES_NO_OPTION, 
                      JOptionPane.QUESTION_MESSAGE, null, null, null);
-                System.out.println(confirm);
                 if (confirm == 0) {
                 	//close menu, do not close application
                    dispose();
@@ -344,10 +378,10 @@ public class ConfigureMenu extends JFrame {
 		System.out.println(phoneNum.getText() + " " + emailAddress.getText() + " " + startH.getText() + "|");
 		if (startH.getText().compareTo("") == 0 || startM.getText().compareTo("") == 0 || endH.getText().compareTo("") == 0 || endM.getText().compareTo("") == 0) {
 			//It's all or nothing, baby.
-			startH.setText("00");
-			startM.setText("00");
-			endH.setText("00");
-			endM.setText("00");
+			startH.setText("");
+			startM.setText("");
+			endH.setText("");
+			endM.setText("");
 		}
 		ClientConfig toSubmit = new ClientConfig( 
 				startH.getText() + ":" + startM.getText(), 
@@ -363,6 +397,8 @@ public class ConfigureMenu extends JFrame {
 				emailBool, 
 				phoneNum.getText(), emailAddress.getText()
 		);
+		toSubmit.SetIP(configs.get(inputNum).ip);
+		configs.set(inputNum, toSubmit);
 		System.out.println(toSubmit);
     	inUse = false;
     	dispose();

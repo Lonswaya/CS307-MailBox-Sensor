@@ -5,7 +5,7 @@ public class ClientConfig extends BaseConfig {
 	protected String name;
 	protected Color color;
 	protected boolean desktopNotification, magicMirrorNotification, textNotification, emailNotification;
-	protected String phoneNumber, emailAddress;
+	protected String phoneNumber, emailAddress, ip;
 	
 	public ClientConfig(String start, String stop, boolean sensing, SensorType type, float threshold, String name, Color color, boolean desktopNotification, boolean magicMirrorNotification, boolean textNotification, boolean emailNotification, String phoneNumber, String emailAddress) {
 		super(start, stop, sensing, type, threshold);
@@ -42,4 +42,14 @@ public class ClientConfig extends BaseConfig {
 				+   "TEXT NOTIFICATION=" + textNotification + ", NUMBER=" + phoneNumber + "\n"
 				+   "EMAIL NOTIFICATION=" + emailNotification + ", EMAIL ADDRESS=" + emailAddress + "\n";
 	}
+	public void SetIP(String s) {
+		ip = s;
+	}
+	public void SetColor(Color c) {
+		color = c;
+	}
+	public void SetName(String s) {
+		name = s;
+	}
+	
 }

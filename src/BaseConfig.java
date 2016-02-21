@@ -46,8 +46,8 @@ public class BaseConfig {
 		this.stop_hours = this.start_hours;
 		this.stop_minutes = this.start_minutes;
 		this.is_sensing = false;
-		this.sensor_type = null;
-		this.sensing_threshold = 101.0f;
+		this.sensor_type = SensorType.LIGHT;
+		this.sensing_threshold = .5f;
 	}
 	
 	//loads the config file from a specified path
