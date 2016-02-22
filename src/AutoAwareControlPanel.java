@@ -38,8 +38,8 @@ public class AutoAwareControlPanel extends JFrame {
     	//GridLayout experimentLayout = new GridLayout(5,3);
     	
     	this.setIconImage(Toolkit.getDefaultToolkit().getImage("resources/icon.png"));
-    	
-    	Timer t = new Timer(5000, new Refresher());
+
+        Timer t = new Timer(5000, new Refresher());
         setTitle("AutoAware Control Panel");
         setSize(1000, 600);
         setLocationRelativeTo(null);
@@ -54,6 +54,7 @@ public class AutoAwareControlPanel extends JFrame {
         JScrollPane scrollPane = new JScrollPane(panelHolder);
         this.add(scrollPane);
         t.start();
+        setVisible(true);
     }
     void UpdateControlPanel(JPanel panelHolder) {
         for (int i = 0; i < maxPanels; i++) {
@@ -289,7 +290,6 @@ public class AutoAwareControlPanel extends JFrame {
     }
     public static void main(String[] args) {
     	AutoAwareControlPanel ex = new AutoAwareControlPanel();
-        ex.setVisible(true);
         
     }
     public void refreshSensorList() {
@@ -312,7 +312,7 @@ public class AutoAwareControlPanel extends JFrame {
             if (configs.get(i).sensor_type == SensorType.LIGHT) {
             	icon.setIcon(new ImageIcon("resources/light.png"));
             }
-            System.out.println(configs.get(i).sensor_type);
+            //System.out.println(configs.get(i).sensor_type);
     		JLabel title = (JLabel) myPanel.getComponent(0);
     		title.setText(configs.get(i).name);
     	}	

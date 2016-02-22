@@ -81,7 +81,7 @@ public class ConfigureMenu extends JFrame {
 	        colorChooser.setPreferredSize(new Dimension(90, 30));
 	        colorChooser.addActionListener(new ButtonListener());
 	       
-	        usesScheduledTimes = (input.start_hours != -1); //get usesscheduledtimes here
+	        usesScheduledTimes = (input.start_hours != -1); 
 
 	        scheduledTimes = new JCheckBox();
 	        scheduledTimes.setText("Scheduled Times");
@@ -112,10 +112,10 @@ public class ConfigureMenu extends JFrame {
 		    endTM.setText("   :");
 		    endTM.setBackground(nameAndSchedule.getBackground());
 	        
-	        startH = new JTextField(Integer.toString(input.start_hours));
-	        endH = new JTextField(Integer.toString(input.stop_hours));
-	        startM = new JTextField(Integer.toString(input.start_minutes));
-	        endM = new JTextField(Integer.toString(input.stop_minutes));
+	        startH = new JTextField(usesScheduledTimes ? Integer.toString(input.start_hours) : "");
+	        endH = new JTextField(usesScheduledTimes ? Integer.toString(input.stop_hours) : "");
+	        startM = new JTextField(usesScheduledTimes ? (input.start_minutes < 10 ? "0" : "") + Integer.toString(input.start_minutes) : "");
+	        endM = new JTextField(usesScheduledTimes ? (input.start_minutes < 10 ? "0" : "") + Integer.toString(input.stop_minutes) : "");
 	        
 	        
 	        startH.setPreferredSize(new Dimension(25, 20));
@@ -250,6 +250,9 @@ public class ConfigureMenu extends JFrame {
 		    phoneNum = new JTextField(input.phoneNumber);
 		    emailAddress = new JTextField(input.emailAddress);
 		    
+		    textBool = input.textNotification;
+		    emailBool = input.emailNotification;
+		    
 			phoneNum.setEnabled(textBool);
 			emailAddress.setEnabled(emailBool);
 			
@@ -376,13 +379,14 @@ public class ConfigureMenu extends JFrame {
 	}
 	private void SubmitValues() {
 		System.out.println(phoneNum.getText() + " " + emailAddress.getText() + " " + startH.getText() + "|");
-		if (startH.getText().compareTo("") == 0 || startM.getText().compareTo("") == 0 || endH.getText().compareTo("") == 0 || endM.getText().compareTo("") == 0) {
+		if (!usesScheduledTimes || startH.getText().compareTo("") == 0 || startM.getText().compareTo("") == 0 || endH.getText().compareTo("") == 0 || endM.getText().compareTo("") == 0) {
 			//It's all or nothing, baby.
-			startH.setText("");
-			startM.setText("");
-			endH.setText("");
-			endM.setText("");
+			startH.setText("-1");
+			startM.setText("-1");
+			endH.setText("-1");
+			endM.setText("-1");
 		}
+		
 		ClientConfig toSubmit = new ClientConfig( 
 				startH.getText() + ":" + startM.getText(), 
 				endH.getText() + ":" + endM.getText(), 
