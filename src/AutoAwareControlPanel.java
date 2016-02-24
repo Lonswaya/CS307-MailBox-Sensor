@@ -85,7 +85,7 @@ public class AutoAwareControlPanel extends JFrame {
 		configure.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent event) {
-               System.out.println("Open configure menu for sensor " + identifier);
+               //System.out.println("Open configure menu for sensor " + identifier);
                createConfigureMenu(identifier);
             }
         });
@@ -98,7 +98,7 @@ public class AutoAwareControlPanel extends JFrame {
             @Override
             public void actionPerformed(ActionEvent event) {
             	RemoveSensor(identifier);
-                System.out.println("Remove sensor " + identifier);
+                //System.out.println("Remove sensor " + identifier);
             }
         });
 		remove.setOpaque( true );
@@ -128,12 +128,16 @@ public class AutoAwareControlPanel extends JFrame {
 		icon.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent event) {
+            	//have to get it every time, since it may change
                 if (ConfigFind(identifier).sensor_type == SensorType.AUDIO)
-                	System.out.println("Open audio stream for sensor " + identifier);
+                	OpenStream(SensorType.AUDIO, identifier);
+                	//System.out.println("Open audio stream for sensor " + identifier);
                 if (ConfigFind(identifier).sensor_type == SensorType.VIDEO)
-                	System.out.println("Open video stream for sensor " + identifier);
+                	OpenStream(SensorType.VIDEO, identifier);
+                	//System.out.println("Open video stream for sensor " + identifier);
                 if (ConfigFind(identifier).sensor_type == SensorType.LIGHT)
-                	System.out.println("Open light stream for sensor " + identifier);
+                	OpenStream(SensorType.LIGHT, identifier);
+                	//System.out.println("Open light stream for sensor " + identifier);
 
             }
         });
@@ -161,7 +165,7 @@ public class AutoAwareControlPanel extends JFrame {
 		myPanel.add(buttonBorderPanel);
 		myPanel.add(iconBorderPanel);
 		panelHolder.add(myPanel);
-		System.out.println("added new sensor to panelholder");
+		//System.out.println("added new sensor to panelholder");
 	}
     
     public void createMenuBar() {
@@ -191,7 +195,7 @@ public class AutoAwareControlPanel extends JFrame {
             @Override
             public void actionPerformed(ActionEvent event) {
             	SaveSensors();
-                System.out.println("Save sensors");
+                //System.out.println("Save sensors");
             }
         });
         JMenuItem AddNewSensor = new JMenuItem("Add New Sensor", icon);
@@ -201,7 +205,7 @@ public class AutoAwareControlPanel extends JFrame {
             @Override
             public void actionPerformed(ActionEvent event) {
             	AddSensor();
-                System.out.println("Open sensor dialog");
+                //System.out.println("Open sensor dialog");
             }
         });
         JMenuItem TurnAllOff = new JMenuItem("Disable All Sensors", icon);
@@ -210,6 +214,7 @@ public class AutoAwareControlPanel extends JFrame {
         TurnAllOff.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent event) {
+            	//TODO
                 System.out.println("Turn all off");
             }
         });
@@ -219,6 +224,7 @@ public class AutoAwareControlPanel extends JFrame {
         TurnAllOn.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent event) {
+            	//TODO
                 System.out.println("Turn all on");
             }
         });
@@ -260,10 +266,11 @@ public class AutoAwareControlPanel extends JFrame {
     }
     public void AddSensor() {
     	String address = JOptionPane.showInputDialog("Enter IP Address of sensor", "");
-    	System.out.println(ConfigFind(address));
-    	if (ConfigFind(address) != null) {
-    		System.out.println("error");
-    		JOptionPane.showMessageDialog(null,"Sensor already added", "error", JOptionPane.ERROR_MESSAGE, null);
+    	//System.out.println(ConfigFind(address));
+    	ClientConfig finder = ConfigFind(address);
+    	if (finder != null) {
+    		//System.out.println("error");
+    		JOptionPane.showMessageDialog(null,"Sensor already added, named \"" + finder.name + "\"", "error", JOptionPane.ERROR_MESSAGE, null);
 
     	} else {
 	    	ClientConfig newSensor = new ClientConfig();
@@ -274,23 +281,20 @@ public class AutoAwareControlPanel extends JFrame {
 	    	configs.add(newSensor);
 	    	createNew(controlIndex, newSensor);
 	    	refreshSensorList();
-	    	//add to database for sensor
+	    	//TODO add to database for sensor
     	}
     	
     }
     public void InitConfigs() {
     	//request to database, add sensors
     	//manually adding sensors for now
+    	//TODO
     	configs = new ArrayList<ClientConfig>();
     	ClientConfig firstConfig = new ClientConfig();
     	firstConfig.ip = "1234";
     	firstConfig.SetName("First Config");
     	configs.add(firstConfig);
     	
-    }
-    public static void main(String[] args) {
-    	AutoAwareControlPanel ex = new AutoAwareControlPanel();
-        
     }
     public void refreshSensorList() {
     	//System.out.println("updating");
@@ -339,7 +343,7 @@ public class AutoAwareControlPanel extends JFrame {
     public ClientConfig ConfigFind(String identifier) {
     	//System.out.println(configs);
     	for (int i = 0; i < configs.size(); i++) {
-    		System.out.println(configs.get(i).ip);
+    		//System.out.println(configs.get(i).ip);
     		if ((configs.get(i).ip).equals(identifier)) {
     			return configs.get(i);
     		}
@@ -349,6 +353,7 @@ public class AutoAwareControlPanel extends JFrame {
     }
     public void SaveSensors() {
     	//save sensors to database
+    	//TODO
     	System.out.println("Sensors saved");
     }
     
@@ -374,13 +379,25 @@ public class AutoAwareControlPanel extends JFrame {
            dispose();
     	
     }
-    /* To refresh the current control panel
-     * Will access the database every 5 seconds
-     * 
-     */
+    public void OpenStream(SensorType s, String address) {
+    	@SuppressWarnings("unused")
+		StreamBox stream = new StreamBox();
+    	if (s == SensorType.VIDEO) {
+    		stream.setTitle("Video stream on sensor " + address);
+	    	stream.add(new VideoStreamBox(address));
+    	} else {
+    		ClientConfig c = ConfigFind(address);
+    		stream.setTitle(c.sensor_type + " stream on sensor " + address);
+	    	stream.add(new ValueStreamBox(address, c.sensor_type, c.sensing_threshold));
+    	}
+    }
     public class Refresher implements ActionListener {
         public void actionPerformed(ActionEvent e) {
         	refreshSensorList();
         }
+    }
+    public static void main(String[] args) {
+    	AutoAwareControlPanel ex = new AutoAwareControlPanel();
+        
     }
 }
