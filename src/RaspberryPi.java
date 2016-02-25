@@ -52,7 +52,7 @@ public class RaspberryPi {
 						objectIn = new ObjectInputStream(receiveSocket.getInputStream());
 						msg = (Message) objectIn.readObject();
 
-						this.sensor.setConfig(this.config)
+						this.sensor.setConfig(msg.config);
 						
 						System.out.println(msg.toString());
 						// do shit with message here
@@ -72,7 +72,7 @@ public class RaspberryPi {
 				this.sensor = sensor;
 				return this;
 			}
-		}.init(this.receiveServer, this.receiveSocket, BaseSensor sensor));
+		}.init(this.receiveServer, this.receiveSocket, sensor));
 	}
 
 	// get the thread receiving shit

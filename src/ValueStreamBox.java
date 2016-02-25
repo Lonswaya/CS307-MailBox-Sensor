@@ -27,6 +27,7 @@ public class ValueStreamBox extends JPanel {
 	private float threshold;
 	private SensorType sensorType;
 	private Timer t;
+		
 	private int[] pointsX1, pointsX2, pointsY1, pointsY2, thresholdPointX, thresholdPointY;
 	public ValueStreamBox(String address, SensorType sensorType, float threshold) {
 		super();
@@ -35,7 +36,6 @@ public class ValueStreamBox extends JPanel {
 		JButton exit = new JButton("Exit");
 		final JPanel tempThis = this;
 		exit.addActionListener(new ActionListener() {
-            @Override
             public void actionPerformed(ActionEvent event) {
             	SwingUtilities.getWindowAncestor(tempThis).dispose();
             }

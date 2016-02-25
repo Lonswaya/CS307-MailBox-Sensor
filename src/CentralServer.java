@@ -84,7 +84,7 @@ public class CentralServer {
 				
 				System.out.println("Recieved: " + tmp.getString() + " from client");
 				
-				server.setMessage(new Message("F*#@ED UP THE MESSAGE"));
+				server.setMessage(new Message("F*#@ED UP THE MESSAGE", null));
 				
 				server.sendMessage();
 				

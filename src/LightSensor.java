@@ -21,7 +21,7 @@ public class LightSensor extends BaseSensor {
 	}
 	
 	public Message form_message(){
-		return new Message("Above threshold");
+		return new Message("Above threshold", null);
 	}
 
 	public void set_webcam_state(boolean state){
