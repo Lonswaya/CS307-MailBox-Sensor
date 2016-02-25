@@ -5,10 +5,12 @@ public class Message implements Serializable {
 	
 	protected String message;
 	protected BaseConfig config;
+	protected MessageType type;
 	
-	public Message(String message, BaseConfig config) {
+	public Message(String message, BaseConfig config, MessageType type) {
 		setString(message);
 		setConfig(config);
+		this.type = type;
 	}
 	
 	public String getString() {
