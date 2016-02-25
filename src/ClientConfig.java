@@ -7,6 +7,7 @@ public class ClientConfig extends BaseConfig {
 	protected boolean desktopNotification, magicMirrorNotification, textNotification, emailNotification;
 	protected String phoneNumber, emailAddress, ip;
 	
+	
 	public ClientConfig(String start, String stop, boolean sensing, SensorType type, float threshold, String name, Color color, boolean desktopNotification, boolean magicMirrorNotification, boolean textNotification, boolean emailNotification, String phoneNumber, String emailAddress) {
 		super(start, stop, sensing, type, threshold);
 		this.color = color;
