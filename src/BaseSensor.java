@@ -25,6 +25,10 @@ public abstract class BaseSensor{
 		}
 	}
 	
+	public void setConfig(BaseConfig config) {
+		this.config = config;
+	}
+	
 	public void receive_message(){
 		
 	}

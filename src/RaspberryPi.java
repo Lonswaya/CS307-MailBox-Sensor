@@ -17,7 +17,7 @@ public class RaspberryPi {
 	private Socket receiveSocket;
 	private Socket sendSocket;
 
-	private String ip = "someip";
+	private String ip = "localhost";
 	private int port = 9999;
 
 	private Thread receiveThread;
@@ -36,6 +36,7 @@ public class RaspberryPi {
 			private Socket receiveSocket;
 			private ObjectInputStream objectIn;
 			private Message msg;
+			private BaseSensor sensor;
 
 			@Override
 			public void run() {
@@ -51,6 +52,8 @@ public class RaspberryPi {
 						objectIn = new ObjectInputStream(receiveSocket.getInputStream());
 						msg = (Message) objectIn.readObject();
 
+						this.sensor.setConfig(this.config)
+						
 						System.out.println(msg.toString());
 						// do shit with message here
 
@@ -63,12 +66,13 @@ public class RaspberryPi {
 				}
 			}
 
-			public Runnable init(ServerSocket serverSocket, Socket socket) {
+			public Runnable init(ServerSocket serverSocket, Socket socket, BaseSensor sensor) {
 				this.receiveServer = serverSocket;
 				this.receiveSocket = socket;
+				this.sensor = sensor;
 				return this;
 			}
-		}.init(this.receiveServer, this.receiveSocket));
+		}.init(this.receiveServer, this.receiveSocket, BaseSensor sensor));
 	}
 
 	// get the thread receiving shit
@@ -154,8 +158,8 @@ public class RaspberryPi {
 	public static void main(String[] args) throws InterruptedException {
 
 		// basically run like this
-		//RaspberryPi pi = new RaspberryPi();
-		//pi.run();
+		RaspberryPi pi = new RaspberryPi();
+		pi.run();
 
 		/*
 		 * while(true){ Calendar c = Calendar.getInstance(); int hour =
