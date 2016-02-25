@@ -1,5 +1,4 @@
 
 public enum MessageType {
-	CONFIG, VIDEO, AUDIO, LIGHT, READING;
-	
+	CONFIG, VIDEO, AUDIO, LIGHT, READING, PICTURE;
 }

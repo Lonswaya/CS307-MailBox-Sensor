@@ -2,6 +2,8 @@ import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.net.Inet4Address;
+import java.net.UnknownHostException;
 
 import javax.imageio.ImageIO;
 
@@ -21,7 +23,14 @@ public class LightSensor extends BaseSensor {
 	}
 	
 	public Message form_message(){
-		return new Message("Above threshold", null, null);
+		Message msg = new LightMessage("Light above threshold", null);
+		try {
+			msg.setFrom(Inet4Address.getLocalHost().getHostAddress());
+		} catch (UnknownHostException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return msg;
 	}
 
 	public void set_webcam_state(boolean state){
