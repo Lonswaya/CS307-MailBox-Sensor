@@ -10,4 +10,9 @@
  2. It will take you to a login page for Oracle. If you do not have an account already go and create and account in Oracle via the "Create an 
  	account". 
  3. Once the zip file is downloaded, unzip the files and run setup.exe inside DISK1 folder.
- 4.
+ 4. Let the set up complete and now you will have Oracle 11g set up on your computer.
+ 
+ 5. Go to Eclipse and got to Help -> Eclipse Marketplace. Search for DTP in the search bar. Select the option that is called Eclipse Data 
+ 	Tools Platform and install it. 
+ 6. Once DTP is installed, click on the "Open Perspective" button on the right side of the screen. You should see Database Development on the
+ 	list. Click on it and you will see a new perspective on the left side.
