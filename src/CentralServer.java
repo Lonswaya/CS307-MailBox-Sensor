@@ -4,6 +4,7 @@ import java.net.*;
 import javax.net.ssl.SSLServerSocket;
 import javax.net.ssl.SSLServerSocketFactory;
 import javax.net.ssl.SSLSocket;
+import javax.net.ssl.SSLSocketFactory;
 
 public class CentralServer implements Runnable {
 			
@@ -13,10 +14,14 @@ public class CentralServer implements Runnable {
 
 	protected ServerSocket ss = null;
 	
+	private SSLSocketFactory socketFactory = null;
+	
 	public CentralServer() {
 	    System.setProperty("javax.net.ssl.keyStore", "mySrvKeystore");
 	    System.setProperty("javax.net.ssl.keyStorePassword", "sensor");
 	    
+	    
+	    socketFactory = (SSLSocketFactory)SSLSocketFactory.getDefault();
 	    
 		SSLServerSocketFactory f = (SSLServerSocketFactory)SSLServerSocketFactory.getDefault();
 		try {
@@ -29,17 +34,28 @@ public class CentralServer implements Runnable {
 	
 	public void notifyUsers(Notification notification) {
 		
-	}	
+	}
+	
+	public boolean sendMessage(Message msg, String ip, int port) {
+		
+		try {
+			Socket sock = socketFactory.createSocket(ip, port);
+			ObjectOutputStream out = new ObjectOutputStream(sock.getOutputStream());
+			out.writeObject(msg);
+			out.flush();
+		} catch (Exception e) {
+			return false;
+		}
+		
+		return true;	
+	}
 	
 	@Override
 	public void run() {
 		// TODO Auto-generated method stub
 		
 		try {
-			SSLServerSocketFactory f = (SSLServerSocketFactory)SSLServerSocketFactory.getDefault();
-			ServerSocket ss = f.createServerSocket(9999);
 			
-			CentralServer server = new CentralServer();
 			do {
 				
 				Socket sock = ss.accept();
@@ -92,7 +108,7 @@ public class CentralServer implements Runnable {
 			return (Message)in.readObject();
 		}
 		
-		public void sendMessage(Message msg, Socket sock) throws IOException {
+		public void sendMessage(Message msg) throws IOException {
 			out.writeObject(msg);
 			out.flush();
 		}
@@ -111,9 +127,6 @@ public class CentralServer implements Runnable {
 		
 			try {
 
-				//do shit
-				
-				try {
 					Message msg = receiveMessage();
 					
 					switch(msg.type) {
@@ -131,18 +144,11 @@ public class CentralServer implements Runnable {
 						
 					}
 					
-				} catch (ClassNotFoundException e) {
+				} catch (ClassNotFoundException | IOException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 				
-				
-					
-				
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
 			
 			
 			
