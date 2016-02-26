@@ -26,8 +26,7 @@ import org.omg.CORBA.portable.InputStream;
 public class AutoAwareControlPanel extends JFrame {
 	private static final long serialVersionUID = 1L;
 	private JPanel panelHolder;
-	private ArrayList<ClientConfig> configs;
-	private int maxPanels = 4;
+	public ArrayList<ClientConfig> configs;
 	private ConfigureMenu cf;
     private int controlIndex;
 	public AutoAwareControlPanel() {
@@ -39,7 +38,7 @@ public class AutoAwareControlPanel extends JFrame {
     	
     	this.setIconImage(Toolkit.getDefaultToolkit().getImage("resources/icon.png"));
 
-        Timer t = new Timer(5000, new Refresher());
+        //Timer t = new Timer(5000, new Refresher());
         setTitle("AutoAware Control Panel");
         setSize(1000, 600);
         setLocationRelativeTo(null);
@@ -53,23 +52,13 @@ public class AutoAwareControlPanel extends JFrame {
         createMenuBar();
         JScrollPane scrollPane = new JScrollPane(panelHolder);
         this.add(scrollPane);
-        t.start();
+        //t.start();
         setVisible(true);
     }
     void UpdateControlPanel(JPanel panelHolder) {
-        for (int i = 0; i < maxPanels; i++) {
+        for (int i = 0; i < configs.size(); i++) {
     		//init panels
-        	if (i >= configs.size()) { //pretend 6 is the number of active sensors
-        		/*JPanel myPanel;
-        		myPanel = new JPanel();
-        		myPanel.setBackground(Color.gray);
-        		myPanel.add(new JLabel("Empty", JLabel.CENTER));
-        		//myPanel.setSize(300, 200);
-        		panelHolder.add(myPanel);*/
-        	} else {
-        		//System.out.println(i);
-        		createNew(i, configs.get(i));
-        	}
+        	createNew(i, configs.get(i));
     	}
     }
     public void createNew(int i, ClientConfig c) {
@@ -89,6 +78,11 @@ public class AutoAwareControlPanel extends JFrame {
                createConfigureMenu(identifier);
             }
         });
+		configure.setOpaque( true );
+		configure.setBackground(Color.green);
+		configure.setForeground( Color.black );
+		configure.setFont(new Font(configure.getName(), Font.PLAIN, 20));
+
 		
 		JButton remove = new JButton("Remove");
 		remove.setPreferredSize(new Dimension(120, 30));
@@ -104,18 +98,26 @@ public class AutoAwareControlPanel extends JFrame {
 		remove.setOpaque( true );
 		remove.setBackground(Color.red);
 		remove.setForeground( Color.WHITE );
+		remove.setFont(new Font(remove.getName(), Font.BOLD, 20));
 		
-		JButton toggle = new JButton("Enable");
+		JButton toggle = new JButton(configs.get(i).is_sensing?"Disable":"Enable");
 		toggle.setPreferredSize(new Dimension(120, 30));
 		toggle.setVerticalTextPosition(AbstractButton.CENTER);
 		toggle.setHorizontalTextPosition(AbstractButton.LEADING); //aka LEFT, for left-to-right locales
 		toggle.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent event) {
-                System.out.println("Enable/disable sensor " + identifier);
+                boolean var = !ConfigFind(identifier).is_sensing;
+            	System.out.println(var?"Enable":"Disable" + " sensor " + identifier);
+                ChangeSensors(var, false, identifier);
                 
             }
         });
+		toggle.setOpaque( true );
+		toggle.setBackground(Color.blue);
+		toggle.setForeground( Color.black );
+		toggle.setFont(new Font(toggle.getName(), Font.PLAIN, 20));
+
 		JButton icon = new JButton(new ImageIcon("resources/mic.png"));
 		if (configs.get(i).sensor_type == SensorType.AUDIO)
         	icon = new JButton(new ImageIcon("resources/mic.png"));
@@ -141,9 +143,13 @@ public class AutoAwareControlPanel extends JFrame {
 
             }
         });
-		JLabel title = new JLabel(configs.get(i).name, JLabel.CENTER);
+        icon.setOpaque( true );
+        icon.setBackground(configs.get(i).is_sensing?Color.white:Color.gray);
+        
+		JLabel title = new JLabel("<html>" + configs.get(i).name + ((configs.get(i).is_sensing)?"":" <br />(Disabled)</html>"), JLabel.CENTER);
 		title.setFont(new Font(title.getName(), Font.BOLD, 30));
 		myPanel.add(title);
+		
 		JPanel filler = new JPanel();
 		filler.setOpaque(false);
 		//filler.setBackground(configs.get(i).color);
@@ -214,8 +220,8 @@ public class AutoAwareControlPanel extends JFrame {
         TurnAllOff.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent event) {
-            	//TODO
                 System.out.println("Turn all off");
+                ChangeSensors(false, true, null);
             }
         });
         JMenuItem TurnAllOn = new JMenuItem("Enable All Sensors", icon);
@@ -224,8 +230,9 @@ public class AutoAwareControlPanel extends JFrame {
         TurnAllOn.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent event) {
-            	//TODO
                 System.out.println("Turn all on");
+                ChangeSensors(true, true, null);
+                
             }
         });
         JMenuItem Helper = new JMenuItem("Help Menu", icon);
@@ -259,10 +266,9 @@ public class AutoAwareControlPanel extends JFrame {
     public void createConfigureMenu(String identifier) {
     	int sensorNumber = configs.indexOf(ConfigFind(identifier));
     	//System.out.println(configs.get(0));
-    	if (cf == null || !cf.inUse) {
-    		cf = new ConfigureMenu(sensorNumber, configs);
+    	if (cf == null || !cf.isEnabled()) {
+    		cf = new ConfigureMenu(sensorNumber, this);
     	}
-    
     }
     public void AddSensor() {
     	String address = JOptionPane.showInputDialog("Enter IP Address of sensor", "");
@@ -316,9 +322,21 @@ public class AutoAwareControlPanel extends JFrame {
             if (configs.get(i).sensor_type == SensorType.LIGHT) {
             	icon.setIcon(new ImageIcon("resources/light.png"));
             }
+            if (configs.get(i).is_sensing) {
+            	if (icon.getBackground() == Color.gray) {
+	            	icon.setBackground(Color.white);
+            	}
+            } else {
+            	if (icon.getBackground() != Color.gray) {
+	            	icon.setBackground(Color.gray);
+            	}
+            }
+            JButton enabled = (JButton)((Container)myPanel.getComponent(2)).getComponent(1);
+            enabled.setText(configs.get(i).is_sensing?"Disable":"Enable");
+            //System.out.println("enabled : " + enabled.getText());
             //System.out.println(configs.get(i).sensor_type);
     		JLabel title = (JLabel) myPanel.getComponent(0);
-    		title.setText(configs.get(i).name);
+    		title.setText("<html>" + configs.get(i).name + ((configs.get(i).is_sensing)?"":" <br />(Disabled)</html>"));
     	}	
 		panelHolder.revalidate();
 		panelHolder.repaint();
@@ -380,23 +398,48 @@ public class AutoAwareControlPanel extends JFrame {
     	
     }
     public void OpenStream(SensorType s, String address) {
-    	@SuppressWarnings("unused")
-		StreamBox stream = new StreamBox();
-    	if (s == SensorType.VIDEO) {
-    		stream.setTitle("Video stream on sensor " + address);
-	    	stream.add(new VideoStreamBox(address));
-    	} else {
-    		ClientConfig c = ConfigFind(address);
-    		stream.setTitle(c.sensor_type + " stream on sensor " + address);
-	    	stream.add(new ValueStreamBox(address, c.sensor_type, c.sensing_threshold));
+		
+    	if (ConfigFind(address).is_sensing) {
+    		StreamBox stream = new StreamBox();
+	    	if (s == SensorType.VIDEO) {
+	    		stream.setTitle("Video stream on sensor " + address);
+		    	stream.add(new VideoStreamBox(address));
+	    	} else {
+	    		ClientConfig c = ConfigFind(address);
+	    		stream.setTitle(c.sensor_type + " stream on sensor " + address);
+		    	stream.add(new ValueStreamBox(address, c.sensor_type, c.sensing_threshold));
+	    	}
     	}
     }
+    public void ChangeSensors(boolean how, boolean all, String identifier) {
+    	if (all) {
+    		for (ClientConfig cfg : configs) {
+    			if (cfg.is_sensing != how) {
+    				cfg.is_sensing = how;
+    				SendConfigToSensor(configs.indexOf(cfg));
+    			}
+    		}
+    	} else {
+    		ClientConfig cfg = ConfigFind(identifier);
+    		cfg.is_sensing = how;
+    		SendConfigToSensor(configs.indexOf(cfg));
+    	}
+    	SaveSensors();
+    	refreshSensorList();
+    }
+    public void SendConfigToSensor(int index) {
+    	//Send a message through the server to update a sensors config
+    	//TODO
+    	System.out.println("Updating info to a sensor with index "  + index);
+    }
     public class Refresher implements ActionListener {
+    	
         public void actionPerformed(ActionEvent e) {
-        	refreshSensorList();
+        	//refreshSensorList();
         }
     }
     public static void main(String[] args) {
+    	@SuppressWarnings("unused")
     	AutoAwareControlPanel ex = new AutoAwareControlPanel();
         
     }

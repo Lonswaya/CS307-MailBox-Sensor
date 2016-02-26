@@ -46,21 +46,22 @@ public class ConfigureMenu extends JFrame {
 	private static String rightThresholdSound = "Gunshot";
 	
 	private Color c;
-	private int inputNum;
-	private ArrayList<ClientConfig> configs;
-	public boolean inUse; //because none of the vars I am trying to use are working
 	
-	public ConfigureMenu(int inputNum, ArrayList<ClientConfig> clientConfigs) {
-		//System.out.println("bullshit");
-		this.configs = clientConfigs;
+	private AutoAwareControlPanel parent;
+	
+	public int inputNum;
+	
+	public ConfigureMenu(int inputNum, AutoAwareControlPanel parent) {
+		
+		//I just pass the whole damn parent through the constructor, saves any back-references we need. Unless java already has that built in. 
 		this.inputNum = inputNum;
+		this.parent = parent;
 		InitUI();
-		inUse = true;
+		
 	}
 	
 	private void InitUI() {
     		this.setIconImage(Toolkit.getDefaultToolkit().getImage("resources/icon.png"));
-
 	        setSize(600, 400);
 	        setResizable(false);
 	        setLocationRelativeTo(null);
@@ -72,7 +73,8 @@ public class ConfigureMenu extends JFrame {
 		    nameText.setBackground(nameAndSchedule.getBackground());
 	        nameText.setEditable(false);
 	        //System.out.println(configs);
-	        ClientConfig input = configs.get(inputNum);
+	        System.out.println(parent.configs);
+	        ClientConfig input = parent.configs.get(inputNum);
 	        name = new JTextField(input.name);
 		    name.setPreferredSize(new Dimension(100, 25));
 		    c = input.color;
@@ -301,8 +303,9 @@ public class ConfigureMenu extends JFrame {
                      JOptionPane.QUESTION_MESSAGE, null, null, null);
                 if (confirm == 0) {
                 	//close menu, do not close application
+            	   setEnabled(false);
+
                    dispose();
-                   inUse = false;
                 } else {
                 	setVisible(true);
                 	//setAlwaysOnTop(true);
@@ -386,11 +389,14 @@ public class ConfigureMenu extends JFrame {
 			endH.setText("-1");
 			endM.setText("-1");
 		}
-		
+		//ClientConfig toSubmit = parent.configs.get(inputNum);
+		ClientConfig lastCfg = parent.configs.get(inputNum);
+
 		ClientConfig toSubmit = new ClientConfig( 
+				lastCfg.ip,
 				startH.getText() + ":" + startM.getText(), 
 				endH.getText() + ":" + endM.getText(), 
-				true, 
+				lastCfg.is_sensing, 
 				type, 
 				threshold.getValue() * .01f, 
 				name.getText(),
@@ -401,10 +407,11 @@ public class ConfigureMenu extends JFrame {
 				emailBool, 
 				phoneNum.getText(), emailAddress.getText()
 		);
-		toSubmit.SetIP(configs.get(inputNum).ip);
-		configs.set(inputNum, toSubmit);
+		this.setEnabled(false);
+		parent.configs.set(inputNum, toSubmit);
 		System.out.println(toSubmit);
-    	inUse = false;
+		parent.SendConfigToSensor(inputNum);
+		parent.refreshSensorList();
     	dispose();
     }
 }

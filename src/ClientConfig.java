@@ -8,8 +8,9 @@ public class ClientConfig extends BaseConfig {
 	protected String phoneNumber, emailAddress, ip;
 	
 	
-	public ClientConfig(String start, String stop, boolean sensing, SensorType type, float threshold, String name, Color color, boolean desktopNotification, boolean magicMirrorNotification, boolean textNotification, boolean emailNotification, String phoneNumber, String emailAddress) {
+	public ClientConfig(String ip, String start, String stop, boolean sensing, SensorType type, float threshold, String name, Color color, boolean desktopNotification, boolean magicMirrorNotification, boolean textNotification, boolean emailNotification, String phoneNumber, String emailAddress) {
 		super(start, stop, sensing, type, threshold);
+		this.ip = ip;
 		this.color = color;
 		this.name = name;
 		this.desktopNotification = desktopNotification;
