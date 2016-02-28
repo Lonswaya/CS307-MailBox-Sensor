@@ -11,6 +11,7 @@ import javax.sound.sampled.AudioFileFormat.Type;
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
 import javax.sound.sampled.DataLine;
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.TargetDataLine;
@@ -19,31 +20,31 @@ import java.util.Scanner;
 
 public class Capture 
 {
-    private double recordDuration;
+    //private double recordDuration;
     
-    TargetDataLine line;
+    //TargetDataLine line;
     
-    public Capture(double dur)
-    {
-        this.recordDuration = dur;
-    }
+    //public Capture(double dur)
+    //{
+    //   this.recordDuration = dur;
+    //}
     
-    public Capture()
-    {
-    	this.recordDuration = 5;
-    }
+    //public Capture()
+    //{
+    //	this.recordDuration = 5;
+    //}
     
-    public void setDuration(double newDur)
-    {
-    	this.recordDuration = newDur;
-    }
+    //public void setDuration(double newDur)
+    //{
+    //	this.recordDuration = newDur;
+    //}
     
-    public double getDuration()
-    {
-    	return this.recordDuration;
-    }
+    //public double getDuration()
+    //{
+    //	return this.recordDuration;
+    //}
     
-    public void recordSound() 
+    public static AudioInputStream recordSound (double duration) 
     {
         
         //double duration = 0;
@@ -56,6 +57,8 @@ public class Capture
         int sampleSize = 16;
         boolean bigEndian = true;
         
+        TargetDataLine line;
+        
         AudioFormat format = new AudioFormat(encoding, rate, sampleSize, channels, (sampleSize/8)*channels,rate,bigEndian);
         
         DataLine.Info info = new DataLine.Info(TargetDataLine.class, format);
@@ -63,7 +66,7 @@ public class Capture
         if(!AudioSystem.isLineSupported(info))
         {
             System.out.println("I'm sorry but " + info + " isn't supported.");
-            return;
+            return null;
         }
         System.out.println(info + " is in fact supported.");
         
@@ -75,12 +78,12 @@ public class Capture
         catch (LineUnavailableException ex) 
         {
             System.out.println(ex + " wasn't able to open.");
-            return;
+            return null;
         } 
         catch (Exception e) 
         {
             System.out.println(e + " happened. Don't let it happen again.");
-            return;
+            return null;
         }
         
         ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -101,7 +104,7 @@ public class Capture
             long difference = (current - begin) / 1000;
             
             
-            if((numBytesRead = line.read(data, 0, bufferLengthInBytes)) == -1 || difference > this.recordDuration)
+            if((numBytesRead = line.read(data, 0, bufferLengthInBytes)) == -1 || difference > duration)
             {
                 break;
             }
@@ -117,10 +120,10 @@ public class Capture
             out.close();
         } catch (Exception e) {
             e.printStackTrace();
-            return;
+            return null;
         }
         
-        System.out.println(recordDuration +"s of audio was recorded.");
+        //System.out.println(recordDuration +"s of audio was recorded.");
         
         
         
@@ -131,7 +134,10 @@ public class Capture
             //DataOutputStream dos = new DataOutputStream(new FileOutputStream("C:\\dicks.bin"));
             //dos.write(audioBytes);
             AudioInputStream stream = new AudioInputStream(in, format, audioBytes.length);
-            
+         
+        
+            return stream;
+            /*
             String path = System.getProperty("user.home");
             
             
@@ -140,9 +146,12 @@ public class Capture
             
             File file = new File(path + File.separator + "output.wav");
             AudioSystem.write(stream, Type.WAVE, file);
+            */
         } catch (Exception e) {
             e.printStackTrace();
         }
+        
+        return null;
         
         
         /*
@@ -166,12 +175,14 @@ public class Capture
     
     public static void main(String[] args) {
         
-        Scanner in = new Scanner(System.in);
+    	/*
+    	Scanner in = new Scanner(System.in);
         
         double duration = in.nextDouble();
         in.close();
         Capture cap = new Capture(duration);
         cap.recordSound();
+        */
     }
     
     
