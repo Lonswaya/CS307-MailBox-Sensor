@@ -304,6 +304,7 @@ public class AutoAwareControlPanel extends JFrame implements Observer {
     	ClientConfig firstConfig = new ClientConfig();
     	firstConfig.ip = "1234";
     	firstConfig.SetName("First Config");
+    	firstConfig.force_off = true;
     	configs.add(firstConfig);
     	
     }
@@ -387,6 +388,7 @@ public class AutoAwareControlPanel extends JFrame implements Observer {
             @Override
             public void windowClosing(WindowEvent e) {
             	//setAlwaysOnTop(false);
+            	server.Kill(); 
                 CloseOperation();
             }
         };

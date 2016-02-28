@@ -159,6 +159,14 @@ public class CentralServer extends Observable implements Runnable {
 		}
 		
 	}
-	
-	
+	public void Kill() {
+		//Kills current server socket
+		try {
+			ss.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
+	
+	
+}
