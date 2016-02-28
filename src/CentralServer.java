@@ -58,14 +58,14 @@ public class CentralServer extends Observable implements Runnable {
 		
 		try {
 			
-			do {
+			while(true) {
 				
 				Socket sock = ss.accept();
 				
 				//creates a new thread that handles that socket
 				new Thread(new ServerListener(sock, this)).start();
 				
-			} while (!server.getMessage().getString().equalsIgnoreCase("quit"));
+			}
 			
 		} catch (Exception e) {
 			e.printStackTrace();
