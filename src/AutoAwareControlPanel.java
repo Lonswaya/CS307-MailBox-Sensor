@@ -47,6 +47,7 @@ public class AutoAwareControlPanel extends JFrame implements Observer {
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
         addWindowListener(CloseListener());
         controlIndex = 0;
+        
         panelHolder = new JPanel(new GridLayout(0,2, 10, 10));
         panelHolder.setBackground(Color.black);
         InitConfigs();
@@ -475,13 +476,13 @@ public class AutoAwareControlPanel extends JFrame implements Observer {
     }
     public void Notify(String ip) {
     	ClientConfig c = ConfigFind(ip);
-    	UIManager UI=new UIManager();
-    	Color oldColor = UI.getColor("OptionPane.background");
-    	UIManager.put("OptionPane.background",c.color);
-    	UIManager.put("OptionPane.foreground",c.color);
+    	//UIManager UI=new UIManager();
+    	//Color oldColor = UI.getColor("OptionPane.background");
+    	//UIManager.put("OptionPane.background",c.color);
+    	//UIManager.put("OptionPane.foreground",c.color);
 		JOptionPane.showMessageDialog(this, "Sensor " + c.name + " has reached threshold!");
-		UIManager.put("OptionPanel.background", oldColor );
-		UIManager.put("OptionPanel.foreground", oldColor );
+		//UIManager.put("OptionPanel.background", oldColor );
+		//UIManager.put("OptionPanel.foreground", oldColor );
 	}
 
 	@Override
@@ -493,7 +494,9 @@ public class AutoAwareControlPanel extends JFrame implements Observer {
 			case LIGHT:
 				break;
 			case READING:
-				((ValueStreamBox)(Streamers.get(gotMessage.from).getComponent(0))).value = ((ReadingMessage)gotMessage).getCurrentThreshold();
+				float f = ((ReadingMessage)gotMessage).getCurrentThreshold();
+				((ValueStreamBox)(Streamers.get(gotMessage.from).getComponent(0))).value = f;
+				if (ConfigFind(gotMessage.from).sensing_threshold <= f) Notify(gotMessage.from);
 				break;
 			case AUDIO:
 				break;
