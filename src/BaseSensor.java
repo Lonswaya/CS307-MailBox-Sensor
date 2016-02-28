@@ -7,6 +7,7 @@ public abstract class BaseSensor{
 	protected float upperBound; //some meaningful boundary values used to calculate percentage
 	protected float lowerBound;
 	
+	
 	public BaseSensor(BaseConfig config){
 		this.config = config;
 		this.sType = config.sensor_type;

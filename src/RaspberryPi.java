@@ -14,30 +14,32 @@ import javax.net.ssl.SSLSocketFactory;
 public class RaspberryPi {
 	private BaseSensor sensor = null;
 	private ServerSocket receiveServer;
-	private Socket receiveSocket;
-	private Socket sendSocket;
 
 	private String ip = "localhost";
 	private int port = 9999;
 
-	private Thread receiveThread;
 
-	public RaspberryPi() {
+	public RaspberryPi() throws IOException {
 
 		System.setProperty("javax.net.ssl.keyStore", "mySrvKeystore");
 		System.setProperty("javax.net.ssl.keyStorePassword", "sensor");
 		System.setProperty("javax.net.ssl.trustStore", "mySrvKeystore");
 		System.setProperty("javax.net.ssl.trustStorePassword", "sensor");
 		
+		//TODO: pull config from text file and create sensor or if no config, leave sensor null
+		BaseConfig config = new BaseConfig();
+		sensor = (!config.Load()) ? null : new WebcamSensorFactory().get_sensor(config);
+		
+		
+		
 		// makes the thread that constantly receive message
-		this.receiveThread = new Thread(new Runnable() {
+		new Thread(new Runnable() {
 
 			private ServerSocket receiveServer;
-			private Socket receiveSocket;
-			private ObjectInputStream objectIn;
-			private Message msg;
 			private BaseSensor sensor;
-
+			private ObjectInputStream in;
+			private Socket sock;
+			
 			@Override
 			public void run() {
 
@@ -48,36 +50,39 @@ public class RaspberryPi {
 
 					while (true) {
 						//System.out.println("from receive thread");
-						receiveSocket = receiveServer.accept();
-						objectIn = new ObjectInputStream(receiveSocket.getInputStream());
-						msg = (Message) objectIn.readObject();
-
-						this.sensor.setConfig(msg.config);
+						sock = receiveServer.accept();
+						in = new ObjectInputStream(sock.getInputStream());
+						Message msg = (Message) in.readObject();
 						
-						System.out.println(msg.toString());
-						// do shit with message here
-
-						receiveSocket.close();
+						switch(msg.type) {
+							case CONFIG:
+								ConfigMessage conf = (ConfigMessage)msg;
+								if(sensor == null) {
+									//create sensor
+									sensor = new WebcamSensorFactory().get_sensor(conf.getConfig());
+								}
+								sensor.setConfig(conf.getConfig());
+								break;
+							default:
+								break;
+								
+						}
+						in.close();
+						sock.close();
 					}
 
 				} catch (Exception e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
-				}
+					} 
 			}
 
-			public Runnable init(ServerSocket serverSocket, Socket socket, BaseSensor sensor) {
+			public Runnable init(ServerSocket serverSocket, BaseSensor sensor) {
 				this.receiveServer = serverSocket;
-				this.receiveSocket = socket;
 				this.sensor = sensor;
 				return this;
 			}
-		}.init(this.receiveServer, this.receiveSocket, sensor));
-	}
-
-	// get the thread receiving shit
-	public Thread getReceiveThread() {
-		return this.receiveThread;
+		}.init(this.receiveServer, sensor)).start();
 	}
 
 	// get the sensor specicically to this pi
@@ -87,13 +92,16 @@ public class RaspberryPi {
 
 	public void send_message(Message msg) {
 
+		Socket sendSocket = null;
+		
 		SSLSocketFactory factory = (SSLSocketFactory) SSLSocketFactory.getDefault();
 		try {
 			sendSocket = factory.createSocket(this.ip, this.port);
-			ObjectOutputStream m_outputStream = new ObjectOutputStream(sendSocket.getOutputStream());
-			m_outputStream.writeObject(msg);
-			m_outputStream.flush();
-			this.sendSocket.close();
+			ObjectOutputStream outputStream = new ObjectOutputStream(sendSocket.getOutputStream());
+			outputStream.writeObject(msg);
+			outputStream.flush();
+			outputStream.close();
+			sendSocket.close();
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -103,7 +111,6 @@ public class RaspberryPi {
 	// run the pi?
 	public void run() throws InterruptedException {
 
-		this.receiveThread.start(); // constantly get message thread
 		
 		// main loop
 		while (true) {
@@ -126,22 +133,40 @@ public class RaspberryPi {
 	// this function determins if sensor should be active given the time
 	// restriction in config
 	public boolean isSensorActive() {
-		if (this.sensor.config.is_sensing) {
-			Calendar c = Calendar.getInstance();
-			int hour = c.get(Calendar.HOUR_OF_DAY);
-			int minute = c.get(Calendar.MINUTE);
+		
+		if(sensor.config.force_on)
+			return true;
+		if(sensor.config.force_off)
+			return true;
+		
+		Calendar c = Calendar.getInstance();
+		int hour = c.get(Calendar.HOUR_OF_DAY);
+		int minute = c.get(Calendar.MINUTE);
 
-			int startH = this.sensor.config.start_hours;
-			int startM = this.sensor.config.start_minutes;
-			int stopH = this.sensor.config.stop_hours;
-			int stopM = this.sensor.config.stop_minutes;
+		int startH = this.sensor.config.start_hours;
+		int startM = this.sensor.config.start_minutes;
+		int stopH = this.sensor.config.stop_hours;
+		int stopM = this.sensor.config.stop_minutes;
 
+		if(hour > sensor.config.start_hours && hour < sensor.config.stop_hours || 
+		  (hour == startH && minute >= startM) || 
+		  (hour == stopH && minute < stopM) ||
+		  (startH > stopH && (hour > startH || hour < stopH)) ||
+		  hour > startH && hour < stopH) {
+			return true;
+		}
+
+		
+		return false;
+		
+			/*
+				legacy. keep 
 			if (hour > startH && hour < stopH)
 				return true;
 			if (startH > stopH) { // 22:00 - 2:00
-				if (hour > stopH && hour > startH)
+				if (hour > startH)
 					return true;
-				if (hour < startH && hour < stopH)
+				if (hour < stopH)
 					return true;
 			}
 			if ((hour == startH && hour == stopH)
@@ -153,48 +178,6 @@ public class RaspberryPi {
 				return true;
 		}
 		return false;
-	}
-
-	public static void main(String[] args) throws InterruptedException {
-
-		// basically run like this
-		RaspberryPi pi = new RaspberryPi();
-		pi.run();
-
-		/*
-		 * while(true){ Calendar c = Calendar.getInstance(); int hour =
-		 * c.get(Calendar.HOUR_OF_DAY); int minute = c.get(Calendar.MINUTE);
-		 * 
-		 * System.out.println(hour + ": " + minute); try { Thread.sleep(2000); }
-		 * catch (InterruptedException e) { // TODO Auto-generated catch block
-		 * e.printStackTrace(); }
-		 * 
-		 * } sensor = new LightSensor(new BaseConfig("9:25", "22:10", true,
-		 * SensorType.LIGHT, 0));
-		 * 
-		 * System.out.println(isActive(9, 30)); // true
-		 * System.out.println(isActive(12, 30)); //true
-		 * System.out.println(isActive(22, 2)); //true
-		 * System.out.println(isActive(2, 2)); //false
-		 * System.out.println(isActive(9, 24)); //false
-		 * System.out.println(isActive(22, 12)); //false
-		 * 
-		 * sensor = new LightSensor(new BaseConfig("9:01", "9:25", true,
-		 * SensorType.LIGHT, 0));
-		 * 
-		 * System.out.println(isActive(9, 24)); // true
-		 * System.out.println(isActive(12, 30)); //false
-		 * System.out.println(isActive(12, 30)); //false
-		 * 
-		 * sensor = new LightSensor(new BaseConfig("23:00", "9:25", true,
-		 * SensorType.LIGHT, 0));
-		 * 
-		 * System.out.println(isActive(9, 30)); // false
-		 * System.out.println(isActive(23, 01)); //true
-		 * System.out.println(isActive(0, 0)); //true
-		 * System.out.println(isActive(2, 2)); //true
-		 * System.out.println(isActive(9, 24)); //true
-		 * System.out.println(isActive(22, 12)); //false
-		 */
+		*/
 	}
 }

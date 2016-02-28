@@ -8,8 +8,8 @@ public class ClientConfig extends BaseConfig {
 	protected String phoneNumber, emailAddress, ip;
 	
 	
-	public ClientConfig(String ip, String start, String stop, boolean sensing, SensorType type, float threshold, String name, Color color, boolean desktopNotification, boolean magicMirrorNotification, boolean textNotification, boolean emailNotification, String phoneNumber, String emailAddress) {
-		super(start, stop, sensing, type, threshold);
+	public ClientConfig(String ip, String start, String stop, boolean force_on, boolean force_off, SensorType type, float threshold, String name, Color color, boolean desktopNotification, boolean magicMirrorNotification, boolean textNotification, boolean emailNotification, String phoneNumber, String emailAddress) {
+		super(start, stop, force_on, force_off , type, threshold);
 		this.ip = ip;
 		this.color = color;
 		this.name = name;
@@ -34,7 +34,8 @@ public class ClientConfig extends BaseConfig {
 				+	"STOP TIME=" + stop_hours + ":" + stop_minutes + "\n"
 				+	"[SENSOR SETTINGS]\n"
 				+	"SENSOR TYPE=" + sensor_type + "\n"
-				+	"CURRENTLY SENSING=" + is_sensing + "\n"
+				+	"FORCE ON=" + force_on + "\n"
+				+	"FORCE OFF" + force_off + "\n"
 				+	"THRESHOLD=" + sensing_threshold + "%\n"
 				+   "[USER SETTINGS]\n"
 				+   "NAME=\"" + name + "\"\n"

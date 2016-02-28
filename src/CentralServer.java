@@ -16,7 +16,9 @@ public class CentralServer extends Observable implements Runnable {
 
 	protected ServerSocket ss = null;
 	
-	private SSLSocketFactory socketFactory = null;
+	protected SSLSocketFactory socketFactory = null;
+	
+	protected boolean run = true;
 	
 	public CentralServer() {
 	    System.setProperty("javax.net.ssl.keyStore", "mySrvKeystore");
@@ -58,14 +60,15 @@ public class CentralServer extends Observable implements Runnable {
 		
 		try {
 			
-			while(true) {
-				
+			
+			do {
 				Socket sock = ss.accept();
 				
 				//creates a new thread that handles that socket
 				new Thread(new ServerListener(sock, this)).start();
 				
-			}
+			} while (run);
+			
 			
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -73,9 +76,11 @@ public class CentralServer extends Observable implements Runnable {
 		
 	}
 	
-	
-	
-	public class ServerListener implements Runnable {
+	public void set_run(boolean b) {
+		this.run = b;
+	}
+
+	class ServerListener implements Runnable {
 
 		protected Socket sock = null;
 		protected ObjectOutputStream out = null;
@@ -122,7 +127,24 @@ public class CentralServer extends Observable implements Runnable {
 			try {
 
 					Message msg = receiveMessage();
-					notifyObservers(msg);
+					
+					if(msg.getString().equalsIgnoreCase("quit"))
+						cs.set_run(false);
+					
+					switch(msg.type) {
+					
+					case VIDEO:
+						break;
+					case AUDIO:
+						break;
+					case LIGHT:
+						break;
+					case CONFIG:
+						break;
+					default:
+						break;
+						
+					}
 					
 				} catch (ClassNotFoundException | IOException e) {
 					// TODO Auto-generated catch block
@@ -139,6 +161,4 @@ public class CentralServer extends Observable implements Runnable {
 	}
 	
 	
-	
-	
-}
+	}

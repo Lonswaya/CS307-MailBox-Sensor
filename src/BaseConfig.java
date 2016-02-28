@@ -1,6 +1,7 @@
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
+import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.*;
@@ -11,12 +12,14 @@ public class BaseConfig {
 	protected int start_minutes; 
 	protected int stop_hours; //in 24H format
 	protected int stop_minutes;
-	protected boolean is_sensing; 
+	protected boolean force_on;
+	protected boolean force_off;
+	
 	protected SensorType sensor_type;
 	protected float sensing_threshold; //percentage?
 	
 	//creates a new config based on the parameters. Start and stop are the times to start and stop sensing in 24H format "HH:MM"
-	public BaseConfig(String start, String stop, boolean sensing, SensorType type, float threshold) {
+	public BaseConfig(String start, String stop, boolean force_on, boolean force_off, SensorType type, float threshold) {
 		
 		String[] starting = start.split(":");
 		if(starting.length < 2) {
@@ -31,7 +34,9 @@ public class BaseConfig {
 		}
 		this.stop_hours = Integer.parseInt(stoping[0]);
 		this.stop_minutes = Integer.parseInt(stoping[1]);
-		this.is_sensing = sensing;
+		this.force_on = force_on;
+		this.force_off = force_off;
+		
 		this.sensor_type = type;
 		this.sensing_threshold = threshold;
 	}
@@ -45,7 +50,8 @@ public class BaseConfig {
 		this.start_minutes = cal.get(Calendar.MINUTE);
 		this.stop_hours = this.start_hours;
 		this.stop_minutes = this.start_minutes;
-		this.is_sensing = false;
+		this.force_on = false;
+		this.force_off = false;
 		this.sensor_type = SensorType.LIGHT;
 		this.sensing_threshold = .5f;
 	}
@@ -69,7 +75,7 @@ public class BaseConfig {
 		//format our file
 		List<String> to_write = Arrays.asList("[TIME SETTINGS]","START TIME=" + start_hours + ":" + start_minutes, 
 				"STOP TIME=" + stop_hours + ":" + stop_minutes, "[SENSOR SETTINGS]", "SENSOR TYPE=" + sensor_type,
-				"CURRENTLY SENSING=" + is_sensing, "THRESHOLD=" + sensing_threshold);
+				"FORCE ON=" + force_on, "FORCE OFF=" + force_off, "THRESHOLD=" + sensing_threshold);
 		
 		//if the directory to store it in doesn't exist make it
 		if(!Files.exists(to_save.getParent()))
@@ -79,18 +85,25 @@ public class BaseConfig {
 	}
 	
 	//loads the config assuming it is stored in ~/config.txt
-	public void Load() throws IOException {
+	public boolean Load() throws IOException {
 		String home_directory = System.getProperty("user.home");
 		Path file = Paths.get(home_directory, "config.txt"); //generate the path to the file
-		Load(file);
+		return Load(file);
 	}
 	
 	//loads the config from the specified path
-	public void Load(Path to_load) throws IOException {
-
+	public boolean Load(Path to_load) throws IOException {
+		
+		File tmp = to_load.toFile();
+		if(!tmp.exists()) {
+			return false;
+		}
+		
 		List<String> lines = Files.readAllLines(to_load, Charset.forName("UTF-8"));
 		for(String line : lines)
-			handle_line(line);		
+			handle_line(line);
+		
+		return true;
 	}
 	
 	//parses the line to populate protected fields
@@ -118,11 +131,11 @@ public class BaseConfig {
 			case "SENSOR TYPE":
 				handle_sensor_type(split[1]); //minimize nested switches/ifs with private methods
 				break;
-			case "CURRENTLY SENSING":
-				if(split[1].equalsIgnoreCase("yes"))
-					this.is_sensing = true;
-				else
-					this.is_sensing = false;
+			case "FORCE ON":
+				this.force_on = split[1].equalsIgnoreCase("yes");
+				break;
+			case "FORCE OFF":
+				this.force_off = split[1].equalsIgnoreCase("yes");
 				break;
 			case "THRESHOLD":
 				this.sensing_threshold = Float.parseFloat(split[1]);
@@ -159,9 +172,11 @@ public class BaseConfig {
 				+	"STOP TIME=" + stop_hours + ":" + stop_minutes + "\n"
 				+	"[SENSOR SETTINGS]\n"
 				+	"SENSOR TYPE=" + sensor_type + "\n"
-				+	"CURRENTLY SENSING=" + is_sensing + "\n"
+				+	"FORCE ON=" + force_on + "\n"
+				+	"FORCE OFF=" + force_off + "\n"
 				+	"THRESHOLD=" + sensing_threshold + "%";
 	}
+	
 	
 	
 	public static void main(String[] args) {
