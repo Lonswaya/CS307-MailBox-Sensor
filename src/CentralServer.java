@@ -7,7 +7,11 @@ import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
 
 import java.util.Observable;
+<<<<<<< HEAD
+import java.util.Scanner;
+=======
 import java.util.Observer;
+>>>>>>> refs/remotes/origin/master
 
 public class CentralServer extends Observable implements Runnable {
 			
@@ -163,6 +167,17 @@ public class CentralServer extends Observable implements Runnable {
 		}
 		
 	}
+<<<<<<< HEAD
+	
+	public static void main(String[] args) {
+		CentralServer c = new CentralServer();
+		
+		Scanner s = new Scanner(System.in);
+		String string = s.nextLine();
+	}
+	
+	
+=======
 	public void Kill() {
 		//Kills current server socket
 		try {
@@ -170,6 +185,7 @@ public class CentralServer extends Observable implements Runnable {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+>>>>>>> refs/remotes/origin/master
 	}
 	
 	

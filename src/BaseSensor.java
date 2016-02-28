@@ -38,5 +38,10 @@ public abstract class BaseSensor{
 	
 	public abstract boolean check_threshold();
 	public abstract Message form_message();
+
+	public void senseAudio(double duration) {
+		// TODO Auto-generated method stub
+		
+	}
 	
 }

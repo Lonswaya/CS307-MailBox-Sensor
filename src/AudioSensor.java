@@ -21,7 +21,8 @@ public class AudioSensor extends BaseSensor
 	//AUDIO_CLIP_TYPE audioClip;
 	private float last_decibel;
 	private float threshold;
-	private Capture listen = new Capture();
+	private boolean overThreshold = false;
+	//private Capture listen = new Capture();
 	
 	String path = System.getProperty("user.home");
 	
@@ -33,37 +34,53 @@ public class AudioSensor extends BaseSensor
 	}
 	
 	//set how long it should sense at a time
+	/*
 	public void setRecordDuration(double newDur)
 	{	
 		listen.setDuration(newDur);
 	}
+	*/
 	
-	//get how long it records for at a time
-	public double getRecordDuration()
+	public void senseAudio(double duration)
 	{
-		return listen.getDuration();
+		float max =Capture.recordSound(duration); 
+		
+		if (max > threshold)
+		{
+			overThreshold = true;
+		}
+		else
+		{
+			overThreshold = false;
+		}
+			
+		
 	}
+		
 	
-	//Records sound and saves it as a WAV file. default 5 seconds at a time.
-	@Override
-	public void sense()
-	{
-		listen.recordSound(); 
-	}
 	
 	
 	@Override
 	public boolean check_threshold()
 	{
-		//get the wav file to check the stuff
-		 
-		
-		return false;
+		return overThreshold;
+	
 	}
 	
 	public Message form_message()
 	{
+		
 		return null;
 	} 
 	//public AUDIO_CLIP_TYPE record_audio() {}
+
+	@Override
+	public void sense() {
+		// TODO Auto-generated method stub
+		//do nothing
+	}
+
+	
+
+	
 }

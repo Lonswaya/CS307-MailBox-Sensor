@@ -44,7 +44,7 @@ public class Capture
     //	return this.recordDuration;
     //}
     
-    public static AudioInputStream recordSound (double duration) 
+    public static float recordSound (double duration) 
     {
         
         //double duration = 0;
@@ -66,7 +66,7 @@ public class Capture
         if(!AudioSystem.isLineSupported(info))
         {
             System.out.println("I'm sorry but " + info + " isn't supported.");
-            return null;
+            return -2.0f;
         }
         System.out.println(info + " is in fact supported.");
         
@@ -78,12 +78,12 @@ public class Capture
         catch (LineUnavailableException ex) 
         {
             System.out.println(ex + " wasn't able to open.");
-            return null;
+            return -2.0f;
         } 
         catch (Exception e) 
         {
             System.out.println(e + " happened. Don't let it happen again.");
-            return null;
+            return -2.0f;
         }
         
         ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -120,7 +120,7 @@ public class Capture
             out.close();
         } catch (Exception e) {
             e.printStackTrace();
-            return null;
+            return -2.0f;
         }
         
         //System.out.println(recordDuration +"s of audio was recorded.");
@@ -135,8 +135,20 @@ public class Capture
             //dos.write(audioBytes);
             AudioInputStream stream = new AudioInputStream(in, format, audioBytes.length);
          
-        
-            return stream;
+            Clip clip = AudioSystem.getClip();
+            
+            float max = 0.0f;
+            
+            clip.open(stream);
+            
+            for(int i = 0; i < clip.getFrameLength(); i++) {
+            	clip.setFramePosition(i);
+            	if(Math.abs(clip.getLevel()) > max)
+            		max = Math.abs(clip.getLevel());
+            }
+                       
+            
+            return max;
             /*
             String path = System.getProperty("user.home");
             
@@ -151,7 +163,7 @@ public class Capture
             e.printStackTrace();
         }
         
-        return null;
+        return -1.0f;
         
         
         /*

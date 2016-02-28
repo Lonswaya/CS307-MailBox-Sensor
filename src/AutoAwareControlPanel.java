@@ -34,8 +34,18 @@ public class AutoAwareControlPanel extends JFrame implements Observer {
     }
 
     private void initUI() {
+<<<<<<< HEAD
+    	
+	    System.setProperty("javax.net.ssl.keyStore", "mySrvKeystore");
+	    System.setProperty("javax.net.ssl.keyStorePassword", "sensor");
+
+    	
+    	server = new CentralServer();
+    	server.addObserver(this);
+=======
     	server = new CentralServer(this);
     	//server.addObserver(this);
+>>>>>>> refs/remotes/origin/master
     	//GridLayout experimentLayout = new GridLayout(5,3);
     	Streamers = new Hashtable<String, StreamBox>();
     	this.setIconImage(Toolkit.getDefaultToolkit().getImage("resources/icon.png"));
