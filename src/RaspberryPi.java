@@ -137,7 +137,7 @@ public class RaspberryPi {
 		if(sensor.config.force_on)
 			return true;
 		if(sensor.config.force_off)
-			return true;
+			return false;
 		
 		Calendar c = Calendar.getInstance();
 		int hour = c.get(Calendar.HOUR_OF_DAY);
