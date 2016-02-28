@@ -13,6 +13,7 @@ public class Message implements Serializable {
 	public Message(String message, BaseConfig config, MessageType type) {
 		setString(message);
 		setConfig(config);
+		generateCreateTime();
 		this.type = type;
 	}
 	

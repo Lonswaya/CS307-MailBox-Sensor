@@ -34,8 +34,8 @@ public class AutoAwareControlPanel extends JFrame implements Observer {
     }
 
     private void initUI() {
-    	server = new CentralServer();
-    	server.addObserver(this);
+    	server = new CentralServer(this);
+    	//server.addObserver(this);
     	//GridLayout experimentLayout = new GridLayout(5,3);
     	Streamers = new Hashtable<String, StreamBox>();
     	this.setIconImage(Toolkit.getDefaultToolkit().getImage("resources/icon.png"));

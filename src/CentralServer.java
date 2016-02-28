@@ -7,6 +7,7 @@ import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
 
 import java.util.Observable;
+import java.util.Observer;
 
 public class CentralServer extends Observable implements Runnable {
 			
@@ -20,10 +21,13 @@ public class CentralServer extends Observable implements Runnable {
 	
 	protected boolean run = true;
 	
-	public CentralServer() {
+	private Observer obs = null;
+	
+	public CentralServer(Observer obs) {
 	    System.setProperty("javax.net.ssl.keyStore", "mySrvKeystore");
 	    System.setProperty("javax.net.ssl.keyStorePassword", "sensor");
 	    
+	    addObserver(obs);
 	    
 	    socketFactory = (SSLSocketFactory)SSLSocketFactory.getDefault();
 	    
@@ -116,8 +120,8 @@ public class CentralServer extends Observable implements Runnable {
 		}
 		
 		//sends notification to observers from central server
-		public void notifyObservers(Message msg) {
-			cs.notifyObservers(msg);
+		public void notifyObservers(Object msg) {
+			obs.update(cs, (Object)msg);
 		}
 		
 		@Override
