@@ -83,7 +83,7 @@ public class ConfigureMenu extends JFrame {
 	        colorChooser.setPreferredSize(new Dimension(90, 30));
 	        colorChooser.addActionListener(new ButtonListener());
 	       
-	        usesScheduledTimes = (input.start_hours != -1); 
+	        usesScheduledTimes = !(input.force_off || input.force_on); 
 
 	        scheduledTimes = new JCheckBox();
 	        scheduledTimes.setText("Scheduled Times");
@@ -391,12 +391,20 @@ public class ConfigureMenu extends JFrame {
 		}
 		//ClientConfig toSubmit = parent.configs.get(inputNum);
 		ClientConfig lastCfg = parent.configs.get(inputNum);
-
+		boolean fOff, fOn;
+		if (this.usesScheduledTimes) {
+			fOff = false;
+			fOn = false;
+		} else {
+			fOff = lastCfg.force_off;
+			fOn = lastCfg.force_on;
+		}
 		ClientConfig toSubmit = new ClientConfig( 
 				lastCfg.ip,
 				startH.getText() + ":" + startM.getText(), 
 				endH.getText() + ":" + endM.getText(), 
-				lastCfg.is_sensing, 
+				fOn, 
+				fOff,
 				type, 
 				threshold.getValue() * .01f, 
 				name.getText(),

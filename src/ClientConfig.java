@@ -1,4 +1,5 @@
 import java.awt.Color;
+import java.util.Calendar;
 
 
 public class ClientConfig extends BaseConfig {
@@ -54,5 +55,28 @@ public class ClientConfig extends BaseConfig {
 	public void SetName(String s) {
 		name = s;
 	}
-	
+	public boolean isSensorActive() {
+		//Checks the time constraints on the client, and returns true if it should be on at the moment
+		if(force_on)
+			return true;
+		if(force_off)
+			return false;
+		Calendar c = Calendar.getInstance();
+		int hour = c.get(Calendar.HOUR_OF_DAY);
+		int minute = c.get(Calendar.MINUTE);
+
+		int startH = this.start_hours;
+		int startM = this.start_minutes;
+		int stopH = this.stop_hours;
+		int stopM = this.stop_minutes;
+
+		if(hour > start_hours && hour < stop_hours || 
+		  (hour == startH && minute >= startM) || 
+		  (hour == stopH && minute < stopM) ||
+		  (startH > stopH && (hour > startH || hour < stopH)) ||
+		  hour > startH && hour < stopH) {
+			return true;
+		}
+		return false;
+	}
 }
