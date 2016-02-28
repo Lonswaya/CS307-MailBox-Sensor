@@ -6,7 +6,9 @@ import javax.net.ssl.SSLServerSocketFactory;
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
 
-public class CentralServer implements Runnable {
+import java.util.Observable;
+
+public class CentralServer extends Observable implements Runnable {
 			
 	//private Vector<BaseConfig> configVector;
 	
@@ -61,21 +63,7 @@ public class CentralServer implements Runnable {
 				Socket sock = ss.accept();
 				
 				//creates a new thread that handles that socket
-				new Thread(new ServerListener(sock)).start();
-				
-				/*
-				server.recieveMessage(sock);
-				
-				Message tmp = server.getMessage();
-				
-				System.out.println("Recieved: " + tmp.getString() + " from client");
-				
-				server.setMessage(new Message("F*#@ED UP THE MESSAGE", tmp.type));
-				
-				server.sendMessage();
-				
-				server.close();
-				*/
+				new Thread(new ServerListener(sock, this)).start();
 				
 			} while (!server.getMessage().getString().equalsIgnoreCase("quit"));
 			
@@ -92,9 +80,11 @@ public class CentralServer implements Runnable {
 		protected Socket sock = null;
 		protected ObjectOutputStream out = null;
 		protected ObjectInputStream in = null;
+		protected CentralServer cs = null;
 		
-		public ServerListener(Socket sock) {
+		public ServerListener(Socket sock, CentralServer cs) {
 			this.sock = sock;
+			this.cs = cs;
 			try {
 				out = new ObjectOutputStream(sock.getOutputStream());
 				in = new ObjectInputStream(sock.getInputStream());
@@ -120,6 +110,10 @@ public class CentralServer implements Runnable {
 			sock.close();
 		}
 		
+		//sends notification to observers from central server
+		public void notifyObservers(Message msg) {
+			cs.notifyObservers(msg);
+		}
 		
 		@Override
 		public void run() {
