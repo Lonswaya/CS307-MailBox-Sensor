@@ -1,5 +1,6 @@
 import java.io.*;
 import java.net.*;
+import java.util.Calendar;
 
 public class Message implements Serializable {
 	
@@ -38,6 +39,19 @@ public class Message implements Serializable {
 	public String getFrom(){
 		return this.from;
 	}
+	
+	public String getCreateTime(){
+		return this.creationTime;
+	}
+	
+	public void generateCreateTime(){
+		Calendar c = Calendar.getInstance();
+		int hour = c.get(Calendar.HOUR_OF_DAY);
+		int minute = c.get(Calendar.MINUTE);
+		
+		this.creationTime = hour + ":" + minute;
+	}
+	
 	public String toString(){
 		String s;
 		s = "Message: " + this.message +

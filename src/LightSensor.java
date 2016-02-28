@@ -2,10 +2,17 @@ import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.net.Inet4Address;
+import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.Calendar;
 
 import javax.imageio.ImageIO;
+
+import com.github.sarxos.webcam.Webcam;
+import com.github.sarxos.webcam.WebcamDriver;
+import com.github.sarxos.webcam.WebcamDriverUtils;
+import com.github.sarxos.webcam.WebcamResolution;
+import com.github.sarxos.webcam.ds.v4l4j.V4l4jDriver;
 
 public class LightSensor extends BaseSensor {
 
@@ -22,24 +29,27 @@ public class LightSensor extends BaseSensor {
 		this.light_intensity = get_reading(this.image);
 	}
 	
-	public Message form_message(){
-		Message msg = new LightMessage("Light above threshold", null);
+	public Message form_message(){		
+		ReadingMessage msg = new ReadingMessage("Light above threshold", null);
 		try {
-			msg.setFrom(Inet4Address.getLocalHost().getHostAddress());
+			msg.setFrom(InetAddress.getLocalHost().getHostAddress());
 		} catch (UnknownHostException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		msg.setCurrentThreshold(this.light_intensity);
 		return msg;
-	}
-
-	public void set_webcam_state(boolean state){
-		
 	}
 	
 	public void take_picture(){
-		//some method via api to take picture
-		this.image = null;
+		Webcam.setDriver(new V4l4jDriver());
+		Webcam webcam = Webcam.getDefault();
+		if (webcam != null) {
+			webcam.open();
+			this.image = webcam.getImage();
+			webcam.close();
+		}else{
+			System.out.println("Can't open webcam");
+		}
 	}
 	
 	//turn image into greyscale
@@ -72,22 +82,4 @@ public class LightSensor extends BaseSensor {
 			return true;
 		return false;
 	}
-	
-	/*public static void main(String[] args){ 
-		LightSensor s = new LightSensor(new BaseConfig("9:25", "22:10", true, SensorType.LIGHT, 0));
-		BufferedImage img = null;
-		try {
-			img = ImageIO.read(new File("C:/Users/Zixuan/Downloads/pic/IMG_1825.JPG"));
-			img = s.greyscale_picture(img);
-			//File out = new File("C:/Users/Zixuan/Downloads/pic/test.JPG");
-			//ImageIO.write(img, "JPG", out);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
-		System.out.println(s.get_reading(img));
-		
-		
-	}*/
 }

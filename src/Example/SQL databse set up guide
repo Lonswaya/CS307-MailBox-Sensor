@@ -15,4 +15,7 @@
  5. Go to Eclipse and got to Help -> Eclipse Marketplace. Search for DTP in the search bar. Select the option that is called Eclipse Data 
  	Tools Platform and install it. 
  6. Once DTP is installed, click on the "Open Perspective" button on the right side of the screen. You should see Database Development on the
- 	list. Click on it and you will see a new perspective on the left side.
+ 	list. Click on it and you will see a Data Source Explorer perspective on the left side.
+ 
+ 7. In the Data Source Explorer, the first folder should be Database Connections. Right click on it and select "New..."
+ 8. 
