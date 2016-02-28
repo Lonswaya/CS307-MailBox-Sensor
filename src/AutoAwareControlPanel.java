@@ -354,10 +354,12 @@ public class AutoAwareControlPanel extends JFrame implements Observer {
                 JOptionPane.QUESTION_MESSAGE, null, null, null);
     	if (confirm == 0) {
     		controlIndex--;
-    		int index = configs.indexOf(ConfigFind(identifier));
+    		ClientConfig cfg = ConfigFind(identifier);
+    		String name = cfg.name;
+    		int index = configs.indexOf(cfg);
     		panelHolder.remove(index);
     		configs.remove(index);
-    		JOptionPane.showMessageDialog(null, "Deleted sensor " + index, "Deleted sensor " + index, JOptionPane.INFORMATION_MESSAGE, null);
+    		JOptionPane.showMessageDialog(null, "Deleted sensor " + name, "Deleted sensor " + name, JOptionPane.INFORMATION_MESSAGE, null);
     	
     	}
     	refreshSensorList();

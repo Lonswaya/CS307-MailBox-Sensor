@@ -399,6 +399,10 @@ public class ConfigureMenu extends JFrame {
 			fOff = lastCfg.force_off;
 			fOn = lastCfg.force_on;
 		}
+		
+		String nameString = name.getText();
+		if (nameString.length() > 20)
+			nameString = nameString.substring(0, 20);
 		ClientConfig toSubmit = new ClientConfig( 
 				lastCfg.ip,
 				startH.getText() + ":" + startM.getText(), 
@@ -407,7 +411,7 @@ public class ConfigureMenu extends JFrame {
 				fOff,
 				type, 
 				threshold.getValue() * .01f, 
-				name.getText(),
+				nameString,
 				c,
 				desktopBool,
 				magicMirrorBool,
