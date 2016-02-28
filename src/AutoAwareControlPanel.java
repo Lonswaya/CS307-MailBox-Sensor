@@ -4,7 +4,6 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridLayout;
-import java.awt.Image;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -12,21 +11,21 @@ import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
-import java.awt.image.BufferedImage;
 import java.util.ArrayList;
+import java.util.Hashtable;
+import java.util.Observable;
+import java.util.Observer;
 import java.util.Random;
-import java.util.concurrent.TimeUnit;
 
-import javax.imageio.ImageIO;
 import javax.swing.*;
 
-import org.omg.CORBA.portable.InputStream;
 
 
-public class AutoAwareControlPanel extends JFrame {
+public class AutoAwareControlPanel extends JFrame implements Observer {
 	private static final long serialVersionUID = 1L;
 	private JPanel panelHolder;
 	public ArrayList<ClientConfig> configs;
+	public Hashtable<String, StreamBox> Streamers;
 	private ConfigureMenu cf;
     private int controlIndex;
 	public AutoAwareControlPanel() {
@@ -35,7 +34,7 @@ public class AutoAwareControlPanel extends JFrame {
 
     private void initUI() {
     	//GridLayout experimentLayout = new GridLayout(5,3);
-    	
+    	Streamers = new Hashtable<String, StreamBox>();
     	this.setIconImage(Toolkit.getDefaultToolkit().getImage("resources/icon.png"));
 
         //Timer t = new Timer(5000, new Refresher());
@@ -400,14 +399,17 @@ public class AutoAwareControlPanel extends JFrame {
     public void OpenStream(SensorType s, String address) {
 		
     	if (ConfigFind(address).is_sensing) {
-    		StreamBox stream = new StreamBox();
+    		StreamBox stream = new StreamBox(Streamers, address);
 	    	if (s == SensorType.VIDEO) {
 	    		stream.setTitle("Video stream on sensor " + address);
 		    	stream.add(new VideoStreamBox(address));
+		    	Streamers.put(address, stream);
+
 	    	} else {
 	    		ClientConfig c = ConfigFind(address);
 	    		stream.setTitle(c.sensor_type + " stream on sensor " + address);
-		    	stream.add(new ValueStreamBox(address, c.sensor_type, c.sensing_threshold));
+		    	stream.add(new ValueStreamBox(c.sensor_type, c.sensing_threshold, address));
+		    	Streamers.put(address, stream);
 	    	}
     	}
     }
@@ -441,6 +443,41 @@ public class AutoAwareControlPanel extends JFrame {
     public static void main(String[] args) {
     	@SuppressWarnings("unused")
     	AutoAwareControlPanel ex = new AutoAwareControlPanel();
+    	//ex.Notify("1234");
         
     }
+    public void Notify(String ip) {
+    	ClientConfig c = ConfigFind(ip);
+    	UIManager UI=new UIManager();
+    	Color oldColor = UI.getColor("OptionPane.background");
+    	UIManager.put("OptionPane.background",c.color);
+    	UIManager.put("OptionPane.foreground",c.color);
+		JOptionPane.showMessageDialog(this, "Sensor " + c.name + " has reached threshold!");
+		UIManager.put("OptionPanel.background", oldColor );
+		UIManager.put("OptionPanel.foreground", oldColor );
+	}
+
+	@Override
+	public void update(Observable arg0, Object arg1) {
+		Message gotMessage = (Message)arg1;
+		switch (gotMessage.type) {
+			case VIDEO:
+				break;
+			case LIGHT:
+				break;
+			case READING:
+				((ValueStreamBox)(Streamers.get(gotMessage.from).getComponent(0))).value = ((ReadingMessage)gotMessage).getCurrentThreshold();
+				break;
+			case AUDIO:
+				break;
+			case PICTURE: 
+				((VideoStreamBox)(Streamers.get(gotMessage.from).getComponent(0))).SetImage(((PictureMessage)gotMessage).getImage()); 
+
+				break;
+			default:
+				break;
+		}
+	}
+    
+    
 }

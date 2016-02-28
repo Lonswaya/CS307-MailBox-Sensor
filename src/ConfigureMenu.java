@@ -414,4 +414,6 @@ public class ConfigureMenu extends JFrame {
 		parent.refreshSensorList();
     	dispose();
     }
+	
+	
 }

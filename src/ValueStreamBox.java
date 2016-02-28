@@ -23,14 +23,16 @@ public class ValueStreamBox extends JPanel {
 	 * Shown in a linear fashion
 	 * 
 	 */
-	private String address;
+	public String address;
+	public float value;
 	private float threshold;
 	private SensorType sensorType;
 	private Timer t;
 		
 	private int[] pointsX1, pointsX2, pointsY1, pointsY2, thresholdPointX, thresholdPointY;
-	public ValueStreamBox(String address, SensorType sensorType, float threshold) {
+	public ValueStreamBox(SensorType sensorType, float threshold, String address) {
 		super();
+		this.address = address;
 		t  = new Timer(1000, new repainter());
 		t.start();
 		JButton exit = new JButton("Exit");
@@ -51,6 +53,7 @@ public class ValueStreamBox extends JPanel {
 		this.threshold = threshold;
 		this.sensorType = sensorType;
 		this.address = address;
+		value = 0;
 		
 		repaint();
 
@@ -113,9 +116,10 @@ public class ValueStreamBox extends JPanel {
 		g.drawLine(getWidth() / 5, getHeight()/2, getWidth() * 4/5, getHeight()/2);
 	}
 	public float GetSensorValue() {
-		Random r = new Random();
+		//Random r = new Random();
 		//currently filler value
-		return r.nextFloat();
+		//return r.nextFloat();
+		return value;
 	}
 	
 }
