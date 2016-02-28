@@ -122,21 +122,7 @@ public class CentralServer extends Observable implements Runnable {
 			try {
 
 					Message msg = receiveMessage();
-					
-					switch(msg.type) {
-					
-					case VIDEO:
-						break;
-					case AUDIO:
-						break;
-					case LIGHT:
-						break;
-					case CONFIG:
-						break;
-					default:
-						break;
-						
-					}
+					notifyObservers(msg);
 					
 				} catch (ClassNotFoundException | IOException e) {
 					// TODO Auto-generated catch block
