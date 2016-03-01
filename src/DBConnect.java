@@ -44,12 +44,17 @@ public class DBConnect {
 	
 	public static String returnEntry (String columnName) throws SQLException {
 		int columnNumber = getColumnNumber(columnName);
-		ResultSet rs = connect();
+		Statement stmt = connect();
+		
+		String SQL = "SELECT * FROM TABLE1";
+		
+		ResultSet rs = stmt.executeQuery(SQL);
 		
 		if (rs == null) {
 			return "";
 		}
 		else {
+			rs.next();
 			String result = rs.getString(columnNumber);
 			return result;
 		}
@@ -57,12 +62,17 @@ public class DBConnect {
 	
 	public static float returnLower() throws SQLException {
 		int columnNumber = getColumnNumber("S_LOWER");
-		ResultSet rs = connect();
+		Statement stmt = connect();
+		
+		String SQL = "SELECT * FROM TABLE1";
+		
+		ResultSet rs = stmt.executeQuery(SQL);
 		
 		if (rs == null) {
 			return 0;
 		}
 		else {
+			rs.next();
 			float result = rs.getFloat(columnNumber);
 			return result;
 		}
@@ -70,12 +80,17 @@ public class DBConnect {
 	
 	public static float returnUpper() throws SQLException {
 		int columnNumber = getColumnNumber("S_UPPER");
-		ResultSet rs = connect();
+		Statement stmt = connect();
+		
+		String SQL = "SELECT * FROM TABLE1";
+		
+		ResultSet rs = stmt.executeQuery(SQL);
 		
 		if (rs == null) {
 			return 0;
 		}
 		else {
+			rs.next();
 			float result = rs.getFloat(columnNumber);
 			return result;
 		}
@@ -83,12 +98,17 @@ public class DBConnect {
 	
 	public static boolean isConfig() throws SQLException {
 		int columnNumber = getColumnNumber("CONFIG");
-		ResultSet rs = connect();
+		Statement stmt = connect();
+		
+		String SQL = "SELECT * FROM TABLE1";
+		
+		ResultSet rs = stmt.executeQuery(SQL);
 		
 		if (rs == null) {
 			return false;
 		}
 		else {
+			rs.next();
 			int result = rs.getInt(columnNumber);
 			if (result == 0)
 				return false;
@@ -99,12 +119,17 @@ public class DBConnect {
 	
 	public static boolean isDetection() throws SQLException {
 		int columnNumber = getColumnNumber("DETECTION");
-		ResultSet rs = connect();
+		Statement stmt = connect();
+		
+		String SQL = "SELECT * FROM TABLE1";
+		
+		ResultSet rs = stmt.executeQuery(SQL);
 		
 		if (rs == null) {
 			return false;
 		}
 		else {
+			rs.next();
 			int result = rs.getInt(columnNumber);
 			if (result == 0)
 				return false;
@@ -113,7 +138,21 @@ public class DBConnect {
 		}
 	}
 	
-	public static ResultSet connect() {
+	public static int addConfig(String user, String ip, String name, String type, float lower, float upper) {
+		try {
+			Statement stmt = connect();
+			System.out.println("In");
+			//String INSERT = "INSERT INTO TABLE1 ";
+			String sql = "INSERT INTO TABLE1 " + "VALUES ('d', '127.000.000.1', 'L', 1, 0, 'LIGHT', 0, 100)";
+			int a = stmt.executeUpdate(sql);
+			System.out.println(a);
+		} catch (SQLException e) {
+			e.getMessage();
+		}
+		return -1;
+	}
+	
+	public static Statement connect() {
 
 		try {
 			String host = "jdbc:oracle:thin:@localhost:1521:xe";
@@ -123,18 +162,19 @@ public class DBConnect {
 			con = DriverManager.getConnection(host, uName, pass);
 			
 			Statement stmt = con.createStatement();
-			
-			String SQL = "SELECT * FROM TABLE1";
-			
-			ResultSet rs = stmt.executeQuery(SQL);
-			rs.next();
-			
-			return rs;
+	
+			return stmt;
 			
 		} catch (SQLException e) {
 			System.out.println(e.getMessage());
 		}
 		return null;
 
+	}
+	
+	public static void main(String[] args) throws Exception {
+		connect();
+		//System.out.println(returnEntry("USERNAME"));
+		addConfig("a", "127.000.000.2", "S1", "LIGHT", 0, 255);
 	}
 }
