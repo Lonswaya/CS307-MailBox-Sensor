@@ -18,6 +18,7 @@ public class RaspberryPi {
 	private String ip = "localhost";
 	private int port = 9999;
 
+	private boolean streaming;
 
 	public RaspberryPi() throws IOException {
 
@@ -25,6 +26,8 @@ public class RaspberryPi {
 		System.setProperty("javax.net.ssl.keyStorePassword", "sensor");
 		System.setProperty("javax.net.ssl.trustStore", "mySrvKeystore");
 		System.setProperty("javax.net.ssl.trustStorePassword", "sensor");
+		
+		streaming = false;
 		
 		//TODO: pull config from text file and create sensor or if no config, leave sensor null
 		BaseConfig config = new BaseConfig();
@@ -63,6 +66,10 @@ public class RaspberryPi {
 								}
 								sensor.setConfig(conf.getConfig());
 								break;
+							case STREAMING:
+								streaming = ((StreamingMessage)msg).streaming;
+								//set Pi to constantly send values back to the server, send a new ReadingMessage
+								//note: it will still send ReadingMessage if the threshold is greater than normal.
 							default:
 								break;
 								
@@ -72,9 +79,8 @@ public class RaspberryPi {
 					}
 
 				} catch (Exception e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
-					} 
+				} 
 			}
 
 			public Runnable init(ServerSocket serverSocket, BaseSensor sensor) {
@@ -103,7 +109,6 @@ public class RaspberryPi {
 			outputStream.close();
 			sendSocket.close();
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
@@ -121,8 +126,8 @@ public class RaspberryPi {
 			} else {
 				if (isSensorActive()) {
 					this.sensor.sense(); // tell sensor to sense shit maybe a
-											// time interval in between
-					if (this.sensor.check_threshold()) {
+					Thread.sleep(1000);		// time interval in between, currently one second
+					if (this.sensor.check_threshold() || streaming) { //if the threshold is above, or if we are supposed to stream constantly
 						send_message(this.sensor.form_message());
 					}
 				}

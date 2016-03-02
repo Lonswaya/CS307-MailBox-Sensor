@@ -34,18 +34,15 @@ public class AutoAwareControlPanel extends JFrame implements Observer {
     }
 
     private void initUI() {
-<<<<<<< HEAD
     	
 	    System.setProperty("javax.net.ssl.keyStore", "mySrvKeystore");
 	    System.setProperty("javax.net.ssl.keyStorePassword", "sensor");
 
     	
-    	server = new CentralServer();
-    	server.addObserver(this);
-=======
+    	
+    	//server.addObserver(this);
     	server = new CentralServer(this);
     	//server.addObserver(this);
->>>>>>> refs/remotes/origin/master
     	//GridLayout experimentLayout = new GridLayout(5,3);
     	Streamers = new Hashtable<String, StreamBox>();
     	this.setIconImage(Toolkit.getDefaultToolkit().getImage("resources/icon.png"));
@@ -424,12 +421,14 @@ public class AutoAwareControlPanel extends JFrame implements Observer {
 	    		stream.setTitle("Video stream on sensor " + address);
 		    	stream.add(new VideoStreamBox(address));
 		    	Streamers.put(address, stream);
+		    	
 
 	    	} else {
 	    		ClientConfig c = ConfigFind(address);
 	    		stream.setTitle(c.sensor_type + " stream on sensor " + address);
 		    	stream.add(new ValueStreamBox(c.sensor_type, c.sensing_threshold, address));
 		    	Streamers.put(address, stream);
+		    	server.sendMessage(new StreamingMessage("",c,true), c.ip, 9999);
 	    	}
     	}
     }
@@ -471,8 +470,10 @@ public class AutoAwareControlPanel extends JFrame implements Observer {
     }
     public void SendConfigToSensor(int index) {
     	//Send a message through the server to update a sensors config
-    	//TODO
+    	//
     	System.out.println("Updating info to a sensor with index "  + index);
+    	ClientConfig cfg = configs.get(index);
+    	server.sendMessage(new ConfigMessage("",cfg), cfg.ip, 9999);
     }
     public class Refresher implements ActionListener {
     	
@@ -502,19 +503,33 @@ public class AutoAwareControlPanel extends JFrame implements Observer {
 		Message gotMessage = (Message)arg1;
 		switch (gotMessage.type) {
 			case VIDEO:
+				//actual video
 				break;
 			case LIGHT:
+				//grayscale image?
 				break;
 			case READING:
 				float f = ((ReadingMessage)gotMessage).getCurrentThreshold();
-				((ValueStreamBox)(Streamers.get(gotMessage.from).getComponent(0))).value = f;
+				//if the streaming page exists, then update it
+				if (Streamers.get(gotMessage.from) != null) ((ValueStreamBox)(Streamers.get(gotMessage.from).getComponent(0))).value = f;
+				else {
+					//close the stream, it does not exist
+					ClientConfig cfg = (ClientConfig) gotMessage.config;
+			    	server.sendMessage(new StreamingMessage("",cfg, false), cfg.ip, 9999);
+				}
 				if (ConfigFind(gotMessage.from).sensing_threshold <= f) Notify(gotMessage.from);
 				break;
 			case AUDIO:
+				//audio clip in .wav format
 				break;
 			case PICTURE: 
-				((VideoStreamBox)(Streamers.get(gotMessage.from).getComponent(0))).SetImage(((PictureMessage)gotMessage).getImage()); 
-
+				//Actual picture, updated on a normal basis
+				if (Streamers.get(gotMessage.from) != null) ((VideoStreamBox)(Streamers.get(gotMessage.from).getComponent(0))).SetImage(((PictureMessage)gotMessage).getImage()); 
+				else {
+					//close the stream, it does not exist
+					ClientConfig cfg = (ClientConfig) gotMessage.config;
+			    	server.sendMessage(new StreamingMessage("",cfg, false), cfg.ip, 9999);
+				}
 				break;
 			default:
 				break;

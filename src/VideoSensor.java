@@ -1,6 +1,8 @@
 
 public class VideoSensor extends BaseSensor {
-
+	
+	public boolean picOrVid; //true if pictures only, false if whole videos are sent, will be affecting messagetype (picture or video)
+	
 	//private VIDEO_CLIP_TYPE videoClip;
 
 	public VideoSensor(BaseConfig config) {
