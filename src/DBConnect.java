@@ -1,13 +1,10 @@
 import java.sql.Connection;
-import java.sql.Date;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.ResultSet;
-import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Calendar;
-import oracle.sql.DATE;
-import oracle.sql.TIMESTAMP;
 
 public class DBConnect {
 	private static Connection con;
@@ -47,8 +44,7 @@ public class DBConnect {
 		return columnNumber;
 	}
 	
-	public static String returnEntry (String columnName) throws SQLException {
-		int columnNumber = getColumnNumber(columnName);
+	public static ArrayList<String> getAllEntries() throws SQLException {
 		Statement stmt = connect();
 		
 		String SQL = "SELECT * FROM TABLE1";
@@ -56,16 +52,63 @@ public class DBConnect {
 		ResultSet rs = stmt.executeQuery(SQL);
 		
 		if (rs == null) {
-			return "";
+			return null;
 		}
-		else {
-			rs.next();
-			String result = rs.getString(columnNumber);
-			return result;
+
+		ArrayList<String> result = new ArrayList<String>();
+		
+		while (rs.next()){
+			String row = rs.getString(1) + " " + rs.getString(2) + " " + rs.getString(3) + " " + rs.getInt(4) + " " + rs.getInt(5) 
+					+ " " + rs.getString(6) + " " + rs.getFloat(7) + " " + rs.getFloat(8) + " " + rs.getString(9);
+			result.add(row);
 		}
+
+		return result;
 	}
 	
-	public static float returnLower() throws SQLException {
+	public static ArrayList<String> getAllIPAddress () throws SQLException {
+		int columnNumber = getColumnNumber("IP_ADDRESS");
+		Statement stmt = connect();
+		
+		String SQL = "SELECT * FROM TABLE1";
+		
+		ResultSet rs = stmt.executeQuery(SQL);
+		
+		if (rs == null) {
+			return null;
+		}
+
+		ArrayList<String> result = new ArrayList<String>();
+		
+		while (rs.next()){
+			result.add(rs.getString(columnNumber));
+		}
+
+		return result;
+	}
+	
+	public static ArrayList<String> getAllSensorNames () throws SQLException {
+		int columnNumber = getColumnNumber("SENSOR_NAME");
+		Statement stmt = connect();
+		
+		String SQL = "SELECT * FROM TABLE1";
+		
+		ResultSet rs = stmt.executeQuery(SQL);
+		
+		if (rs == null) {
+			return null;
+		}
+
+		ArrayList<String> result = new ArrayList<String>();
+		
+		while (rs.next()){
+			result.add(rs.getString(columnNumber));
+		}
+
+		return result;
+	}
+	
+	public static ArrayList<Float> getAllLowerValues() throws SQLException {
 		int columnNumber = getColumnNumber("S_LOWER");
 		Statement stmt = connect();
 		
@@ -74,16 +117,20 @@ public class DBConnect {
 		ResultSet rs = stmt.executeQuery(SQL);
 		
 		if (rs == null) {
-			return 0;
+			return null;
 		}
-		else {
-			rs.next();
-			float result = rs.getFloat(columnNumber);
-			return result;
+
+		ArrayList<Float> result = new ArrayList<Float>();
+		
+		while (rs.next()){
+			result.add(rs.getFloat(columnNumber));
 		}
+
+		return result;
 	}
+
 	
-	public static float returnUpper() throws SQLException {
+	public static ArrayList<Float> getAllUpperValues() throws SQLException {
 		int columnNumber = getColumnNumber("S_UPPER");
 		Statement stmt = connect();
 		
@@ -92,20 +139,24 @@ public class DBConnect {
 		ResultSet rs = stmt.executeQuery(SQL);
 		
 		if (rs == null) {
-			return 0;
+			return null;
 		}
-		else {
-			rs.next();
-			float result = rs.getFloat(columnNumber);
-			return result;
+
+		ArrayList<Float> result = new ArrayList<Float>();
+		
+		while (rs.next()){
+			result.add(rs.getFloat(columnNumber));
 		}
+
+		return result;
 	}
 	
-	public static boolean isConfig() throws SQLException {
+	public static boolean isConfig(String user, String ip, String name) throws SQLException {
 		int columnNumber = getColumnNumber("CONFIG");
 		Statement stmt = connect();
 		
-		String SQL = "SELECT * FROM TABLE1";
+		String SQL = "SELECT * FROM TABLE1 WHERE USERNAME = '" + name + "' AND IP_ADDRESS = '" + ip + "' AND SENSOR_NAME = '" 
+				+ name + "'";
 		
 		ResultSet rs = stmt.executeQuery(SQL);
 		
@@ -115,18 +166,22 @@ public class DBConnect {
 		else {
 			rs.next();
 			int result = rs.getInt(columnNumber);
+			if (rs.next()) {
+				System.out.println("Multiple entries available");
+				return false;
+			}
 			if (result == 0)
 				return false;
-			else
-				return true;
+			return true;
 		}
 	}
 	
-	public static boolean isDetection() throws SQLException {
+	public static boolean isDetection(String user, String ip, String name) throws SQLException {
 		int columnNumber = getColumnNumber("DETECTION");
 		Statement stmt = connect();
 		
-		String SQL = "SELECT * FROM TABLE1";
+		String SQL = "SELECT * FROM TABLE1 WHERE USERNAME = '" + name + "' AND IP_ADDRESS = '" + ip + "' AND SENSOR_NAME = '" 
+				+ name + "'";
 		
 		ResultSet rs = stmt.executeQuery(SQL);
 		
@@ -136,10 +191,13 @@ public class DBConnect {
 		else {
 			rs.next();
 			int result = rs.getInt(columnNumber);
+			if (rs.next()) {
+				System.out.println("Multiple entries available");
+				return false;
+			}
 			if (result == 0)
 				return false;
-			else
-				return true;
+			return true;
 		}
 	}
 	
@@ -351,7 +409,8 @@ public class DBConnect {
 	public static void main(String[] args) throws Exception {
 		connect();
 		//System.out.println(returnEntry("USERNAME"));
-		removeAllSensorDetection("x", "127.000.000.3", "S2");
-		//System.out.println(returnUpper());
+		//removeAllSensorDetection("x", "127.000.000.3", "S2");
+		//returnLower();
+		System.out.println(getAllEntries());
 	}
 }
