@@ -1,8 +1,13 @@
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.ResultSet;
+import java.sql.Timestamp;
+import java.util.Calendar;
+import oracle.sql.DATE;
+import oracle.sql.TIMESTAMP;
 
 public class DBConnect {
 	private static Connection con;
@@ -143,11 +148,34 @@ public class DBConnect {
 			Statement stmt = connect();
 			System.out.println("In");
 			//String INSERT = "INSERT INTO TABLE1 ";
+			Calendar c = Calendar.getInstance();
+			
 			String sql = "INSERT INTO TABLE1 VALUES ('" + user + "', '" + ip + "', '" + name + "', 1, 0, '" + type 
-					+ "', " + lower + ", " + upper + ", NULL, NULL)";
+					+ "', " + lower + ", " + upper + ", '" + c.getTime() + "')";
 			System.out.println(sql);
 			int a = stmt.executeUpdate(sql);
 			System.out.println(a);
+			return 1;
+		} catch (SQLException e) {
+			e.getMessage();
+		}
+		return -1;
+	}
+	
+	public static int addDetection(String user, String ip, String name, String type, float lower, float upper) {
+		try {
+			Statement stmt = connect();
+			System.out.println("In");
+			//String INSERT = "INSERT INTO TABLE1 ";
+			Calendar c = Calendar.getInstance();
+			
+			String sql = "INSERT INTO TABLE1 VALUES ('" + user + "', '" + ip + "', '" + name + "', 0, 1, '" + type 
+					+ "', " + lower + ", " + upper + ", '" + c.getTime() + "')";
+			System.out.println(sql);
+			
+			int a = stmt.executeUpdate(sql);
+			System.out.println(a);
+			return 1;
 		} catch (SQLException e) {
 			e.getMessage();
 		}
@@ -177,6 +205,6 @@ public class DBConnect {
 	public static void main(String[] args) throws Exception {
 		connect();
 		//System.out.println(returnEntry("USERNAME"));
-		addConfig("a", "127.000.000.5", "S1", "LIGHT", 0, 255);
+		addDetection("x", "127.000.000.3", "S2", "LIGHT", 0, 2);
 	}
 }
