@@ -5,6 +5,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.Calendar;
+import java.util.Scanner;
 
 import javax.net.ssl.SSLServerSocket;
 import javax.net.ssl.SSLServerSocketFactory;
@@ -22,6 +23,12 @@ public class RaspberryPi {
 
 	public RaspberryPi() throws IOException {
 
+		Scanner in = new Scanner(System.in);
+		System.out.println("Enter the server's ip");
+		ip = in.nextLine();
+		System.out.println("Enter server's port");
+		port = Integer.parseInt(in.nextLine());
+		
 		System.setProperty("javax.net.ssl.keyStore", "mySrvKeystore");
 		System.setProperty("javax.net.ssl.keyStorePassword", "sensor");
 		System.setProperty("javax.net.ssl.trustStore", "mySrvKeystore");
