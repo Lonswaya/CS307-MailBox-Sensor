@@ -11,12 +11,16 @@ import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.Random;
+import java.util.Stack;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 
 
@@ -29,6 +33,8 @@ public class AutoAwareControlPanel extends JFrame implements Observer {
 	private CentralServer server;
 	private ConfigureMenu cf;
     private int controlIndex;
+    private boolean isNotifying;
+    private Stack<String> notificationStack;
 	public AutoAwareControlPanel() {
         initUI();
     }
@@ -42,30 +48,31 @@ public class AutoAwareControlPanel extends JFrame implements Observer {
     	
     	//server.addObserver(this);
     	server = new CentralServer(this);
+    	notificationStack = new Stack<String>();
     	//server.addObserver(this);
     	//GridLayout experimentLayout = new GridLayout(5,3);
     	Streamers = new Hashtable<String, StreamBox>();
     	this.setIconImage(Toolkit.getDefaultToolkit().getImage("resources/icon.png"));
 
-        //Timer t = new Timer(5000, new Refresher());
+        Timer t = new Timer(5000, new Refresher());
         setTitle("AutoAware Control Panel");
         setSize(1000, 600);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
         addWindowListener(CloseListener());
         controlIndex = 0;
-        
+        isNotifying = false;
         panelHolder = new JPanel(new GridLayout(0,2, 10, 10));
         panelHolder.setBackground(Color.black);
         InitConfigs();
-        UpdateControlPanel(panelHolder);
+        CreateControlPanel(panelHolder);
         createMenuBar();
         JScrollPane scrollPane = new JScrollPane(panelHolder);
         this.add(scrollPane);
-        //t.start();
+        t.start();
         setVisible(true);
     }
-    void UpdateControlPanel(JPanel panelHolder) {
+    void CreateControlPanel(JPanel panelHolder) {
         for (int i = 0; i < configs.size(); i++) {
     		//init panels
         	createNew(i, configs.get(i));
@@ -86,6 +93,7 @@ public class AutoAwareControlPanel extends JFrame implements Observer {
             public void actionPerformed(ActionEvent event) {
                //System.out.println("Open configure menu for sensor " + identifier);
                createConfigureMenu(identifier);
+               //Notify(identifier);
             }
         });
 		configure.setOpaque( true );
@@ -419,14 +427,19 @@ public class AutoAwareControlPanel extends JFrame implements Observer {
     		StreamBox stream = new StreamBox(Streamers, address);
 	    	if (s == SensorType.VIDEO) {
 	    		stream.setTitle("Video stream on sensor " + address);
-		    	stream.add(new VideoStreamBox(address));
+	    		VideoStreamBox newVid = new VideoStreamBox(address);
+	    		stream.myPanel = newVid;
+		    	stream.add(newVid);
+		    	
 		    	Streamers.put(address, stream);
 		    	
 
 	    	} else {
 	    		ClientConfig c = ConfigFind(address);
 	    		stream.setTitle(c.sensor_type + " stream on sensor " + address);
-		    	stream.add(new ValueStreamBox(c.sensor_type, c.sensing_threshold, address));
+	    		ValueStreamBox newVal = new ValueStreamBox(c.sensor_type, c.sensing_threshold, address);
+		    	stream.add(newVal);
+		    	stream.myPanel = newVal;
 		    	Streamers.put(address, stream);
 		    	server.sendMessage(new StreamingMessage("",c,true), c.ip, 9999);
 	    	}
@@ -470,7 +483,7 @@ public class AutoAwareControlPanel extends JFrame implements Observer {
     }
     public void SendConfigToSensor(int index) {
     	//Send a message through the server to update a sensors config
-    	//
+    	
     	System.out.println("Updating info to a sensor with index "  + index);
     	ClientConfig cfg = configs.get(index);
     	server.sendMessage(new ConfigMessage("",cfg), cfg.ip, 9999);
@@ -479,29 +492,98 @@ public class AutoAwareControlPanel extends JFrame implements Observer {
     	
         public void actionPerformed(ActionEvent e) {
         	//refreshSensorList();
+        	Notify();
         }
     }
     public static void main(String[] args) {
     	@SuppressWarnings("unused")
+		final
     	AutoAwareControlPanel ex = new AutoAwareControlPanel();
+    	final Random r = new Random();
+    	Thread t1 = new Thread(new Runnable(){
+    		public void run(){
+    			int num = 8;
+    			while(true) {
+	    			try {
+						Thread.sleep(1000);
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+	    			BaseConfig cfg = new BaseConfig();
+	    			cfg.sensor_type = SensorType.VIDEO;
+	    			PictureMessage pm = new PictureMessage("", cfg);
+	    			pm.setFrom("1234"); 
+	    			try {
+	    				//some temp images from my game project
+	    				pm.setImage(ImageIO.read(new File("resources/tmp-" + num + ".gif")));
+	    				num++;
+	    				if (num == 25) num = 8;
+	    				//pm.setImage(ImageIO.read(new File("tmp-" + (8+r.nextInt(16) + ".gif"))));
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+	    			
+	    			ex.update(null, pm);
+    			}
+    		}
+    	});
+    	Thread t2 = new Thread(new Runnable(){
+    		public void run(){
+    			while(true) {
+	    			try {
+						Thread.sleep(4000);
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+	    			BaseConfig cfg = new BaseConfig();
+	    			ReadingMessage rd = new ReadingMessage("", cfg);
+	    			rd.setFrom("1234"); 
+	    			
+	    			rd.setCurrentThreshold(r.nextFloat());
+	    			ex.update(null, rd);
+    			}
+    		}
+    	});
+    	t1.start();
+    	//t2.start();
     	//ex.Notify("1234");
         
     }
-    public void Notify(String ip) {
-    	ClientConfig c = ConfigFind(ip);
+    public void Notify() {
+    	String names = "";
+    	int number = 0;
+    	while (!notificationStack.isEmpty()) {
+    		names+=((number>0?", ":"") + notificationStack.pop());
+    		number++;
+    	}
+    	if (number > 0)
+    		JOptionPane.showMessageDialog(null, "Sensor" + (number>1?"s ":" ") + names + " ha" + (number>1?"ve":"s") + " reached threshold!");
+    	//ClientConfig c = ConfigFind(ip);
     	//UIManager UI=new UIManager();
     	//Color oldColor = UI.getColor("OptionPane.background");
     	//UIManager.put("OptionPane.background",c.color);
     	//UIManager.put("OptionPane.foreground",c.color);
-		JOptionPane.showMessageDialog(this, "Sensor " + c.name + " has reached threshold!");
+    	/*if (!isNotifying) {
+    		isNotifying = true;
+    		JOptionPane.showMessageDialog(this, "Sensor " + c.name + " has reached threshold!");
+    		isNotifying = false;
+    	}*/
 		//UIManager.put("OptionPanel.background", oldColor );
 		//UIManager.put("OptionPanel.foreground", oldColor );
 	}
-
+    
+   
+  
 	@Override
 	public void update(Observable arg0, Object arg1) {
 		Message gotMessage = (Message)arg1;
+		ClientConfig myClient = ConfigFind(gotMessage.from);
+
 		switch (gotMessage.type) {
+		
 			case VIDEO:
 				//actual video
 				break;
@@ -511,24 +593,29 @@ public class AutoAwareControlPanel extends JFrame implements Observer {
 			case READING:
 				float f = ((ReadingMessage)gotMessage).getCurrentThreshold();
 				//if the streaming page exists, then update it
-				if (Streamers.get(gotMessage.from) != null) ((ValueStreamBox)(Streamers.get(gotMessage.from).getComponent(0))).value = f;
+				//include checking the sensor type, in case a message is sent and doesn't have the correct information (i.e. switching from light to video)
+				if (Streamers.get(gotMessage.from) != null && myClient.sensor_type == gotMessage.config.sensor_type) ((ValueStreamBox)(Streamers.get(gotMessage.from).myPanel)).value = f;
 				else {
 					//close the stream, it does not exist
-					ClientConfig cfg = (ClientConfig) gotMessage.config;
-			    	server.sendMessage(new StreamingMessage("",cfg, false), cfg.ip, 9999);
+			    	//TODO re-insert after test cases
+					server.sendMessage(new StreamingMessage("",gotMessage.config, false), myClient.ip, 9999);
 				}
-				if (ConfigFind(gotMessage.from).sensing_threshold <= f) Notify(gotMessage.from);
+				//if we have a higher threshold, and the item was not already added to the list
+				if (myClient.sensing_threshold <= f && notificationStack.search(myClient.name) == -1) {
+					System.out.println(notificationStack.search(myClient.name));
+					notificationStack.add(myClient.name);
+					Notify();
+				}
 				break;
 			case AUDIO:
 				//audio clip in .wav format
 				break;
 			case PICTURE: 
 				//Actual picture, updated on a normal basis
-				if (Streamers.get(gotMessage.from) != null) ((VideoStreamBox)(Streamers.get(gotMessage.from).getComponent(0))).SetImage(((PictureMessage)gotMessage).getImage()); 
+				if (Streamers.get(gotMessage.from) != null && myClient.sensor_type == gotMessage.config.sensor_type) ((VideoStreamBox)(Streamers.get(gotMessage.from).myPanel)).SetImage(((PictureMessage)gotMessage).getImage()); 
 				else {
 					//close the stream, it does not exist
-					ClientConfig cfg = (ClientConfig) gotMessage.config;
-			    	server.sendMessage(new StreamingMessage("",cfg, false), cfg.ip, 9999);
+			    	server.sendMessage(new StreamingMessage("",gotMessage.config, false), myClient.ip, 9999);
 				}
 				break;
 			default:
