@@ -30,7 +30,7 @@ public class VideoStreamBox extends JPanel {
 		try {
 		    image = ImageIO.read(new File("resources/none.png"));
 		} catch (IOException e) {
-			System.out.println("Image not found");
+			//System.out.println("Image not found");
 		}
 		JButton exit = new JButton("Exit");
 		final JPanel tempThis = this;
@@ -57,7 +57,7 @@ public class VideoStreamBox extends JPanel {
 		super.paintComponent(g);
 		if (found) {
 		} else {
-			System.out.println("image not found");
+			//System.out.println("image not found");
 		}
 		g.drawImage(image, getWidth()/2-image.getWidth()/2, getHeight()/2-image.getHeight()/2, null);
 

@@ -8,6 +8,7 @@ import java.util.Hashtable;
 import java.util.Timer;
 
 import javax.swing.JFrame;
+import javax.swing.JPanel;
 
 
 
@@ -15,6 +16,7 @@ public class StreamBox extends JFrame {
 	protected String address;
 	protected Timer t;
 	public Hashtable<String, StreamBox> hRef;
+	public JPanel myPanel;
 	public StreamBox(Hashtable<String, StreamBox> h, String address) {
 		 this.address = address;
 		 hRef = h;
