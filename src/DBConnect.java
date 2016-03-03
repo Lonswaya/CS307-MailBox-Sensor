@@ -182,6 +182,152 @@ public class DBConnect {
 		return -1;
 	}
 	
+	public static int removeAllSensorDetection(String user, String ip, String name) {
+		try {
+			Statement stmt = connect();
+			System.out.println("In");
+			//String INSERT = "INSERT INTO TABLE1 ";
+			
+			String sql = "DELETE FROM TABLE1 WHERE IP_ADDRESS = '" + ip + "' AND USERNAME = '" + user 
+					+ "' AND SENSOR_NAME = '" + name + "' AND DETECTION = " + 1;
+			System.out.println(sql);
+			
+			int a = stmt.executeUpdate(sql);
+			System.out.println(a);
+			return 1;
+		} catch (SQLException e) {
+			e.getMessage();
+		}
+		return -1;
+	}
+	
+	public static int removeAllSensorConfig(String user, String ip, String name) {
+		try {
+			Statement stmt = connect();
+			System.out.println("In");
+			//String INSERT = "INSERT INTO TABLE1 ";
+			
+			String sql = "DELETE FROM TABLE1 WHERE IP_ADDRESS = '" + ip + "' AND USERNAME = '" + user 
+					+ "' AND SENSOR_NAME = '" + name + "' AND CONFIG = " + 1;
+			System.out.println(sql);
+			
+			int a = stmt.executeUpdate(sql);
+			System.out.println(a);
+			return 1;
+		} catch (SQLException e) {
+			e.getMessage();
+		}
+		return -1;
+	}
+	
+	public static int removeAllUserEntries(String user) {
+		try {
+			Statement stmt = connect();
+			System.out.println("In");
+			//String INSERT = "INSERT INTO TABLE1 ";
+			
+			String sql = "DELETE FROM TABLE1 WHERE USERNAME = '" + user + "'";
+			System.out.println(sql);
+			
+			int a = stmt.executeUpdate(sql);
+			System.out.println(a);
+			return 1;
+		} catch (SQLException e) {
+			e.getMessage();
+		}
+		return -1;
+	}
+	
+	public static int removeAllIPEntries(String ip) {
+		try {
+			Statement stmt = connect();
+			System.out.println("In");
+			//String INSERT = "INSERT INTO TABLE1 ";
+			
+			String sql = "DELETE FROM TABLE1 WHERE IP_ADDRESS = '" + ip + "'";
+			System.out.println(sql);
+			
+			int a = stmt.executeUpdate(sql);
+			System.out.println(a);
+			return 1;
+		} catch (SQLException e) {
+			e.getMessage();
+		}
+		return -1;
+	}
+	
+	public static int removeAllSenosrNameEntries(String name) {
+		try {
+			Statement stmt = connect();
+			System.out.println("In");
+			//String INSERT = "INSERT INTO TABLE1 ";
+			
+			String sql = "DELETE FROM TABLE1 WHERE SENSOR_NAME = '" + name + "'";
+			System.out.println(sql);
+			
+			int a = stmt.executeUpdate(sql);
+			System.out.println(a);
+			return 1;
+		} catch (SQLException e) {
+			e.getMessage();
+		}
+		return -1;
+	}
+	
+	public static int removeAllConfigEntries() {
+		try {
+			Statement stmt = connect();
+			System.out.println("In");
+			//String INSERT = "INSERT INTO TABLE1 ";
+			
+			String sql = "DELETE FROM TABLE1 WHERE CONFIG = 1'";
+			System.out.println(sql);
+			
+			int a = stmt.executeUpdate(sql);
+			System.out.println(a);
+			return 1;
+		} catch (SQLException e) {
+			e.getMessage();
+		}
+		return -1;
+	}
+	
+	public static int removeAllDetectionEntries() {
+		try {
+			Statement stmt = connect();
+			System.out.println("In");
+			//String INSERT = "INSERT INTO TABLE1 ";
+			
+			String sql = "DELETE FROM TABLE1 WHERE DETECTION = 1'";
+			System.out.println(sql);
+			
+			int a = stmt.executeUpdate(sql);
+			System.out.println(a);
+			return 1;
+		} catch (SQLException e) {
+			e.getMessage();
+		}
+		return -1;
+	}
+	
+	public static int removeAllTypeEntries(String type) {
+		try {
+			Statement stmt = connect();
+			System.out.println("In");
+			//String INSERT = "INSERT INTO TABLE1 ";
+			
+			String sql = "DELETE FROM TABLE1 WHERE S_TYPE = '" + type + "'";
+			System.out.println(sql);
+			
+			int a = stmt.executeUpdate(sql);
+			System.out.println(a);
+			return 1;
+		} catch (SQLException e) {
+			e.getMessage();
+		}
+		return -1;
+	}
+	
 	public static Statement connect() {
 
 		try {
@@ -205,6 +351,7 @@ public class DBConnect {
 	public static void main(String[] args) throws Exception {
 		connect();
 		//System.out.println(returnEntry("USERNAME"));
-		addDetection("x", "127.000.000.3", "S2", "LIGHT", 0, 2);
+		removeAllSensorDetection("x", "127.000.000.3", "S2");
+		//System.out.println(returnUpper());
 	}
 }
