@@ -143,7 +143,9 @@ public class DBConnect {
 			Statement stmt = connect();
 			System.out.println("In");
 			//String INSERT = "INSERT INTO TABLE1 ";
-			String sql = "INSERT INTO TABLE1 " + "VALUES ('d', '127.000.000.1', 'L', 1, 0, 'LIGHT', 0, 100)";
+			String sql = "INSERT INTO TABLE1 VALUES ('" + user + "', '" + ip + "', '" + name + "', 1, 0, '" + type 
+					+ "', " + lower + ", " + upper + ", NULL, NULL)";
+			System.out.println(sql);
 			int a = stmt.executeUpdate(sql);
 			System.out.println(a);
 		} catch (SQLException e) {
@@ -175,6 +177,6 @@ public class DBConnect {
 	public static void main(String[] args) throws Exception {
 		connect();
 		//System.out.println(returnEntry("USERNAME"));
-		addConfig("a", "127.000.000.2", "S1", "LIGHT", 0, 255);
+		addConfig("a", "127.000.000.5", "S1", "LIGHT", 0, 255);
 	}
 }
