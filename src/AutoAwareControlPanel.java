@@ -41,10 +41,7 @@ public class AutoAwareControlPanel extends JFrame implements Observer {
 
     private void initUI() {
     	
-	    System.setProperty("javax.net.ssl.keyStore", "mySrvKeystore");
-	    System.setProperty("javax.net.ssl.keyStorePassword", "sensor");
-
-    	
+	   
     	
     	//server.addObserver(this);
     	server = new CentralServer(this);
@@ -452,13 +449,13 @@ public class AutoAwareControlPanel extends JFrame implements Observer {
     				if (!cfg.force_on){ 
 	    				cfg.force_off = false;
 	    				cfg.force_on = true;
-	    				SendConfigToSensor(configs.indexOf(cfg));
+	    				SendConfigToSensor(cfg);
     				}
     			} else {
     				if (!cfg.force_off){ 
 	    				cfg.force_off = true;
 	    				cfg.force_on = false;
-	    				SendConfigToSensor(configs.indexOf(cfg));
+	    				SendConfigToSensor(cfg);
     				}
     			}
     		}
@@ -468,24 +465,23 @@ public class AutoAwareControlPanel extends JFrame implements Observer {
 				if (!cfg.force_on){ 
     				cfg.force_off = false;
     				cfg.force_on = true;
-    	    		SendConfigToSensor(configs.indexOf(cfg));
+    	    		SendConfigToSensor(cfg);
 				}
 			} else {
 				if (!cfg.force_off){ 
     				cfg.force_off = true;
     				cfg.force_on = false;
-    	    		SendConfigToSensor(configs.indexOf(cfg));
+    	    		SendConfigToSensor(cfg);
 				}
 			}
     	}
     	SaveSensors();
     	refreshSensorList();
     }
-    public void SendConfigToSensor(int index) {
+    public void SendConfigToSensor(ClientConfig cfg) {
     	//Send a message through the server to update a sensors config
     	
-    	System.out.println("Updating info to a sensor with index "  + index);
-    	ClientConfig cfg = configs.get(index);
+    	System.out.println("Updating info to a sensor with type "  + cfg.sensor_type);
     	server.sendMessage(new ConfigMessage("",cfg), cfg.ip, 9999);
     }
     public class Refresher implements ActionListener {
@@ -499,7 +495,7 @@ public class AutoAwareControlPanel extends JFrame implements Observer {
     	@SuppressWarnings("unused")
 		final
     	AutoAwareControlPanel ex = new AutoAwareControlPanel();
-    	final Random r = new Random();
+    	/*final Random r = new Random();
     	Thread t1 = new Thread(new Runnable(){
     		public void run(){
     			int num = 8;
@@ -507,7 +503,6 @@ public class AutoAwareControlPanel extends JFrame implements Observer {
 	    			try {
 						Thread.sleep(1000);
 					} catch (InterruptedException e) {
-						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
 	    			BaseConfig cfg = new BaseConfig();
@@ -521,7 +516,6 @@ public class AutoAwareControlPanel extends JFrame implements Observer {
 	    				if (num == 25) num = 8;
 	    				//pm.setImage(ImageIO.read(new File("tmp-" + (8+r.nextInt(16) + ".gif"))));
 					} catch (IOException e) {
-						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
 	    			
@@ -535,7 +529,6 @@ public class AutoAwareControlPanel extends JFrame implements Observer {
 	    			try {
 						Thread.sleep(4000);
 					} catch (InterruptedException e) {
-						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
 	    			BaseConfig cfg = new BaseConfig();
@@ -547,9 +540,9 @@ public class AutoAwareControlPanel extends JFrame implements Observer {
     			}
     		}
     	});
-    	t1.start();
+    	//t1.start();
     	//t2.start();
-    	//ex.Notify("1234");
+    	//ex.Notify("1234");*/
         
     }
     public void Notify() {
@@ -597,7 +590,6 @@ public class AutoAwareControlPanel extends JFrame implements Observer {
 				if (Streamers.get(gotMessage.from) != null && myClient.sensor_type == gotMessage.config.sensor_type) ((ValueStreamBox)(Streamers.get(gotMessage.from).myPanel)).value = f;
 				else {
 					//close the stream, it does not exist
-			    	//TODO re-insert after test cases
 					server.sendMessage(new StreamingMessage("",gotMessage.config, false), myClient.ip, 9999);
 				}
 				//if we have a higher threshold, and the item was not already added to the list

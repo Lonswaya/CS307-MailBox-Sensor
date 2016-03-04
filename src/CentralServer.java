@@ -136,6 +136,8 @@ public class CentralServer extends Observable implements Runnable {
 					if(msg.getString().equalsIgnoreCase("quit"))
 						cs.set_run(false);
 					
+					this.cs.notifyObservers(msg);
+					
 					switch(msg.type) {
 					
 					case VIDEO:

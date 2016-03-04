@@ -62,7 +62,7 @@ public class ConfigureMenu extends JFrame {
 	
 	private void InitUI() {
     		this.setIconImage(Toolkit.getDefaultToolkit().getImage("resources/icon.png"));
-	        setSize(600, 400);
+	        setSize(600, 450);
 	        setResizable(false);
 	        setLocationRelativeTo(null);
 	        setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
@@ -422,7 +422,7 @@ public class ConfigureMenu extends JFrame {
 		this.setEnabled(false);
 		parent.configs.set(inputNum, toSubmit);
 		System.out.println(toSubmit);
-		parent.SendConfigToSensor(inputNum);
+		parent.SendConfigToSensor(toSubmit);
 		parent.refreshSensorList();
     	dispose();
     }
