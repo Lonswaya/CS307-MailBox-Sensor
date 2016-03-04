@@ -30,7 +30,7 @@ public class LightSensor extends BaseSensor {
 		} else {
 			System.out.println("Errors opening da camera");
 			System.exit(1);
-		}	
+		}
 	}
 	
 	@Override
@@ -81,9 +81,33 @@ public class LightSensor extends BaseSensor {
 	}
 	
 	public float get_reading(BufferedImage image){
-		Color color = new Color(image.getRGB(image.getWidth() / 2, image.getHeight() / 2));
-		//System.out.println("R: " + color.getRed() + " G: " + color.getGreen() + " B: " + color.getBlue());
-		return color.getBlue() / (this.upperBound - this.lowerBound);
+		double intensity = 0;
+		Color color;
+		
+		if(image.getHeight() < 5 || image.getWidth() < 5){
+			color = new Color(image.getRGB(image.getWidth() / 2, image.getHeight() / 2));
+			intensity = color.getBlue();
+		}else{
+			/*int wDistance = image.getWidth() / 5;
+			int hDistance = image.getHeight() / 5;
+			
+			int lastH = 0, lastW = 0;
+			
+			for(int i = hDistance; times != 0; i += hDistance, times--){
+				for(int j = wDistance; times != 0; j += wDistance, times--){
+					
+				}
+			}*/
+			
+			for(int x = 0; x < image.getWidth(); x++){
+				for(int y = 0; y < image.getHeight(); y++){
+					color = new Color(image.getRGB(x, y));
+					intensity += color.getBlue();
+				}
+			}
+			intensity /= image.getHeight() * image.getWidth();
+		}
+		return (float) (intensity / (this.upperBound - this.lowerBound) * 100);
 	}
 
 	@Override
@@ -92,4 +116,21 @@ public class LightSensor extends BaseSensor {
 			return true;
 		return false;
 	}
+	
+	/*public static void main (String[] args) throws Exception{
+		
+		LightSensor s = new LightSensor(new BaseConfig());
+		BufferedImage img = ImageIO.read(new File("C:/Users/Zixuan/Desktop/CS307/winter.png"));
+		img = s.greyscale_picture(img);
+		Color c = new Color(img.getRGB(img.getHeight() / 2, img.getWidth() / 2));
+		if(c.getRed() == c.getBlue() && c.getGreen() == c.getBlue()){
+			System.out.println("Image greyscaled");
+		}else{
+			System.out.println("Image didn't get greyscaled");
+		}
+		
+		ImageIO.write(img, "jpg", new File("newpic.jpg"));
+		
+		System.out.println(s.get_reading(img));
+	}*/
 }
