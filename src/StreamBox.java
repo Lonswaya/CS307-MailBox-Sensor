@@ -17,9 +17,11 @@ public class StreamBox extends JFrame {
 	protected Timer t;
 	public Hashtable<String, StreamBox> hRef;
 	public JPanel myPanel;
-	public StreamBox(Hashtable<String, StreamBox> h, String address) {
+	private AutoAwareControlPanel aRef;
+	public StreamBox(Hashtable<String, StreamBox> h, String address, AutoAwareControlPanel aRef) {
 		 this.address = address;
 		 hRef = h;
+		 this.aRef = aRef;
 		 setTitle("You shouldn't be seeing this");
 	     setSize(600, 600);
 	     setVisible(true);
@@ -32,10 +34,20 @@ public class StreamBox extends JFrame {
 	private WindowListener CloseListener() {
 		WindowListener exitListener = new WindowAdapter() {
             @Override
-            public void windowClosing(WindowEvent e) {
+            public void windowClosed(WindowEvent e) {
+            	//System.out.println("STOP THE FUCK NOW");
             	hRef.remove(address);
             	setEnabled(false);
                 dispose();
+                aRef.StopStream(address);
+            }
+            public void windowClosing(WindowEvent e) {
+            	
+            	System.out.println("STOP THE FUCK NOW");
+            	hRef.remove(address);
+            	setEnabled(false);
+                dispose();
+                aRef.StopStream(address);
             }
 		};
 		return exitListener;

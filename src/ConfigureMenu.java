@@ -167,7 +167,7 @@ public class ConfigureMenu extends JFrame {
 		    sound = new JRadioButton("Sound Sensor");
 		    sound.setActionCommand("sound");
 		    if (input.sensor_type == SensorType.AUDIO) sound.setSelected(true);
-		    motion = new JRadioButton("Motion Sensor");
+		    motion = new JRadioButton("Video/motion Sensor");
 		    motion.setActionCommand("motion");
 		    if (input.sensor_type == SensorType.VIDEO) motion.setSelected(true);
 

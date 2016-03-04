@@ -80,6 +80,12 @@ public class AudioSensor extends BaseSensor
 		//do nothing
 	}
 
+	@Override
+	public void close() {
+		// TODO Auto-generated method stub
+		
+	}
+
 	
 
 	

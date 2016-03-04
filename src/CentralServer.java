@@ -18,16 +18,19 @@ public class CentralServer extends Observable implements Runnable {
 	
 	protected boolean run = true;
 	
+	private AutoAwareControlPanel ref;
+	
 	private Observer obs = null;
 	
-	public CentralServer(Observer obs) {
+	public CentralServer(AutoAwareControlPanel obs) {
 	    System.setProperty("javax.net.ssl.keyStore", "mySrvKeystore");
 	    System.setProperty("javax.net.ssl.keyStorePassword", "sensor");
 	
 	    System.setProperty("javax.net.ssl.trustStore", "mySrvKeystore");
 	    System.setProperty("javax.net.ssl.trustStorePassword", "sensor");
 
-	    addObserver(obs);
+	    ref = obs;
+	    //addObserver(obs);
 	    
 	    socketFactory = (SSLSocketFactory)SSLSocketFactory.getDefault();
 	    
@@ -105,11 +108,12 @@ public class CentralServer extends Observable implements Runnable {
 			try {
 				in = new ObjectInputStream(sock.getInputStream());
 				Message msg = (Message)in.readObject();
-				System.out.println("MESSAGE RECIEVED, type " + msg.type);
+				//System.out.println("MESSAGE RECIEVED, type " + msg.type);
 				if(msg.getString().equalsIgnoreCase("quit"))
 					cs.set_run(false);
 				
-				this.cs.notifyObservers(msg);
+				//this.cs.notifyObservers(msg);
+				ref.ProcessMessage(msg);
 				
 				switch(msg.type) {
 				

@@ -26,7 +26,7 @@ import javax.swing.*;
 
 
 
-public class AutoAwareControlPanel extends JFrame implements Observer {
+public class AutoAwareControlPanel extends JFrame {//implements Observer {
 	private static final long serialVersionUID = 1L;
 	private JPanel panelHolder;
 	public ArrayList<ClientConfig> configs;
@@ -55,7 +55,7 @@ public class AutoAwareControlPanel extends JFrame implements Observer {
     	Streamers = new Hashtable<String, StreamBox>();
     	this.setIconImage(Toolkit.getDefaultToolkit().getImage("resources/icon.png"));
 
-        Timer t = new Timer(5000, new Refresher());
+        Timer t = new Timer(1000, new Refresher());
         setTitle("AutoAware Control Panel");
         setSize(1000, 600);
         setLocationRelativeTo(null);
@@ -301,29 +301,38 @@ public class AutoAwareControlPanel extends JFrame implements Observer {
 
     	} else {
 	    	ClientConfig newSensor = new ClientConfig();
+	    	newSensor.force_off = true;
+	    	newSensor.force_on = false;
 	    	newSensor.SetIP(address);
+	    	newSensor.serverPort = 9999;
 	    	Random r = new Random();
 	    	newSensor.SetColor(new Color(r.nextInt(255),r.nextInt(255),r.nextInt(255)));
 	    	newSensor.SetName("New Sensor");
-	    	configs.add(newSensor);
-	    	createNew(controlIndex, newSensor);
-	    	refreshSensorList();
-	    	//TODO add to database for sensor
+	    	
+	    	boolean b = server.sendMessage(new ConfigMessage("Updating config",newSensor), newSensor.ip, 9999);
+	    	if (b) {
+		    	configs.add(newSensor);
+		    	createNew(controlIndex, newSensor);
+		    	refreshSensorList();
+	    	} else {
+	    		JOptionPane.showMessageDialog(null,"Sensor not found", "erorr", JOptionPane.ERROR_MESSAGE, null);
+
+	    	}
     	}
-    	
     }
     public void InitConfigs() {
     	//request to database, add sensors
     	//manually adding sensors for now
     	//TODO
     	configs = new ArrayList<ClientConfig>();
-    	ClientConfig firstConfig = new ClientConfig();
+    	//TODO show first config for demos
+    	/*ClientConfig firstConfig = new ClientConfig();
     	
     	firstConfig.ip = "128.211.255.32";
     	firstConfig.SetName("First Config");
     	firstConfig.force_off = true;
     	configs.add(firstConfig);
-    	server.sendMessage(new ConfigMessage("Updating config",firstConfig), firstConfig.ip, 9999);
+    	server.sendMessage(new ConfigMessage("Updating config",firstConfig), firstConfig.ip, 9999);*/
     	
     }
     public void refreshSensorList() {
@@ -359,6 +368,7 @@ public class AutoAwareControlPanel extends JFrame implements Observer {
             enabled.setText(configs.get(i).isSensorActive()?"Disable":"Enable");
             //System.out.println("enabled : " + enabled.getText());
             //System.out.println(configs.get(i).sensor_type);
+            //System.out.println("look here eugene you fucking prick " + configs.get(i).isSensorActive());
     		JLabel title = (JLabel) myPanel.getComponent(0);
     		title.setText("<html>" + configs.get(i).name + (configs.get(i).isSensorActive()?"":" <br />(Disabled)</html>"));
     	}	
@@ -376,20 +386,31 @@ public class AutoAwareControlPanel extends JFrame implements Observer {
     		controlIndex--;
     		ClientConfig cfg = ConfigFind(identifier);
     		String name = cfg.name;
+    		cfg.force_off = true;
+    		cfg.force_on = false;
     		int index = configs.indexOf(cfg);
     		panelHolder.remove(index);
     		configs.remove(index);
+    		server.sendMessage(new ConfigMessage("Updating config, turning off",cfg), cfg.ip, 9999);
     		JOptionPane.showMessageDialog(null, "Deleted sensor " + name, "Deleted sensor " + name, JOptionPane.INFORMATION_MESSAGE, null);
-    	
+	    	
     	}
     	refreshSensorList();
+    }
+    public void StopStream(String address) {
+    	System.out.println("Stopping stream now");
+    	ClientConfig cfg = ConfigFind(address);
+		server.sendMessage(new StreamingMessage("Telling to stop streaming",cfg, false), cfg.ip, 9999);
+
     }
     public ClientConfig ConfigFind(String identifier) {
     	//System.out.println(configs);
     	for (int i = 0; i < configs.size(); i++) {
     		//System.out.println(configs.get(i).ip);
-    		if ((configs.get(i).ip).equals(identifier)) {
-    			return configs.get(i);
+    		if (configs.get(i) != null) {
+	    		if ((configs.get(i).ip).equals(identifier)) {
+	    			return configs.get(i);
+	    		}
     		}
     	}
     	//was not found
@@ -427,25 +448,38 @@ public class AutoAwareControlPanel extends JFrame implements Observer {
     public void OpenStream(SensorType s, String address) {
 		ClientConfig cfg = ConfigFind(address);
     	if (cfg.isSensorActive()) {
-    		StreamBox stream = new StreamBox(Streamers, address);
+    		StreamBox stream = new StreamBox(Streamers, address, this);
 	    	if (s == SensorType.VIDEO) {
-	    		stream.setTitle("Video stream on sensor " + address);
-	    		VideoStreamBox newVid = new VideoStreamBox(address);
-	    		stream.myPanel = newVid;
-		    	stream.add(newVid);
-		    	
-		    	Streamers.put(address, stream);
+	    		ClientConfig c = ConfigFind(address);
+	    		boolean connection = server.sendMessage(new StreamingMessage("Setting image/video streaming to true",c,true), c.ip, 9999);
+	    		if (connection) {
+		    		stream.setTitle("Video stream on sensor " + address);
+		    		VideoStreamBox newVid = new VideoStreamBox(address);
+		    		stream.myPanel = newVid;
+			    	stream.add(newVid);
+			    	Streamers.put(address, stream);
+			    	
+	    		} else {
+	    			JOptionPane.showMessageDialog(null, "Conneciton refused");
+	    			System.out.println("Connection refused");
+	    		}
 		    	
 
 	    	} else {
 	    		ClientConfig c = ConfigFind(address);
-	    		stream.setTitle(c.sensor_type + " stream on sensor " + address);
-	    		ValueStreamBox newVal = new ValueStreamBox(c.sensor_type, c.sensing_threshold, address);
-		    	stream.add(newVal);
-		    	stream.myPanel = newVal;
-		    	Streamers.put(address, stream);
-		    	server.sendMessage(new StreamingMessage("Setting streaming to true",c,true), c.ip, 9999);
-		    	System.out.println("setting to stream now");
+	    		boolean connection = server.sendMessage(new StreamingMessage("Setting streaming to true",c,true), c.ip, 9999);
+	    		if (connection) {
+		    		stream.setTitle(c.sensor_type + " stream on sensor " + address);
+		    		ValueStreamBox newVal = new ValueStreamBox(c.sensor_type, c.sensing_threshold, address);
+			    	stream.add(newVal);
+			    	stream.myPanel = newVal;
+			    	Streamers.put(address, stream);
+			    	
+			    	System.out.println("setting to stream now");
+	    		} else {
+	    			JOptionPane.showMessageDialog(null, "Conneciton refused");
+	    			System.out.println("Connection refused");
+	    		}
 	    	}
     	}
     }
@@ -494,7 +528,7 @@ public class AutoAwareControlPanel extends JFrame implements Observer {
     public class Refresher implements ActionListener {
     	
         public void actionPerformed(ActionEvent e) {
-        	//refreshSensorList();
+        	refreshSensorList();
         	Notify();
         }
     }
@@ -577,11 +611,14 @@ public class AutoAwareControlPanel extends JFrame implements Observer {
     
    
   
-	@Override
-	public void update(Observable arg0, Object arg1) {
-		Message gotMessage = (Message)arg1;
+	public void ProcessMessage(Message arg1) {
+		Message gotMessage = arg1;
 		ClientConfig myClient = ConfigFind(gotMessage.from);
-		System.out.println(gotMessage.message + " " + gotMessage.type);
+		if (myClient == null) {
+			System.out.println("Message recieved for incorrect sensor, please try again");
+			return;
+		}
+		System.out.println("Message recieved, says to: " + gotMessage.message + " with the type of" + gotMessage.type);
 		switch (gotMessage.type) {
 		
 		
@@ -592,11 +629,13 @@ public class AutoAwareControlPanel extends JFrame implements Observer {
 				//grayscale image?
 				break;
 			case READING:
-				float f = ((ReadingMessage)gotMessage).getCurrentThreshold();
+				float f = ((ReadingMessage)gotMessage).getCurrentThreshold()/100; //hacky af
+				System.out.println("reading message found with value " + f);
+
 				//if the streaming page exists, then update it
 				//include checking the sensor type, in case a message is sent and doesn't have the correct information (i.e. switching from light to video)
 				
-				if (Streamers.get(gotMessage.from) != null && (gotMessage.config.sensor_type != null && myClient.sensor_type == gotMessage.config.sensor_type)) ((ValueStreamBox)(Streamers.get(gotMessage.from).myPanel)).value = f;
+				if (Streamers.get(gotMessage.from) != null) ((ValueStreamBox)(Streamers.get(gotMessage.from).myPanel)).value = f;
 				else {
 					//close the stream, it does not exist
 					server.sendMessage(new StreamingMessage("Telling to stop streaming",gotMessage.config, false), myClient.ip, 9999);
@@ -604,9 +643,8 @@ public class AutoAwareControlPanel extends JFrame implements Observer {
 				}
 				//if we have a higher threshold, and the item was not already added to the list
 				if (myClient.sensing_threshold <= f && notificationStack.search(myClient.name) == -1) {
-					System.out.println(notificationStack.search(myClient.name));
+					//System.out.println(notificationStack.search(myClient.name));
 					notificationStack.add(myClient.name);
-					Notify();
 				}
 				break;
 			case AUDIO:
@@ -614,7 +652,7 @@ public class AutoAwareControlPanel extends JFrame implements Observer {
 				break;
 			case PICTURE: 
 				//Actual picture, updated on a normal basis
-				if (Streamers.get(gotMessage.from) != null &&(gotMessage.config.sensor_type != null && myClient.sensor_type == gotMessage.config.sensor_type)) ((VideoStreamBox)(Streamers.get(gotMessage.from).myPanel)).SetImage(((PictureMessage)gotMessage).getImage()); 
+				if (Streamers.get(gotMessage.from) != null) ((VideoStreamBox)(Streamers.get(gotMessage.from).myPanel)).SetImage(((PictureMessage)gotMessage).getImage()); 
 				else {
 					//close the stream, it does not exist
 			    	server.sendMessage(new StreamingMessage("Telling to stop streaming",gotMessage.config, false), myClient.ip, 9999);

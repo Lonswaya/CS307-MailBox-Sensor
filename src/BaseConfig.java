@@ -36,6 +36,7 @@ public class BaseConfig implements Serializable {
 		String[] stoping = stop.split(":");
 		if(stoping.length < 2) {
 			//ERROR
+			
 		}
 		this.stop_hours = Integer.parseInt(stoping[0]);
 		this.stop_minutes = Integer.parseInt(stoping[1]);
@@ -203,8 +204,43 @@ public class BaseConfig implements Serializable {
 				+	"FORCE OFF=" + force_off + "\n"
 				+	"THRESHOLD=" + sensing_threshold + "%";
 	}
+public boolean isSensorActive() {
+	if(force_on)
+		return true;
+	if(force_off)
+		return false;
+	
+	Calendar c = Calendar.getInstance();
+	int hour = c.get(Calendar.HOUR_OF_DAY);
+	int minute = c.get(Calendar.MINUTE);
+
+	int startH = this.start_hours;
+	int startM = this.start_minutes;
+	int stopH = this.stop_hours;
+	int stopM = this.stop_minutes;
+	//System.out.println("current time: " + hour + ":" + minute);
 	
 	
+	if(hour > startH && hour < stopH) return true;
+	if(startH > stopH) {
+		if ((hour > stopH && hour > startH) || (hour < startH && hour < stopH)) 
+			return true;
+	}
+	if (hour == startH && hour == stopH) {
+		if (minute >= startM) {
+			if (minute < stopM)
+				return true;
+		}
+	} else {
+		if (hour == startH)
+			if (minute >= startM)
+				return true;
+		if (hour == stopH)
+			if (minute < stopM)
+				return true;
+	}
+	return false;
+}
 	
 	public static void main(String[] args) {
 		

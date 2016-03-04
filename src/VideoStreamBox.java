@@ -25,7 +25,7 @@ public class VideoStreamBox extends JPanel {
 	public VideoStreamBox(String address) {
 		found = false;
 		this.address = address;
-		t  = new Timer(1000, new repainter());
+		t  = new Timer(300, new repainter());
 		t.start();
 		try {
 		    image = ImageIO.read(new File("resources/none.png"));
@@ -45,6 +45,7 @@ public class VideoStreamBox extends JPanel {
 		repaint();
 	}
 	public void SetImage(BufferedImage image) {
+		System.out.println("new image set");
 		this.image = image;
 		found = true;
 	}

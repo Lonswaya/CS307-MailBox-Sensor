@@ -7,8 +7,9 @@ public class WebcamSensorFactory implements SensorFactory {
 			return new AudioSensor(config);
 		else if(config.sensor_type == SensorType.LIGHT)
 			return new LightSensor(config);
+		//currently set to picture for simplicity
 		else if(config.sensor_type == SensorType.VIDEO)
-			return new VideoSensor(config);
+			return new PictureSensor(config);
 		return null;
 	}
 

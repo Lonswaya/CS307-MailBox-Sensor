@@ -25,6 +25,12 @@ public class VideoSensor extends BaseSensor {
 	public Message form_message(){
 		return null;
 	}
+
+	@Override
+	public void close() {
+		// TODO Auto-generated method stub
+		
+	}
 	
 	//public VIDEO_CLIP_TYPE record_video(){}
 	

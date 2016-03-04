@@ -40,14 +40,16 @@ public class PictureSensor extends BaseSensor{
 
 	@Override
 	public Message form_message() {
-		
+		System.out.println("start form pic");
+
 		if(!webcam.isOpen())
 			webcam.open();
 		this.image = webcam.getImage();
-		webcam.close();
+		//webcam.close();
 		
 		PictureMessage msg = new PictureMessage("Sending a picture from picture sensor", null);
 		msg.setImage(this.image);
+		
 		try{
 			NetworkInterface ni = NetworkInterface.getByName("eth0");
 	        Enumeration<InetAddress> inetAddresses =  ni.getInetAddresses();
@@ -58,15 +60,24 @@ public class PictureSensor extends BaseSensor{
 	                address = ia.getHostAddress();
 	            }
 	        }
+	        msg.setFrom(address);
 		}catch(Exception e){
 			e.printStackTrace();
 		}
         
 		//String address = InetAddress.getLocalHost().toString();
 		//address = address.substring(address.indexOf('/') + 1);
-		msg.setFrom(address);
 		
-		return null;
+		System.out.println("end form pic");
+
+		return msg;
+	}
+
+	@Override
+	public void close() {
+		// TODO Auto-generated method stub
+		if (this.webcam.isOpen()) this.webcam.close();
+
 	}
 
 }

@@ -130,9 +130,16 @@ public class LightSensor extends BaseSensor {
 
 	@Override
 	public boolean check_threshold() {
-		if(this.light_intensity > config.sensing_threshold)
+		//because sensing threshold is val/1
+		if(this.light_intensity > 100*config.sensing_threshold)
 			return true;
 		return false;
+	}
+
+	@Override
+	public void close() {
+		// TODO Auto-generated method stub
+		if (this.webcam.isOpen()) this.webcam.close();
 	}
 	
 	/*public static void main (String[] args) throws Exception{
