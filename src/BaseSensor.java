@@ -1,3 +1,4 @@
+import java.util.Calendar;
 
 public abstract class BaseSensor{
 	
@@ -34,14 +35,40 @@ public abstract class BaseSensor{
 		
 	}
 	
+	// this function determins if sensor should be active given the time
+	// restriction in config
+	public boolean isSensorActive() {
+		
+		if(config.force_on)
+			return true;
+		if(config.force_off)
+			return false;
+		
+		Calendar c = Calendar.getInstance();
+		int hour = c.get(Calendar.HOUR_OF_DAY);
+		int minute = c.get(Calendar.MINUTE);
+
+		int startH = this.config.start_hours;
+		int startM = this.config.start_minutes;
+		int stopH = this.config.stop_hours;
+		int stopM = this.config.stop_minutes;
+
+		if(hour > config.start_hours && hour < config.stop_hours || 
+		  (hour == startH && minute >= startM) || 
+		  (hour == stopH && minute < stopM) ||
+		  (startH > stopH && (hour > startH || hour < stopH)) ||
+		  hour > startH && hour < stopH) {
+			return true;
+		}
+
+		
+		return false;
+	}
+	
 	public abstract void sense();
 	
 	public abstract boolean check_threshold();
 	public abstract Message form_message();
 
-	public void senseAudio(double duration) {
-		// TODO Auto-generated method stub
-		
-	}
 	
 }

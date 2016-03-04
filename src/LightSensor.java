@@ -18,9 +18,19 @@ public class LightSensor extends BaseSensor {
 
 	private float light_intensity;
 	private BufferedImage image;
+	private Webcam webcam = null;
 	
 	public LightSensor(BaseConfig config){
 		super(config);
+		Webcam.setDriver(new V4l4jDriver());
+		webcam = Webcam.getDefault();	
+		if (webcam != null) {
+			if(isSensorActive())
+				webcam.open();
+		} else {
+			System.out.println("Errors opening da camera");
+			System.exit(1);
+		}	
 	}
 	
 	@Override
@@ -41,14 +51,14 @@ public class LightSensor extends BaseSensor {
 	}
 	
 	public void take_picture(){
-		Webcam.setDriver(new V4l4jDriver());
-		Webcam webcam = Webcam.getDefault();
-		if (webcam != null) {
-			webcam.open();
+		
+		if(isSensorActive()) {
+			if(!webcam.isOpen())
+				webcam.open();
 			this.image = webcam.getImage();
-			webcam.close();
-		}else{
-			System.out.println("Can't open webcam");
+		} else {
+			if(webcam.isOpen())
+				webcam.close();
 		}
 	}
 	
