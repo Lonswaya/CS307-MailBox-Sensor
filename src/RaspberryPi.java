@@ -13,14 +13,14 @@ import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
 
 public class RaspberryPi {
-	private BaseSensor sensor = null;
+	BaseSensor sensor = null;
 	private ServerSocket receiveServer;
 
 	private String ip = "localhost";
 	private int port = 9999;
 
-	private boolean streaming;
-
+	boolean streaming = false;
+	
 	public RaspberryPi() throws IOException {
 
 		Scanner in = new Scanner(System.in);
@@ -63,6 +63,8 @@ public class RaspberryPi {
 						sock = receiveServer.accept();
 						in = new ObjectInputStream(sock.getInputStream());
 						Message msg = (Message) in.readObject();
+						
+						System.out.println(msg.toString());
 						
 						switch(msg.type) {
 							case CONFIG:
@@ -119,33 +121,5 @@ public class RaspberryPi {
 			e.printStackTrace();
 		}
 	}
-
-
-	
-	
-	public static void main(String[] args) throws IOException, InterruptedException {
-		
-		RaspberryPi pi = new RaspberryPi();
-		
-		// main loop
-		while (true) {
-			//System.out.println("from sense thread");
-			if (pi.sensor == null) { // if pi doesnt have a sensor
-				Thread.sleep(5000);
-				continue;
-			} else {
-				if (pi.sensor.isSensorActive()) {
-					pi.sensor.sense(); // tell sensor to sense shit maybe a
-					Thread.sleep(1000);		// time interval in between, currently one second
-					if (pi.sensor.check_threshold() || pi.streaming) { //if the threshold is above, or if we are supposed to stream constantly
-						pi.send_message(pi.sensor.form_message());
-					}
-				}
-			}
-		}
-		
-	}
-	
-	
 
 }

@@ -486,6 +486,7 @@ public class AutoAwareControlPanel extends JFrame implements Observer {
     	
     	System.out.println("Updating info to a sensor with index "  + index);
     	ClientConfig cfg = configs.get(index);
+    	System.out.println("Client ip " + cfg.ip);
     	server.sendMessage(new ConfigMessage("",cfg), cfg.ip, 9999);
     }
     public class Refresher implements ActionListener {

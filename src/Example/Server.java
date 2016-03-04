@@ -1,9 +1,12 @@
+package Example;
+
 import java.io.*;
 import java.net.*;
 
 import javax.net.ssl.SSLServerSocket;
 import javax.net.ssl.SSLServerSocketFactory;
 import javax.net.ssl.SSLSocket;
+import javax.net.ssl.SSLSocketFactory;
 
 public class Server {
 
@@ -64,6 +67,10 @@ public class Server {
 	    System.setProperty("javax.net.ssl.keyStore", "mySrvKeystore");
 	    System.setProperty("javax.net.ssl.keyStorePassword", "sensor");
 
+	    System.setProperty("javax.net.ssl.trustStore", "mySrvKeystore");
+	    System.setProperty("javax.net.ssl.trustStorePassword", "sensor");
+
+	    
 		try {
 			
 			SSLServerSocketFactory f = (SSLServerSocketFactory)SSLServerSocketFactory.getDefault();
@@ -72,15 +79,26 @@ public class Server {
 			Server server = new Server(ss);
 			do {
 				
-				server.recieveMessage();
+				//server.recieveMessage();
 				
-				Message tmp = server.getMessage();
+				//Message tmp = server.getMessage();
 				
-				System.out.println("Recieved: " + tmp.getString() + " from client");
+				//System.out.println("Recieved: " + tmp.getString() + " from client");
+
+				SSLSocketFactory fac = (SSLSocketFactory)SSLSocketFactory.getDefault(); 
+				Socket sockk = fac.createSocket("128.211.255.32", 9999);
+
+				ObjectOutputStream out = new ObjectOutputStream(sockk.getOutputStream());
+
+				out.writeObject();
 				
-				server.setMessage(new Message("F*#@ED UP THE MESSAGE"));
+				out.flush();
+
 				
-				server.sendMessage();
+				
+				//server.setMessage(new Message("IM SENDING DA MESSAGE"));
+				
+				//server.sendMessage();
 				
 				server.close();
 				
