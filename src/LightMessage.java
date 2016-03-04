@@ -1,5 +1,7 @@
+import java.io.Serializable;
 
-public class LightMessage extends Message{
+
+public class LightMessage extends Message implements Serializable {
 	
 	//private float light_intensity;
 	

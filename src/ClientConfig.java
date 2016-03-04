@@ -1,8 +1,9 @@
 import java.awt.Color;
+import java.io.Serializable;
 import java.util.Calendar;
 
 
-public class ClientConfig extends BaseConfig {
+public class ClientConfig extends BaseConfig implements Serializable {
 	protected String name;
 	protected Color color;
 	protected boolean desktopNotification, magicMirrorNotification, textNotification, emailNotification;

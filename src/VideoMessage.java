@@ -1,5 +1,7 @@
+import java.io.Serializable;
 
-public class VideoMessage extends Message{
+
+public class VideoMessage extends Message implements Serializable {
 	//date type for video
 	
 	private float video_length;

@@ -1,7 +1,8 @@
 import java.awt.image.BufferedImage;
+import java.io.Serializable;
 
 
-public class PictureMessage extends Message{
+public class PictureMessage extends Message implements Serializable {
 	
 	private BufferedImage image;
 	

@@ -3,10 +3,11 @@ import java.util.Calendar;
 import java.util.List;
 import java.io.File;
 import java.io.IOException;
+import java.io.Serializable;
 import java.nio.charset.Charset;
 import java.nio.file.*;
 
-public class BaseConfig {
+public class BaseConfig implements Serializable {
 
 	protected int start_hours; //in 24H format
 	protected int start_minutes; 

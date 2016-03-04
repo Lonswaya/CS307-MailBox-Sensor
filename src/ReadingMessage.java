@@ -1,5 +1,7 @@
+import java.io.Serializable;
 
-public class ReadingMessage extends Message{
+
+public class ReadingMessage extends Message implements Serializable {
 	
 	private float currentThreshold;
 	
