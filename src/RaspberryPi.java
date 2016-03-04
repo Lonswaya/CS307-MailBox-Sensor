@@ -5,6 +5,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.Calendar;
+import java.util.Scanner;
 
 import javax.net.ssl.SSLServerSocket;
 import javax.net.ssl.SSLServerSocketFactory;
@@ -12,16 +13,22 @@ import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
 
 public class RaspberryPi {
-	private BaseSensor sensor = null;
+	BaseSensor sensor = null;
 	private ServerSocket receiveServer;
 
 	private String ip = "localhost";
 	private int port = 9999;
 
-	private boolean streaming;
-
+	boolean streaming = false;
+	
 	public RaspberryPi() throws IOException {
 
+		Scanner in = new Scanner(System.in);
+		System.out.println("Enter the server's ip");
+		ip = in.nextLine();
+		System.out.println("Enter server's port");
+		port = Integer.parseInt(in.nextLine());
+		
 		System.setProperty("javax.net.ssl.keyStore", "mySrvKeystore");
 		System.setProperty("javax.net.ssl.keyStorePassword", "sensor");
 		System.setProperty("javax.net.ssl.trustStore", "mySrvKeystore");
@@ -56,6 +63,8 @@ public class RaspberryPi {
 						sock = receiveServer.accept();
 						in = new ObjectInputStream(sock.getInputStream());
 						Message msg = (Message) in.readObject();
+						
+						System.out.println(msg.toString());
 						
 						switch(msg.type) {
 							case CONFIG:
@@ -113,76 +122,4 @@ public class RaspberryPi {
 		}
 	}
 
-	// run the pi?
-	public void run() throws InterruptedException {
-
-		
-		// main loop
-		while (true) {
-			//System.out.println("from sense thread");
-			if (this.sensor == null) { // if pi doesnt have a sensor
-				Thread.sleep(5000);
-				continue;
-			} else {
-				if (isSensorActive()) {
-					this.sensor.sense(); // tell sensor to sense shit maybe a
-					Thread.sleep(1000);		// time interval in between, currently one second
-					if (this.sensor.check_threshold() || streaming) { //if the threshold is above, or if we are supposed to stream constantly
-						send_message(this.sensor.form_message());
-					}
-				}
-			}
-		}
-	}
-
-	// this function determins if sensor should be active given the time
-	// restriction in config
-	public boolean isSensorActive() {
-		
-		if(sensor.config.force_on)
-			return true;
-		if(sensor.config.force_off)
-			return false;
-		
-		Calendar c = Calendar.getInstance();
-		int hour = c.get(Calendar.HOUR_OF_DAY);
-		int minute = c.get(Calendar.MINUTE);
-
-		int startH = this.sensor.config.start_hours;
-		int startM = this.sensor.config.start_minutes;
-		int stopH = this.sensor.config.stop_hours;
-		int stopM = this.sensor.config.stop_minutes;
-
-		if(hour > sensor.config.start_hours && hour < sensor.config.stop_hours || 
-		  (hour == startH && minute >= startM) || 
-		  (hour == stopH && minute < stopM) ||
-		  (startH > stopH && (hour > startH || hour < stopH)) ||
-		  hour > startH && hour < stopH) {
-			return true;
-		}
-
-		
-		return false;
-		
-			/*
-				legacy. keep 
-			if (hour > startH && hour < stopH)
-				return true;
-			if (startH > stopH) { // 22:00 - 2:00
-				if (hour > startH)
-					return true;
-				if (hour < stopH)
-					return true;
-			}
-			if ((hour == startH && hour == stopH)
-					&& (minute >= startM && minute < stopM))
-				return true;
-			if (hour == startH && minute >= startM)
-				return true;
-			if (hour == stopH && minute < stopM)
-				return true;
-		}
-		return false;
-		*/
-	}
 }

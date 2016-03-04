@@ -11,10 +11,6 @@ import java.util.Scanner;
 import java.util.Observer;
 
 public class CentralServer extends Observable implements Runnable {
-			
-	//private Vector<BaseConfig> configVector;
-	
-	//private Vector<User> userVector;
 
 	protected ServerSocket ss = null;
 	
@@ -27,7 +23,10 @@ public class CentralServer extends Observable implements Runnable {
 	public CentralServer(Observer obs) {
 	    System.setProperty("javax.net.ssl.keyStore", "mySrvKeystore");
 	    System.setProperty("javax.net.ssl.keyStorePassword", "sensor");
-	    
+	
+	    System.setProperty("javax.net.ssl.trustStore", "mySrvKeystore");
+	    System.setProperty("javax.net.ssl.trustStorePassword", "sensor");
+
 	    addObserver(obs);
 	    
 	    socketFactory = (SSLSocketFactory)SSLSocketFactory.getDefault();
@@ -36,7 +35,6 @@ public class CentralServer extends Observable implements Runnable {
 		try {
 			ss = f.createServerSocket(9999);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
@@ -170,8 +168,8 @@ public class CentralServer extends Observable implements Runnable {
 	public static void main(String[] args) {
 		//CentralServer c = new CentralServer();
 		
-		Scanner s = new Scanner(System.in);
-		String string = s.nextLine();
+		//Scanner s = new Scanner(System.in);
+		//String string = s.nextLine();
 	}
 	
 	
