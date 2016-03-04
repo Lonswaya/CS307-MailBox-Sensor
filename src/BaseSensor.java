@@ -38,6 +38,7 @@ public abstract class BaseSensor{
 	// this function determins if sensor should be active given the time
 	// restriction in config
 	public boolean isSensorActive() {
+		if (config == null) return false;
 		
 		if(config.force_on)
 			return true;
@@ -69,6 +70,10 @@ public abstract class BaseSensor{
 	
 	public abstract boolean check_threshold();
 	public abstract Message form_message();
+	
+	public String toString() {
+		return "FUCK you " + this.sType;
+	}
 
 	
 }

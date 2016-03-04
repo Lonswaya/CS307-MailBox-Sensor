@@ -3,8 +3,11 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.Calendar;
+import java.util.Enumeration;
 
 import javax.imageio.ImageIO;
 
@@ -22,6 +25,7 @@ public class LightSensor extends BaseSensor {
 	
 	public LightSensor(BaseConfig config){
 		super(config);
+		System.out.println("light camrea created");
 		Webcam.setDriver(new V4l4jDriver());
 		webcam = Webcam.getDefault();	
 		if (webcam != null) {
@@ -40,10 +44,24 @@ public class LightSensor extends BaseSensor {
 	}
 	
 	public Message form_message(){		
+		System.out.println("forming light message");
 		ReadingMessage msg = new ReadingMessage("Light above threshold", null);
 		try {
-			msg.setFrom(InetAddress.getLocalHost().getHostAddress());
-		} catch (UnknownHostException e) {
+			NetworkInterface ni = NetworkInterface.getByName("eth0");
+	        Enumeration<InetAddress> inetAddresses =  ni.getInetAddresses();
+	        String address = "";
+	        while(inetAddresses.hasMoreElements()) {
+	            InetAddress ia = inetAddresses.nextElement();
+	            if(!ia.isLinkLocalAddress()) {
+	                address = ia.getHostAddress();
+	            }
+	        }
+	        
+			//String address = InetAddress.getLocalHost().toString();
+			//address = address.substring(address.indexOf('/') + 1);
+			msg.setFrom(address);
+			
+		} catch (SocketException e) {
 			e.printStackTrace();
 		}
 		msg.setCurrentThreshold(this.light_intensity);
@@ -51,7 +69,7 @@ public class LightSensor extends BaseSensor {
 	}
 	
 	public void take_picture(){
-		
+		System.out.println("picture taken");
 		if(isSensorActive()) {
 			if(!webcam.isOpen())
 				webcam.open();

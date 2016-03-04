@@ -25,6 +25,7 @@ import javax.swing.*;
 
 
 
+
 public class AutoAwareControlPanel extends JFrame implements Observer {
 	private static final long serialVersionUID = 1L;
 	private JPanel panelHolder;
@@ -45,6 +46,9 @@ public class AutoAwareControlPanel extends JFrame implements Observer {
     	
     	//server.addObserver(this);
     	server = new CentralServer(this);
+		//start server recieving thread
+    	new Thread(server).start();
+		
     	notificationStack = new Stack<String>();
     	//server.addObserver(this);
     	//GridLayout experimentLayout = new GridLayout(5,3);
@@ -314,10 +318,12 @@ public class AutoAwareControlPanel extends JFrame implements Observer {
     	//TODO
     	configs = new ArrayList<ClientConfig>();
     	ClientConfig firstConfig = new ClientConfig();
-    	firstConfig.ip = "1234";
+    	
+    	firstConfig.ip = "128.211.255.32";
     	firstConfig.SetName("First Config");
     	firstConfig.force_off = true;
     	configs.add(firstConfig);
+    	server.sendMessage(new ConfigMessage("Updating config",firstConfig), firstConfig.ip, 9999);
     	
     }
     public void refreshSensorList() {
@@ -438,7 +444,8 @@ public class AutoAwareControlPanel extends JFrame implements Observer {
 		    	stream.add(newVal);
 		    	stream.myPanel = newVal;
 		    	Streamers.put(address, stream);
-		    	server.sendMessage(new StreamingMessage("",c,true), c.ip, 9999);
+		    	server.sendMessage(new StreamingMessage("Setting streaming to true",c,true), c.ip, 9999);
+		    	System.out.println("setting to stream now");
 	    	}
     	}
     }
@@ -482,7 +489,7 @@ public class AutoAwareControlPanel extends JFrame implements Observer {
     	//Send a message through the server to update a sensors config
     	
     	System.out.println("Updating info to a sensor with type "  + cfg.sensor_type);
-    	server.sendMessage(new ConfigMessage("",cfg), cfg.ip, 9999);
+    	server.sendMessage(new ConfigMessage("Updating config",cfg), cfg.ip, 9999);
     }
     public class Refresher implements ActionListener {
     	
@@ -538,8 +545,8 @@ public class AutoAwareControlPanel extends JFrame implements Observer {
 	    			rd.setCurrentThreshold(r.nextFloat());
 	    			ex.update(null, rd);
     			}
-    		}
-    	});
+	    		}
+	    	});
     	//t1.start();
     	//t2.start();
     	//ex.Notify("1234");*/
@@ -588,10 +595,12 @@ public class AutoAwareControlPanel extends JFrame implements Observer {
 				float f = ((ReadingMessage)gotMessage).getCurrentThreshold();
 				//if the streaming page exists, then update it
 				//include checking the sensor type, in case a message is sent and doesn't have the correct information (i.e. switching from light to video)
-				if (Streamers.get(gotMessage.from) != null && myClient.sensor_type == gotMessage.config.sensor_type) ((ValueStreamBox)(Streamers.get(gotMessage.from).myPanel)).value = f;
+				
+				if (Streamers.get(gotMessage.from) != null && (gotMessage.config.sensor_type != null && myClient.sensor_type == gotMessage.config.sensor_type)) ((ValueStreamBox)(Streamers.get(gotMessage.from).myPanel)).value = f;
 				else {
 					//close the stream, it does not exist
-					server.sendMessage(new StreamingMessage("",gotMessage.config, false), myClient.ip, 9999);
+					server.sendMessage(new StreamingMessage("Telling to stop streaming",gotMessage.config, false), myClient.ip, 9999);
+					
 				}
 				//if we have a higher threshold, and the item was not already added to the list
 				if (myClient.sensing_threshold <= f && notificationStack.search(myClient.name) == -1) {
@@ -605,10 +614,10 @@ public class AutoAwareControlPanel extends JFrame implements Observer {
 				break;
 			case PICTURE: 
 				//Actual picture, updated on a normal basis
-				if (Streamers.get(gotMessage.from) != null && myClient.sensor_type == gotMessage.config.sensor_type) ((VideoStreamBox)(Streamers.get(gotMessage.from).myPanel)).SetImage(((PictureMessage)gotMessage).getImage()); 
+				if (Streamers.get(gotMessage.from) != null &&(gotMessage.config.sensor_type != null && myClient.sensor_type == gotMessage.config.sensor_type)) ((VideoStreamBox)(Streamers.get(gotMessage.from).myPanel)).SetImage(((PictureMessage)gotMessage).getImage()); 
 				else {
 					//close the stream, it does not exist
-			    	server.sendMessage(new StreamingMessage("",gotMessage.config, false), myClient.ip, 9999);
+			    	server.sendMessage(new StreamingMessage("Telling to stop streaming",gotMessage.config, false), myClient.ip, 9999);
 				}
 				break;
 			default:

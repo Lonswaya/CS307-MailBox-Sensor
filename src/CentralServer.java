@@ -56,6 +56,7 @@ public class CentralServer extends Observable implements Runnable {
 			out.flush();
 			out.close();
 		} catch (Exception e) {
+			e.printStackTrace();
 			return false;
 		}
 		
@@ -90,82 +91,47 @@ public class CentralServer extends Observable implements Runnable {
 
 	class ServerListener implements Runnable {
 
-		protected Socket sock = null;
-		protected ObjectOutputStream out = null;
-		protected ObjectInputStream in = null;
-		protected CentralServer cs = null;
+		protected Socket sock;
+		protected ObjectOutputStream out;
+		protected ObjectInputStream in;
+		protected CentralServer cs;
 		
 		public ServerListener(Socket sock, CentralServer cs) {
 			this.sock = sock;
 			this.cs = cs;
-			try {
-				out = new ObjectOutputStream(sock.getOutputStream());
-				in = new ObjectInputStream(sock.getInputStream());
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
 		}
-		
-		public Message receiveMessage() throws ClassNotFoundException, IOException {
-			return (Message)in.readObject();
-		}
-		
-		public void sendMessage(Message msg) throws IOException {
-			out.writeObject(msg);
-			out.flush();
-		}
-		
-		public void close() throws IOException
-		{
-			in.close();
-			out.close();
-			sock.close();
-		}
-		
-		//sends notification to observers from central server
-		public void notifyObservers(Object msg) {
-			obs.update(cs, (Object)msg);
-		}
-		
 		@Override
 		public void run() {
-			// TODO Auto-generated method stub
-		
 			try {
-
-					Message msg = receiveMessage();
-					
-					if(msg.getString().equalsIgnoreCase("quit"))
-						cs.set_run(false);
-					
-					this.cs.notifyObservers(msg);
-					
-					switch(msg.type) {
-					
-					case VIDEO:
-						break;
-					case AUDIO:
-						break;
-					case LIGHT:
-						break;
-					case CONFIG:
-						break;
-					default:
-						break;
-						
-					}
-					
-				} catch (ClassNotFoundException | IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
+				in = new ObjectInputStream(sock.getInputStream());
+				Message msg = (Message)in.readObject();
+				System.out.println("MESSAGE RECIEVED, type " + msg.type);
+				if(msg.getString().equalsIgnoreCase("quit"))
+					cs.set_run(false);
 				
-			
-			
-			
-			
-			
+				this.cs.notifyObservers(msg);
+				
+				switch(msg.type) {
+				
+				case VIDEO:
+					break;
+				case AUDIO:
+					break;
+				case LIGHT:
+					break;
+				case CONFIG:
+					break;
+				default:
+					break;
+					
+				}
+				in.close();
+				sock.close();
+				
+			} catch (ClassNotFoundException | IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}	
 		}
 		
 	}
