@@ -58,15 +58,15 @@ public class RaspberryPi {
 				try {
 					receiveServer = factory.createServerSocket(9999);
 
+					
 					while (true) {
 						//System.out.println("from receive thread");
 						sock = receiveServer.accept();
 						in = new ObjectInputStream(sock.getInputStream());
 						Message msg = (Message) in.readObject();
 						
-						System.out.println(msg.config.toString());
-						ip = msg.config.serverIP;
-						port = msg.config.serverPort;
+						System.out.println(msg.toString());
+						
 						switch(msg.type) {
 							case CONFIG:
 								ConfigMessage conf = (ConfigMessage)msg;
@@ -112,7 +112,6 @@ public class RaspberryPi {
 		
 		SSLSocketFactory factory = (SSLSocketFactory) SSLSocketFactory.getDefault();
 		try {
-			
 			sendSocket = factory.createSocket(this.ip, this.port);
 			ObjectOutputStream outputStream = new ObjectOutputStream(sendSocket.getOutputStream());
 			outputStream.writeObject(msg);
