@@ -13,6 +13,8 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.io.File;
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Observable;
@@ -314,7 +316,7 @@ public class AutoAwareControlPanel extends JFrame implements Observer {
     	//TODO
     	configs = new ArrayList<ClientConfig>();
     	ClientConfig firstConfig = new ClientConfig();
-    	firstConfig.ip = "1234";
+    	firstConfig.ip = "128.211.255.32";
     	firstConfig.SetName("First Config");
     	firstConfig.force_off = true;
     	configs.add(firstConfig);
@@ -438,7 +440,7 @@ public class AutoAwareControlPanel extends JFrame implements Observer {
 		    	stream.add(newVal);
 		    	stream.myPanel = newVal;
 		    	Streamers.put(address, stream);
-		    	server.sendMessage(new StreamingMessage("",c,true), c.ip, 9999);
+		    	server.sendMessage(new StreamingMessage("Telling the Pi to start streaming",c,true), c.ip, 9999);
 	    	}
     	}
     }
@@ -482,7 +484,8 @@ public class AutoAwareControlPanel extends JFrame implements Observer {
     	//Send a message through the server to update a sensors config
     	
     	System.out.println("Updating info to a sensor with type "  + cfg.sensor_type);
-    	server.sendMessage(new ConfigMessage("",cfg), cfg.ip, 9999);
+    	server.sendMessage(new ConfigMessage("Config Update",cfg), cfg.ip, 9999);
+    	System.out.println("message sent successfuly");
     }
     public class Refresher implements ActionListener {
     	
@@ -492,9 +495,9 @@ public class AutoAwareControlPanel extends JFrame implements Observer {
         }
     }
     public static void main(String[] args) {
+    	
     	@SuppressWarnings("unused")
-		final
-    	AutoAwareControlPanel ex = new AutoAwareControlPanel();
+		final AutoAwareControlPanel ex = new AutoAwareControlPanel();
     	/*final Random r = new Random();
     	Thread t1 = new Thread(new Runnable(){
     		public void run(){
@@ -590,14 +593,14 @@ public class AutoAwareControlPanel extends JFrame implements Observer {
 				if (Streamers.get(gotMessage.from) != null && myClient.sensor_type == gotMessage.config.sensor_type) ((ValueStreamBox)(Streamers.get(gotMessage.from).myPanel)).value = f;
 				else {
 					//close the stream, it does not exist
-					server.sendMessage(new StreamingMessage("",gotMessage.config, false), myClient.ip, 9999);
+					server.sendMessage(new StreamingMessage("Telling the Pi to stop streaming",gotMessage.config, false), myClient.ip, 9999);
 				}
 				//if we have a higher threshold, and the item was not already added to the list
 				if (myClient.sensing_threshold <= f && notificationStack.search(myClient.name) == -1) {
 					System.out.println(notificationStack.search(myClient.name));
 					notificationStack.add(myClient.name);
 					Notify();
-				}
+				} 
 				break;
 			case AUDIO:
 				//audio clip in .wav format
@@ -607,7 +610,7 @@ public class AutoAwareControlPanel extends JFrame implements Observer {
 				if (Streamers.get(gotMessage.from) != null && myClient.sensor_type == gotMessage.config.sensor_type) ((VideoStreamBox)(Streamers.get(gotMessage.from).myPanel)).SetImage(((PictureMessage)gotMessage).getImage()); 
 				else {
 					//close the stream, it does not exist
-			    	server.sendMessage(new StreamingMessage("",gotMessage.config, false), myClient.ip, 9999);
+			    	server.sendMessage(new StreamingMessage("Telling the Pi to stop streaming",gotMessage.config, false), myClient.ip, 9999);
 				}
 				break;
 			default:

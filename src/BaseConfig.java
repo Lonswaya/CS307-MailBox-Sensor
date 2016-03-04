@@ -4,6 +4,8 @@ import java.util.List;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.nio.charset.Charset;
 import java.nio.file.*;
 
@@ -18,6 +20,8 @@ public class BaseConfig implements Serializable {
 	
 	protected SensorType sensor_type;
 	protected float sensing_threshold; //percentage?
+	protected String serverIP;
+	protected int serverPort;
 	
 	//creates a new config based on the parameters. Start and stop are the times to start and stop sensing in 24H format "HH:MM"
 	public BaseConfig(String start, String stop, boolean force_on, boolean force_off, SensorType type, float threshold) {
@@ -40,6 +44,17 @@ public class BaseConfig implements Serializable {
 		
 		this.sensor_type = type;
 		this.sensing_threshold = threshold;
+		
+		String address;
+		try {
+			address = InetAddress.getLocalHost().toString();
+			address = address.substring(address.indexOf('/') + 1);
+			serverIP = address;
+			serverPort = 9999;
+		} catch (UnknownHostException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	
 	//creates a new, garbage config
@@ -55,6 +70,17 @@ public class BaseConfig implements Serializable {
 		this.force_off = false;
 		this.sensor_type = SensorType.LIGHT;
 		this.sensing_threshold = .5f;
+		String address;
+		try {
+			address = InetAddress.getLocalHost().toString();
+			address = address.substring(address.indexOf('/') + 1);
+			serverIP = address;
+			serverPort = 9999;
+		} catch (UnknownHostException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
 	}
 	
 	//loads the config file from a specified path

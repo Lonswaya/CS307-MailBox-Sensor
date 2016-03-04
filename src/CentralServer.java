@@ -46,10 +46,15 @@ public class CentralServer extends Observable implements Runnable {
 	public boolean sendMessage(Message msg, String ip, int port) {
 		
 		try {
+			String address = InetAddress.getLocalHost().toString();
+			address = address.substring(address.indexOf('/') + 1);
+			msg.setFrom(address);
+			
 			Socket sock = socketFactory.createSocket(ip, port);
 			ObjectOutputStream out = new ObjectOutputStream(sock.getOutputStream());
 			out.writeObject(msg);
 			out.flush();
+			out.close();
 		} catch (Exception e) {
 			return false;
 		}
