@@ -574,7 +574,7 @@ public class AutoAwareControlPanel extends JFrame implements Observer {
 	public void update(Observable arg0, Object arg1) {
 		Message gotMessage = (Message)arg1;
 		ClientConfig myClient = ConfigFind(gotMessage.from);
-
+		System.out.println(gotMessage.message + " " + gotMessage.type);
 		switch (gotMessage.type) {
 		
 			case VIDEO:

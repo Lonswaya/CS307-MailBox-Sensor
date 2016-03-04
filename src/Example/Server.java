@@ -86,11 +86,11 @@ public class Server {
 				//System.out.println("Recieved: " + tmp.getString() + " from client");
 
 				SSLSocketFactory fac = (SSLSocketFactory)SSLSocketFactory.getDefault(); 
-				Socket sockk = fac.createSocket("128.211.255.32", 9999);
+				Socket sockk = fac.createSocket("localhost", 9999);
 
 				ObjectOutputStream out = new ObjectOutputStream(sockk.getOutputStream());
 
-				out.writeObject();
+				out.writeObject(new Message("SHIT"));
 				
 				out.flush();
 
