@@ -1,3 +1,3 @@
 public enum SensorType {
-	VIDEO, LIGHT, AUDIO
+	VIDEO, LIGHT, AUDIO, PICTURE
 }
