@@ -23,7 +23,7 @@ public class dicks {
 						System.out.println("currently sending a message");
 						
 						pi.send_message(pi.sensor.form_message());
-						if (pi.sensor.sType == SensorType.PICTURE || pi.sensor.sType == SensorType.LIGHT) sleepAmt = 0; //for lower latency
+						/*if (pi.sensor.sType == SensorType.PICTURE || pi.sensor.sType == SensorType.LIGHT)*/ sleepAmt = 0; //for lower latency
 					} else {
 						pi.sensor.close();
 					}

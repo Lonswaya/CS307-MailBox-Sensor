@@ -25,7 +25,7 @@ public class VideoStreamBox extends JPanel {
 	public VideoStreamBox(String address) {
 		found = false;
 		this.address = address;
-		t  = new Timer(300, new repainter());
+		t  = new Timer(10, new repainter());
 		t.start();
 		try {
 		    image = ImageIO.read(new File("resources/none.png"));
