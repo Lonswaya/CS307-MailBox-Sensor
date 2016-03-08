@@ -22,6 +22,8 @@ public class CentralServer extends Observable implements Runnable {
 	
 	private Observer obs = null;
 	
+	public String seperateIP;
+	public int seperatePort = 9999;
 	public CentralServer(AutoAwareControlPanel obs) {
 	    System.setProperty("javax.net.ssl.keyStore", "mySrvKeystore");
 	    System.setProperty("javax.net.ssl.keyStorePassword", "sensor");
@@ -65,6 +67,7 @@ public class CentralServer extends Observable implements Runnable {
 		
 		return true;	
 	}
+	
 	
 	@Override
 	public void run() {
@@ -155,6 +158,30 @@ public class CentralServer extends Observable implements Runnable {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+	public ArrayList<ClientConfig> GetSensors() {
+		try {
+			Message msg = new Message("Getting sensors", null, MessageType.GET_SENSORS);
+			
+			
+			String address = InetAddress.getLocalHost().toString();
+			address = address.substring(address.indexOf('/') + 1);
+			msg.setFrom(address);
+			
+			Socket sock = socketFactory.createSocket(seperateIP, seperatePort);
+			ObjectOutputStream out = new ObjectOutputStream(sock.getOutputStream());
+			out.writeObject(msg);
+			out.flush();
+			
+			
+			out.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
+		
+		return null;
+		
 	}
 	
 	
