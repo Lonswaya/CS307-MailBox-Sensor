@@ -201,10 +201,12 @@ public class AutoAwareControlPanel extends JFrame {//implements Observer {
 
         JMenu file = new JMenu("File");
         file.setMnemonic(KeyEvent.VK_F);
+        JMenu options = new JMenu("Options");
+        options.setMnemonic(KeyEvent.VK_O);
         JMenu actions = new JMenu("Actions");
-        file.setMnemonic(KeyEvent.VK_A);
+        actions.setMnemonic(KeyEvent.VK_A);
         JMenu help = new JMenu("Help");
-        file.setMnemonic(KeyEvent.VK_H);
+        help.setMnemonic(KeyEvent.VK_H);
 
         JMenuItem eMenuItem = new JMenuItem("Exit", icon);
         eMenuItem.setMnemonic(KeyEvent.VK_E);
@@ -278,6 +280,7 @@ public class AutoAwareControlPanel extends JFrame {//implements Observer {
         file.add(SaveSensors);
         file.add(eMenuItem);
         menubar.add(file);
+        menubar.add(options);
         menubar.add(actions);
         menubar.add(help);
         setJMenuBar(menubar);
