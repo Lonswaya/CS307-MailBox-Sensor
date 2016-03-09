@@ -2,6 +2,7 @@
 <classpath>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.7"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/Twilio"/>
 	<classpathentry kind="lib" path="C:/Users/Lonswaya/workspace/CS307-MailBox-Sensor/resources/bridj-0.6.3-20130316.190111-13.jar"/>
 	<classpathentry kind="lib" path="C:/Users/Lonswaya/workspace/CS307-MailBox-Sensor/resources/slf4j-api-1.7.2.jar"/>
 	<classpathentry kind="lib" path="C:/Users/Lonswaya/workspace/CS307-MailBox-Sensor/resources/v4l4j-0.9.1-r507.jar"/>
