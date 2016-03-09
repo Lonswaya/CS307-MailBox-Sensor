@@ -10,7 +10,7 @@ import javax.imageio.ImageIO;
 public class PictureMessage extends Message implements Serializable {
 	
 	private BufferedImage image;
-	private byte[] imager;
+	private byte[] imager; //wtf kind of name is this
 	
 	
 	public PictureMessage(String message, ClientConfig config) {
@@ -20,11 +20,12 @@ public class PictureMessage extends Message implements Serializable {
 	}
 	public BufferedImage getImage() {
 		//byte->picture
-		ByteArrayInputStream bais = new ByteArrayInputStream(imager);
+		ByteArrayInputStream bais;
+		int uncompressedLength = Integer.parseInt(this.message.substring(0, this.message.indexOf(',')));
 		try {
+			bais = new ByteArrayInputStream(BaseSensor.uncompressByteArray(this.imager, uncompressedLength));
 			return ImageIO.read(bais);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		return null;
@@ -36,6 +37,8 @@ public class PictureMessage extends Message implements Serializable {
 			ImageIO.write(img, "jpg", baos);
 			baos.flush();
 			this.imager = baos.toByteArray();
+			this.imager = BaseSensor.compressByteArray(this.imager);
+			this.message = this.imager.length + ", Picture message";
 			baos.close();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block

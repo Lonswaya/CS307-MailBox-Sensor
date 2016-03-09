@@ -29,7 +29,7 @@ public class PictureSensor extends BaseSensor{
 
 	@Override
 	public void sense() {
-		
+		//Probably not needed since picture sensor purely send pictures
 	}
 
 	
@@ -40,15 +40,19 @@ public class PictureSensor extends BaseSensor{
 
 	@Override
 	public Message form_message() {
-		System.out.println("start form pic");
+		System.out.println("Debug: Start forming picture");
 
 		if(!webcam.isOpen())
 			webcam.open();
+		
+		System.out.println("Debug: Taking a picture");
+		long tempTime = System.currentTimeMillis();
 		this.image = webcam.getImage();
+		System.out.println("Debug: End taking a picture, Time:" + (int) (System.currentTimeMillis() - tempTime) + "\n");
 		//webcam.close();
 		
-		PictureMessage msg = new PictureMessage("Sending a picture from picture sensor", null);
-		msg.setImage(this.image);
+		PictureMessage msg = new PictureMessage("", null); //message will be set from setImage()
+		msg.setImage(this.image);						   //in picture message class
 		
 		try{
 			NetworkInterface ni = NetworkInterface.getByName("eth0");
@@ -65,11 +69,7 @@ public class PictureSensor extends BaseSensor{
 			e.printStackTrace();
 		}
         
-		//String address = InetAddress.getLocalHost().toString();
-		//address = address.substring(address.indexOf('/') + 1);
-		
-		System.out.println("end form pic");
-
+		System.out.println("Debug: End taking a picture");
 		return msg;
 	}
 
