@@ -49,14 +49,14 @@ public class CentralServer extends Observable implements Runnable {
 		
 	}
 	
-	public boolean sendMessage(Message msg, String ip, int port) {
+	public boolean sendMessage(Message msg) {
 		
 		try {
 			String address = InetAddress.getLocalHost().toString();
 			address = address.substring(address.indexOf('/') + 1);
 			msg.setFrom(address);
 			
-			Socket sock = socketFactory.createSocket(ip, port);
+			Socket sock = socketFactory.createSocket(this.seperateIP, this.seperatePort);
 			ObjectOutputStream out = new ObjectOutputStream(sock.getOutputStream());
 			out.writeObject(msg);
 			out.flush();
@@ -78,10 +78,14 @@ public class CentralServer extends Observable implements Runnable {
 			
 			
 			do {
-				Socket sock = ss.accept();
+				
+				if (!ss.isClosed()) {
+					Socket sock = ss.accept();
+					new Thread(new ServerListener(sock, this)).start();
+
+				}
 				
 				//creates a new thread that handles that socket
-				new Thread(new ServerListener(sock, this)).start();
 				
 			} while (run);
 			
@@ -113,8 +117,8 @@ public class CentralServer extends Observable implements Runnable {
 				in = new ObjectInputStream(sock.getInputStream());
 				Message msg = (Message)in.readObject();
 				//System.out.println("MESSAGE RECIEVED, type " + msg.type);
-				if(msg.getString().equalsIgnoreCase("quit"))
-					cs.set_run(false);
+				//if(msg.getString().equalsIgnoreCase("quit"))
+				//	cs.set_run(false);
 				
 				//this.cs.notifyObservers(msg);
 				ref.ProcessMessage(msg);
@@ -160,6 +164,41 @@ public class CentralServer extends Observable implements Runnable {
 			e.printStackTrace();
 		}
 	}
+	
+	
+	public Message AddSensor(ConfigMessage cfg) {
+		Message m = new Message("Server connection failed",null,null);
+		try {
+			
+			//Message msg = new Message("Getting sensors", null, MessageType.GET_SENSORS);
+			
+			
+			String address = InetAddress.getLocalHost().toString();
+			address = address.substring(address.indexOf('/') + 1);
+			cfg.setFrom(address);
+			cfg.type = MessageType.ADD_SENSOR;
+			Socket sock = socketFactory.createSocket(seperateIP, seperatePort);
+			ObjectOutputStream out = new ObjectOutputStream(sock.getOutputStream());
+			out.writeObject(cfg);
+			out.flush();
+			
+			
+			ObjectInputStream os = new ObjectInputStream(sock.getInputStream());
+			
+			
+			m = (Message)os.readObject();
+			//ar = (ArrayList<ClientConfig>)os.readObject();
+			
+			
+			os.close();
+			out.close();
+		} catch (Exception e) {
+			//e.printStackTrace();
+		}
+		
+		return m;
+	}
+	
 	@SuppressWarnings("unchecked")
 	public ArrayList<ClientConfig> GetSensors() {
 		ArrayList<ClientConfig> ar;
@@ -176,11 +215,13 @@ public class CentralServer extends Observable implements Runnable {
 			out.writeObject(msg);
 			out.flush();
 			
+			
 			ObjectInputStream os = new ObjectInputStream(sock.getInputStream());
 			
 			ar = (ArrayList<ClientConfig>)os.readObject();
 			
 			
+			os.close();
 			out.close();
 		} catch (Exception e) {
 			e.printStackTrace();

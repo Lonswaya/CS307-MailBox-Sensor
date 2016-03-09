@@ -5,12 +5,12 @@ import java.util.Calendar;
 public class Message implements Serializable {
 	
 	protected String message;
-	protected BaseConfig config;
+	protected ClientConfig config;
 	protected MessageType type;
 	protected String from;
 	protected String creationTime;
 	
-	public Message(String message, BaseConfig config, MessageType type) {
+	public Message(String message, ClientConfig config, MessageType type) {
 		setString(message);
 		setConfig(config);
 		generateCreateTime();
@@ -21,7 +21,7 @@ public class Message implements Serializable {
 		return this.message;
 	}
 	
-	public void setConfig(BaseConfig config) {
+	public void setConfig(ClientConfig config) {
 		this.config = config;
 	}
 	
@@ -29,7 +29,7 @@ public class Message implements Serializable {
 		this.message = message;
 	}
 	
-	public BaseConfig getConfig() {
+	public ClientConfig getConfig() {
 		return this.config;
 	}
 	

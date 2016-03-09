@@ -13,7 +13,7 @@ public class PictureMessage extends Message implements Serializable {
 	private byte[] imager;
 	
 	
-	public PictureMessage(String message, BaseConfig config) {
+	public PictureMessage(String message, ClientConfig config) {
 		super(message, config, MessageType.PICTURE);
 		
 		//

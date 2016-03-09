@@ -7,7 +7,7 @@ public class VideoMessage extends Message implements Serializable {
 	private float video_length;
 	private float motion_level;
 	
-	public VideoMessage(String message, BaseConfig config) {
+	public VideoMessage(String message, ClientConfig config) {
 		super(message, config, MessageType.VIDEO);
 		//
 	}

@@ -1,0 +1,9 @@
+new server duties:
+
+When getting a config message with type "ADD_SENSOR", set type to CONFIG and try to send to sensor. if not existing, return false, if existing,  return true;
+
+When getting a message with type "GET_SENSORS", return an arraylist of all sensors
+
+When getting a regular config message, update the updated config information and send a config message to every other UI, and send config info to sensor
+
+Everything else, relay to the sensor/client as if you weren't there.

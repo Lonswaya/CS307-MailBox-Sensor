@@ -26,6 +26,7 @@ import javax.swing.*;
 
 
 
+
 public class AutoAwareControlPanel extends JFrame {//implements Observer {
 	private static final long serialVersionUID = 1L;
 	private JPanel panelHolder;
@@ -55,7 +56,7 @@ public class AutoAwareControlPanel extends JFrame {//implements Observer {
     	Streamers = new Hashtable<String, StreamBox>();
     	this.setIconImage(Toolkit.getDefaultToolkit().getImage("resources/icon.png"));
 
-        Timer t = new Timer(1000, new Refresher());
+        Timer t = new Timer(5000, new Refresher());
         setTitle("AutoAware Control Panel");
         setSize(1000, 600);
         setLocationRelativeTo(null);
@@ -227,6 +228,27 @@ public class AutoAwareControlPanel extends JFrame {//implements Observer {
                 //System.out.println("Save sensors");
             }
         });
+        
+        JMenuItem ChangeServer = new JMenuItem("Change Server Information", icon);
+        ChangeServer.setMnemonic(KeyEvent.VK_S);
+        ChangeServer.setToolTipText("Add new sensor");
+        ChangeServer.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent event) {
+            	//aveSensors();
+            	String address = JOptionPane.showInputDialog("Enter IP Address of server", "");
+            	System.out.println(address);
+        		//do your ip parsing here boi
+
+            	if(address != null)
+            	{
+            		server.seperateIP = address;
+            		
+            	}
+                //System.out.println("Save sensors");
+            }
+        });
+        
         JMenuItem AddNewSensor = new JMenuItem("Add New Sensor", icon);
         AddNewSensor.setMnemonic(KeyEvent.VK_A);
         AddNewSensor.setToolTipText("Add new sensor");
@@ -276,7 +298,8 @@ public class AutoAwareControlPanel extends JFrame {//implements Observer {
         help.add(Helper);
         actions.add(TurnAllOn);
         actions.add(TurnAllOff);
-        file.add(AddNewSensor);
+        options.add(AddNewSensor);
+        options.add(ChangeServer);
         file.add(SaveSensors);
         file.add(eMenuItem);
         menubar.add(file);
@@ -311,24 +334,23 @@ public class AutoAwareControlPanel extends JFrame {//implements Observer {
 	    	Random r = new Random();
 	    	newSensor.SetColor(new Color(r.nextInt(255),r.nextInt(255),r.nextInt(255)));
 	    	newSensor.SetName("New Sensor");
-	    	
-	    	boolean b = server.sendMessage(new ConfigMessage("Updating config",newSensor), newSensor.ip, 9999);
-	    	if (b) {
-		    	configs.add(newSensor);
+	    	//get a return message from the server, if sensor type is null then blah
+	    	Message m = server.AddSensor(new ConfigMessage("Updating config",newSensor));
+	    	if (m.message == "Shit succeeded") {
+	    		configs.add(newSensor);
 		    	createNew(controlIndex, newSensor);
 		    	refreshSensorList();
 	    	} else {
-	    		JOptionPane.showMessageDialog(null,"Sensor not found", "erorr", JOptionPane.ERROR_MESSAGE, null);
-
+	    		JOptionPane.showMessageDialog(null,m.message, "error", JOptionPane.ERROR_MESSAGE, null);
 	    	}
+
     	}
     }
     public void InitConfigs() {
     	//request to database, add sensors
     	//manually adding sensors for now
-    	//TODO
-    	configs = new ArrayList<ClientConfig>();
-    	//TODO show first config for demos
+    	      //TODO: uncommentnew Thread(new GetConfigsListener()).start();
+    	       configs = new ArrayList<ClientConfig>();
     	/*ClientConfig firstConfig = new ClientConfig();
     	
     	firstConfig.ip = "128.211.255.32";
@@ -340,44 +362,8 @@ public class AutoAwareControlPanel extends JFrame {//implements Observer {
     }
     public void refreshSensorList() {
     	//System.out.println("updating");
-    	for (int i = 0; i < configs.size(); i++) {
-        	
-    		//System.out.println(i);
-    		//JPanel myPanel = controlPanels[i];
-    		JPanel myPanel = (JPanel) panelHolder.getComponent(i);
-    		//System.out.println(panelHolder.getComponent(i));
-    		//myPanel.setBackground(Color.red);
-    		myPanel.setBackground(configs.get(i).color);
-    		JButton icon = (JButton) ((Container) myPanel.getComponent(3)).getComponent(0);
-    		if (configs.get(i).sensor_type == SensorType.AUDIO) {
-    			icon.setIcon(new ImageIcon("resources/mic.png"));
-    		}
-            if (configs.get(i).sensor_type == SensorType.VIDEO) {
-            	icon.setIcon(new ImageIcon("resources/camera.png"));
-            }
-            if (configs.get(i).sensor_type == SensorType.LIGHT) {
-            	icon.setIcon(new ImageIcon("resources/light.png"));
-            }
-            if (configs.get(i).isSensorActive()) {
-            	if (icon.getBackground() == Color.gray) {
-	            	icon.setBackground(Color.white);
-            	}
-            } else {
-            	if (icon.getBackground() != Color.gray) {
-	            	icon.setBackground(Color.gray);
-            	}
-            }
-            JButton enabled = (JButton)((Container)myPanel.getComponent(2)).getComponent(1);
-            enabled.setText(configs.get(i).isSensorActive()?"Disable":"Enable");
-            //System.out.println("enabled : " + enabled.getText());
-            //System.out.println(configs.get(i).sensor_type);
-            //System.out.println("look here eugene you fucking prick " + configs.get(i).isSensorActive());
-    		JLabel title = (JLabel) myPanel.getComponent(0);
-    		title.setText("<html>" + configs.get(i).name + (configs.get(i).isSensorActive()?"":" <br />(Disabled)</html>"));
-    	}	
-		panelHolder.revalidate();
-		panelHolder.repaint();
-
+    	//TODO uncomment: new Thread(new RefreshListener()).start();
+    	
     
     }
     public void RemoveSensor(String identifier) {
@@ -394,7 +380,7 @@ public class AutoAwareControlPanel extends JFrame {//implements Observer {
     		int index = configs.indexOf(cfg);
     		panelHolder.remove(index);
     		configs.remove(index);
-    		server.sendMessage(new ConfigMessage("Updating config, turning off",cfg), cfg.ip, 9999);
+    		server.sendMessage(new ConfigMessage("Updating config, turning off",cfg));
     		JOptionPane.showMessageDialog(null, "Deleted sensor " + name, "Deleted sensor " + name, JOptionPane.INFORMATION_MESSAGE, null);
 	    	
     	}
@@ -403,7 +389,7 @@ public class AutoAwareControlPanel extends JFrame {//implements Observer {
     public void StopStream(String address) {
     	System.out.println("Stopping stream now");
     	ClientConfig cfg = ConfigFind(address);
-		server.sendMessage(new StreamingMessage("Telling to stop streaming",cfg, false), cfg.ip, 9999);
+		server.sendMessage(new StreamingMessage("Telling to stop streaming",cfg, false));
 
     }
     public ClientConfig ConfigFind(String identifier) {
@@ -423,6 +409,58 @@ public class AutoAwareControlPanel extends JFrame {//implements Observer {
     	//save sensors to database
     	//TODO
     	System.out.println("Sensors saved");
+    }
+    class GetConfigsListener implements Runnable {
+    	public void run() {
+    		configs = server.GetSensors();
+    	}
+    }
+    class RefreshListener implements Runnable { 
+    	public void run() {
+    		//configs = server.GetSensors();
+    		if (configs == null) return;
+    		//if we have not yet 
+
+        	for (int i = 0; i < configs.size(); i++) {
+            	
+        		//System.out.println(i);
+        		//JPanel myPanel = controlPanels[i];
+        		JPanel myPanel = (JPanel) panelHolder.getComponent(i);
+        		//System.out.println(panelHolder.getComponent(i));
+        		//myPanel.setBackground(Color.red);
+        		myPanel.setBackground(configs.get(i).color);
+        		JButton icon = (JButton) ((Container) myPanel.getComponent(3)).getComponent(0);
+        		if (configs.get(i).sensor_type == SensorType.AUDIO) {
+        			icon.setIcon(new ImageIcon("resources/mic.png"));
+        		}
+                if (configs.get(i).sensor_type == SensorType.VIDEO) {
+                	icon.setIcon(new ImageIcon("resources/camera.png"));
+                }
+                if (configs.get(i).sensor_type == SensorType.LIGHT) {
+                	icon.setIcon(new ImageIcon("resources/light.png"));
+                }
+                if (configs.get(i).isSensorActive()) {
+                	if (icon.getBackground() == Color.gray) {
+    	            	icon.setBackground(Color.white);
+                	}
+                } else {
+                	if (icon.getBackground() != Color.gray) {
+    	            	icon.setBackground(Color.gray);
+                	}
+                }
+                JButton enabled = (JButton)((Container)myPanel.getComponent(2)).getComponent(1);
+                enabled.setText(configs.get(i).isSensorActive()?"Disable":"Enable");
+                //System.out.println("enabled : " + enabled.getText());
+                //System.out.println(configs.get(i).sensor_type);
+                //System.out.println("look here eugene you fucking prick " + configs.get(i).isSensorActive());
+        		JLabel title = (JLabel) myPanel.getComponent(0);
+        		title.setText("<html>" + configs.get(i).name + (configs.get(i).isSensorActive()?"":" <br />(Disabled)</html>"));
+        	}	
+    		panelHolder.revalidate();
+    		panelHolder.repaint();
+
+    	}
+    	
     }
     
     private WindowListener CloseListener() {
@@ -454,7 +492,7 @@ public class AutoAwareControlPanel extends JFrame {//implements Observer {
     		StreamBox stream = new StreamBox(Streamers, address, this);
 	    	if (s == SensorType.VIDEO) {
 	    		ClientConfig c = ConfigFind(address);
-	    		boolean connection = server.sendMessage(new StreamingMessage("Setting image/video streaming to true",c,true), c.ip, 9999);
+	    		boolean connection = server.sendMessage(new StreamingMessage("Setting image/video streaming to true",c,true));
 	    		if (connection) {
 		    		stream.setTitle("Video stream on sensor " + address);
 		    		VideoStreamBox newVid = new VideoStreamBox(address);
@@ -470,7 +508,7 @@ public class AutoAwareControlPanel extends JFrame {//implements Observer {
 
 	    	} else {
 	    		ClientConfig c = ConfigFind(address);
-	    		boolean connection = server.sendMessage(new StreamingMessage("Setting streaming to true",c,true), c.ip, 9999);
+	    		boolean connection = server.sendMessage(new StreamingMessage("Setting streaming to true",c,true));
 	    		if (connection) {
 		    		stream.setTitle(c.sensor_type + " stream on sensor " + address);
 		    		ValueStreamBox newVal = new ValueStreamBox(c.sensor_type, c.sensing_threshold, address);
@@ -526,7 +564,7 @@ public class AutoAwareControlPanel extends JFrame {//implements Observer {
     	//Send a message through the server to update a sensors config
     	
     	System.out.println("Updating info to a sensor with type "  + cfg.sensor_type);
-    	server.sendMessage(new ConfigMessage("Updating config",cfg), cfg.ip, 9999);
+    	server.sendMessage(new ConfigMessage("Updating config",cfg));
     }
     public class Refresher implements ActionListener {
     	
@@ -622,6 +660,8 @@ public class AutoAwareControlPanel extends JFrame {//implements Observer {
 			return;
 		}
 		System.out.println("Message recieved, says to: " + gotMessage.message + " with the type of" + gotMessage.type);
+		
+		
 		switch (gotMessage.type) {
 		
 		
@@ -641,7 +681,7 @@ public class AutoAwareControlPanel extends JFrame {//implements Observer {
 				if (Streamers.get(gotMessage.from) != null) ((ValueStreamBox)(Streamers.get(gotMessage.from).myPanel)).value = f;
 				else {
 					//close the stream, it does not exist
-					server.sendMessage(new StreamingMessage("Telling to stop streaming",gotMessage.config, false), myClient.ip, 9999);
+					server.sendMessage(new StreamingMessage("Telling to stop streaming",gotMessage.config, false));
 					
 				}
 				//if we have a higher threshold, and the item was not already added to the list
@@ -658,10 +698,17 @@ public class AutoAwareControlPanel extends JFrame {//implements Observer {
 				if (Streamers.get(gotMessage.from) != null) ((VideoStreamBox)(Streamers.get(gotMessage.from).myPanel)).SetImage(((PictureMessage)gotMessage).getImage()); 
 				else {
 					//close the stream, it does not exist
-			    	server.sendMessage(new StreamingMessage("Telling to stop streaming",gotMessage.config, false), myClient.ip, 9999);
+			    	server.sendMessage(new StreamingMessage("Telling to stop streaming",gotMessage.config, false));
 				}
 				break;
+			case CONFIG:
+				//  *shudder*
+				configs.set(configs.indexOf(ConfigFind((gotMessage.getConfig().serverIP))), gotMessage.config);
+				refreshSensorList();
+				break;
 			default:
+				//null, error message
+				System.out.println(gotMessage.message);
 				break;
 		}
 	}

@@ -2,7 +2,7 @@ import java.io.Serializable;
 
 
 public class StreamingMessage extends Message implements Serializable {
-	public StreamingMessage(String message, BaseConfig config, boolean on) {
+	public StreamingMessage(String message, ClientConfig config, boolean on) {
 		super(message, config, MessageType.STREAMING);
 		streaming = on;
 	}

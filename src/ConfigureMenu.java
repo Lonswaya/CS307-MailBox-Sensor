@@ -382,6 +382,8 @@ public class ConfigureMenu extends JFrame {
 	}
 	private void SubmitValues() {
 		System.out.println(phoneNum.getText() + " " + emailAddress.getText() + " " + startH.getText() + "|");
+		//do your time parsing here boi
+		
 		if (!usesScheduledTimes || startH.getText().compareTo("") == 0 || startM.getText().compareTo("") == 0 || endH.getText().compareTo("") == 0 || endM.getText().compareTo("") == 0) {
 			//It's all or nothing, baby.
 			startH.setText("-1");
