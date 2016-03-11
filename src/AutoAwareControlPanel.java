@@ -11,17 +11,24 @@ import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Hashtable;
-import java.util.Observable;
-import java.util.Observer;
 import java.util.Random;
 import java.util.Stack;
 
-import javax.imageio.ImageIO;
-import javax.swing.*;
+import javax.swing.AbstractButton;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.Timer;
 
 
 
@@ -237,13 +244,18 @@ public class AutoAwareControlPanel extends JFrame {//implements Observer {
             public void actionPerformed(ActionEvent event) {
             	//aveSensors();
             	String address = JOptionPane.showInputDialog("Enter IP Address of server", "");
-            	System.out.println(address);
+            	while(!checkIPFormat(address))
+            	{
+            		address = JOptionPane.showInputDialog("Enter IP Address of server", ""); //Do ip parsing here.
+            	}
+            	//System.out.println(address);
         		//do your ip parsing here boi
 
-            	if(address != null)
+            	if(address != null && !address.isEmpty())
             	{
             		server.seperateIP = address;
-            		
+            		System.out.println(address);
+            		System.out.println("Correct Ip format!");
             	}
                 //System.out.println("Save sensors");
             }
@@ -288,7 +300,7 @@ public class AutoAwareControlPanel extends JFrame {//implements Observer {
             public void actionPerformed(ActionEvent event) {
             	JDialog dialog = new JDialog();     
                 dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-                dialog.setTitle("h̵͙̮̥̞̱̺̰͕̟̫̺͓͙̻̣̀ͧ͊̊͛ͥ̑͒̇̿̆͛ͫ̚͝ȇ̴̴̶̡̪̭̞̖̰̫̣̲̞͉̥̝̟̥͓͉͈ͯ̈́ͯͣ̉̓ͧ̒̽̆̾͘ͅl̹̟̺̼͖̪͖̠͎̳̻̯͙͈̯̦̞͌̊ͥ̃̓̾̂ͩ̒ͨ̾̚͜͜͜͡ͅp̢̨̗̞̻̗̗ͨ̔̔ͦ͐ͤͩ̾ͧ̏̽͊̆̆ͥ́͐ͤͅ ̵̜̲͓̲̜̼̦̹̠̬̻̂̅ͯ̆ͤ͆ͧ̿̃ͥ̚̕͢mͨͭ̉͂ͤ̌́͂̔͒̾̔͋͏̸̱̲̜͓͎̞͇̞͢eͫͩ̾͂ͨ̿͒ͩ͂̑͌̚͏̶҉̳͍̗͇͖̱͈͉͇");
+                dialog.setTitle("hÌ€Í§ÍŠÌŠÍ›Í¥Ì‘Í’Ì‡Ì¿Ì†ÌšÍ›Í«Í�ÌµÍ™Ì®Ì¥ÌžÌ±ÌºÌ°Í•ÌŸÌ«ÌºÍ“Í™Ì»Ì£eÌ‘Í¯Í„Í¯Í£Ì‰Ì“Í§Ì’Ì½Ì†Ì¾Ì¡Ì´Í˜Ì´Ì¶Í…ÌªÌ­ÌžÌ–Ì°Ì«Ì£Ì²ÌžÍ‰Ì¥Ì�ÌŸÌ¥Í“Í‰ÍˆlÍŒÌŠÍ¥ÌƒÍƒÌ¾ÌšÌ‚Í©Ì’Í¨Ì¾Í¡ÍœÍœÍœÌ¹ÌŸÌºÌ¼Í–ÌªÍ–Ì Í…ÍŽÌ³Ì»Ì¯Í™ÍˆÌ¯Ì¦ÌžpÍ¨Ì”Ì”Í¦Í�Í¤Í©Ì¾Í§Ì�Ì½ÍŠÌ†Ì†Í¥Ì�Í�Í¤Ì¢Ì¨Ì—ÌžÌ»Í…Ì—Ì— Ì‚Ì…Í¯Ì†Í¤Í†ÌšÍ§Ì¿ÌƒÍ¥Í¢Ì•ÌµÌœÌ²Í“Ì²ÌœÌ¼Ì¦Ì¹Ì Ì¬Ì»mÍ¨Í­Ì‰Í‚Í¤ÌŒÌ�Í‚Ì”Í’Ì¾Ì”Í‹Í�Ì¸Í¢Ì±Ì²ÌœÍ“ÍŽÌžÍ‡ÌžeÍ«Í©Ì¾Í‚Í¨Ì¿Í’ÌšÍ©Í‚Ì‘ÍŒÍ�Ì¶Ò‰Ì³Í�Ì—Í‡Í–Ì±ÍˆÍ‰Í‡");
                 dialog.add(new JLabel(new ImageIcon("resources/help.png")));
                 dialog.pack();
                 dialog.setLocationByPlatform(true);
@@ -319,6 +331,10 @@ public class AutoAwareControlPanel extends JFrame {//implements Observer {
     }
     public void AddSensor() {
     	String address = JOptionPane.showInputDialog("Enter IP Address of sensor", "");
+    	while(!checkIPFormat(address))
+    	{
+    		address = JOptionPane.showInputDialog("Enter IP Address of sensor", ""); //Do ip parsing here.
+    	}
     	//System.out.println(ConfigFind(address));
     	ClientConfig finder = ConfigFind(address);
     	if (finder != null) {
@@ -719,6 +735,34 @@ public class AutoAwareControlPanel extends JFrame {//implements Observer {
 				System.out.println(gotMessage.message);
 				break;
 		}
+	}
+	public boolean checkIPFormat(String ip)
+	{
+		try {
+	        if ( ip == null || ip.isEmpty() ) {
+	            return true;
+	        }
+
+	        String[] parts = ip.split( "\\." );
+	        if ( parts.length != 4 ) {
+	            return false;
+	        }
+
+	        for ( String s : parts ) {
+	            int i = Integer.parseInt( s );
+	            if ( (i < 0) || (i > 255) ) {
+	                return false;
+	            }
+	        }
+	        if ( ip.endsWith(".") ) {
+	            return false;
+	        }
+
+	        return true;
+	    } catch (NumberFormatException nfe) {
+	        return false;
+	    }
+		
 	}
     
     
