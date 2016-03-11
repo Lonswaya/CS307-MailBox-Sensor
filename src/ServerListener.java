@@ -12,9 +12,9 @@ import java.net.UnknownHostException;
 
 public class ServerListener implements Runnable {
 
-	protected Socket sock = null;													//used for sending data
-	protected ObjectOutputStream out = null;										//same
-	protected ObjectInputStream in = null;											//same
+	private Socket sock = null;													//used for sending data
+	private ObjectOutputStream out = null;										//same
+	private ObjectInputStream in = null;											//same
 	
 	/*
 	 * Generates a new object to handle individual requests from clients
@@ -26,6 +26,9 @@ public class ServerListener implements Runnable {
 		try {
 			out = new ObjectOutputStream(sock.getOutputStream());					//initialize the input and output streams
 			in = new ObjectInputStream(sock.getInputStream());
+			if(in == null) {
+				System.out.println("Error getting ObjectInputStream");
+			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -106,60 +109,70 @@ public class ServerListener implements Runnable {
 	@Override
 	public void run() {
 
+	
+		
 		Message msg = receiveMessage();											//receive message from socket
 		if (msg == null) {														//if there was an error receiving the message
 			System.err.println("Error, failed receiving message");
 			return;
 		}
 		
-		if(msg.type == MessageType.CONFIG || msg.type == MessageType.STREAMING) // TODO: add other sensor type shit
-			addUI(msg.from);													//add ip to list of gui ips
+		//if(msg.type == MessageType.CONFIG || msg.type == MessageType.STREAMING) // TODO: add other sensor type shit
+		//	addUI(msg.from);													//add ip to list of gui ips
 		
 		if (msg.getString().equalsIgnoreCase("quit")) {							//if the message told the server to quit
 			SeparateServer.run = false;											//make the server quit running
 			return;
 		}
 		
-		//parse the type of message
-		switch(msg.type) {
+		if(msg.type == null) {
+			System.out.println(msg);
+		} else {
 			
-			case VIDEO:
-				break;
-			case AUDIO:
-				break;
-			case LIGHT:
-				break;
-			case ADD_SENSOR:
+			//parse the type of message
+			switch(msg.type) {
 				
-				if (msg.from already in database) {// TODO: Add database support
-					return;			
-				} else {
-					SeparateServer.sendMessage(out, new Message("Adding sensor already in db",  null), msg.from, 9999);
-					return;
-				}
-				
-				msg.type = MessageType.CONFIG;
-				ConfigMessage cm = (ConfigMessage)msg;
-				
-				if(SeparateServer.sendMessage(msg, cm.getConfig().serverIP, 9999)) {
-					SeparateServer.sendMessage(out, new Message("Shit succeeded", null), msg.from, 9999); // TODO: create msg type for this
-					notify_uis(cm.getConfig());
-				} else {
-					SeparateServer.sendMessage(out, new Message("Shit failed", null), msg.from, 9999);    // TODO: create msg type for this
-				}
-				break;
-			case CONFIG:
-				// TODO: update database?
-				ConfigMessage cm = (ConfigMessage)msg;
-				notify_uis(cm.getConfig());
-				break;
-			default:
-				break;
-				
+				case VIDEO:
+					break;
+				case AUDIO:
+					break;
+				case LIGHT:
+					break;
+				case ADD_SENSOR:
+					
+					//if (msg.from already in database) {// TODO: Add database support
+					//	return;			
+					//} else {
+					//	SeparateServer.sendMessage(out, new Message("Adding sensor already in db",  null), msg.from, 9999);
+					//	return;
+					//}
+					
+					System.out.println(msg);
+					
+					msg.type = MessageType.CONFIG;
+					ConfigMessage cm = (ConfigMessage)msg;
+					
+					//if(SeparateServer.sendMessage(msg, cm.getConfig().serverIP, 9999)) {
+						SeparateServer.sendMessage(out, new Message("Shit succeeded", MessageType.CONFIG), msg.from, 9999); // TODO: create msg type for this
+						//notify_uis(cm.getConfig());
+					//} else {
+					//	SeparateServer.sendMessage(out, new Message("Shit failed", null), msg.from, 9999);    // TODO: create msg type for this
+					//}
+					break;
+				case CONFIG:
+					// TODO: update database?
+					ConfigMessage cm3 = (ConfigMessage)msg;
+					System.out.println(cm3);
+					//notify_uis(cm.getConfig());
+					//send to sensor that is in config
+					break;
+				default:
+					break;
+					
+			}
+		
 		}
-		
-		close();
-			
-	} 
-		
+			close();		
+		 
+	}
 }
