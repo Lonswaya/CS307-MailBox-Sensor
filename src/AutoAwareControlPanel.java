@@ -334,15 +334,22 @@ public class AutoAwareControlPanel extends JFrame {//implements Observer {
 	    	Random r = new Random();
 	    	newSensor.SetColor(new Color(r.nextInt(255),r.nextInt(255),r.nextInt(255)));
 	    	newSensor.SetName("New Sensor");
+	    	
+	    	
+	    	//TODO remove
+	    	configs.add(newSensor);
+	    	createNew(controlIndex, newSensor);
+	    	refreshSensorList();
+	    	
 	    	//get a return message from the server, if sensor type is null then blah
-	    	Message m = server.AddSensor(new ConfigMessage("Updating config",newSensor));
+	    	/*TODO: Add for server connection TODO Message m = server.AddSensor(new ConfigMessage("Updating config",newSensor));
 	    	if (m.message == "Shit succeeded") {
 	    		configs.add(newSensor);
 		    	createNew(controlIndex, newSensor);
 		    	refreshSensorList();
 	    	} else {
 	    		JOptionPane.showMessageDialog(null,m.message, "error", JOptionPane.ERROR_MESSAGE, null);
-	    	}
+	    	}*/
 
     	}
     }
@@ -362,7 +369,8 @@ public class AutoAwareControlPanel extends JFrame {//implements Observer {
     }
     public void refreshSensorList() {
     	//System.out.println("updating");
-    	//TODO uncomment: new Thread(new RefreshListener()).start();
+    	//TODO uncomment: 
+    	new Thread(new RefreshListener()).start();
     	
     
     }
