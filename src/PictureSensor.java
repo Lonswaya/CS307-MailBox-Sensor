@@ -53,22 +53,7 @@ public class PictureSensor extends BaseSensor{
 		
 		PictureMessage msg = new PictureMessage("", null); //message will be set from setImage()
 		msg.setImage(this.image);						   //in picture message class
-		
-		try{
-			NetworkInterface ni = NetworkInterface.getByName("eth0");
-	        Enumeration<InetAddress> inetAddresses =  ni.getInetAddresses();
-	        String address = "";
-	        while(inetAddresses.hasMoreElements()) {
-	            InetAddress ia = inetAddresses.nextElement();
-	            if(!ia.isLinkLocalAddress()) {
-	                address = ia.getHostAddress();
-	            }
-	        }
-	        msg.setFrom(address);
-		}catch(Exception e){
-			e.printStackTrace();
-		}
-        
+		msg.setFrom(this.getIP());
 		System.out.println("Debug: End taking a picture");
 		return msg;
 	}

@@ -109,24 +109,7 @@ public static float checkVolume(){
 		System.out.println("Forming Volume message");
 		
 		ReadingMessage msg = new ReadingMessage("Volume above threshold", null);
-		try {
-			NetworkInterface ni = NetworkInterface.getByName("eth0");
-	        Enumeration<InetAddress> inetAddresses =  ni.getInetAddresses();
-	        String address = "";
-	        while(inetAddresses.hasMoreElements()) {
-	            InetAddress ia = inetAddresses.nextElement();
-	            if(!ia.isLinkLocalAddress()) {
-	                address = ia.getHostAddress();
-	            }
-	        }
-	        
-			//String address = InetAddress.getLocalHost().toString();
-			//address = address.substring(address.indexOf('/') + 1);
-			msg.setFrom(address);
-			
-		} catch (SocketException e) {
-			e.printStackTrace();
-		}
+		msg.setFrom(this.getIP());
 		msg.setCurrentThreshold(this.currentVolume);
 		return msg;
 		//return null;
