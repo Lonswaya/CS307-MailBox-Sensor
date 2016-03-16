@@ -56,6 +56,8 @@ public class CentralServer extends Observable implements Runnable {
 			address = address.substring(address.indexOf('/') + 1);
 			msg.setFrom(address);
 			
+			System.out.println("Sending message: " + msg);
+
 			Socket sock = socketFactory.createSocket(this.seperateIP, this.seperatePort);
 			ObjectOutputStream out = new ObjectOutputStream(sock.getOutputStream());
 			out.writeObject(msg);

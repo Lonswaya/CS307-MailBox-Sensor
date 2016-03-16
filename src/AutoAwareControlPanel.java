@@ -1,3 +1,5 @@
+import java.applet.Applet;
+import java.applet.AudioClip;
 import java.awt.Color;
 import java.awt.Container;
 import java.awt.Dimension;
@@ -13,6 +15,8 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Observable;
@@ -37,6 +41,8 @@ public class AutoAwareControlPanel extends JFrame {//implements Observer {
     private int controlIndex;
     private boolean isNotifying;
     private Stack<String> notificationStack;
+    private boolean t1bool;
+	private static boolean t2bool;
 	public AutoAwareControlPanel() {
         initUI();
     }
@@ -193,7 +199,7 @@ public class AutoAwareControlPanel extends JFrame {//implements Observer {
 		myPanel.add(buttonBorderPanel);
 		myPanel.add(iconBorderPanel);
 		panelHolder.add(myPanel);
-		//System.out.println("added new sensor to panelholder");
+		System.out.println("added new sensor to panelholder");
 	}
     
     public void createMenuBar() {
@@ -218,7 +224,7 @@ public class AutoAwareControlPanel extends JFrame {//implements Observer {
                 CloseOperation();
             }
         });
-        JMenuItem SaveSensors = new JMenuItem("Save Sensor Information", icon);
+        /*MenuItem SaveSensors = new JMenuItem("Save Sensor Information", icon);
         SaveSensors.setMnemonic(KeyEvent.VK_S);
         SaveSensors.setToolTipText("Add new sensor");
         SaveSensors.addActionListener(new ActionListener() {
@@ -227,7 +233,7 @@ public class AutoAwareControlPanel extends JFrame {//implements Observer {
             	SaveSensors();
                 //System.out.println("Save sensors");
             }
-        });
+        });*/
         
         JMenuItem ChangeServer = new JMenuItem("Change Server Information", icon);
         ChangeServer.setMnemonic(KeyEvent.VK_S);
@@ -300,7 +306,7 @@ public class AutoAwareControlPanel extends JFrame {//implements Observer {
         actions.add(TurnAllOff);
         options.add(AddNewSensor);
         options.add(ChangeServer);
-        file.add(SaveSensors);
+//        file.add(SaveSensors);
         file.add(eMenuItem);
         menubar.add(file);
         menubar.add(options);
@@ -315,6 +321,16 @@ public class AutoAwareControlPanel extends JFrame {//implements Observer {
     	//System.out.println(configs.get(0));
     	if (cf == null || !cf.isEnabled()) {
     		cf = new ConfigureMenu(sensorNumber, this);
+    		System.out.println("Starting stream now");
+        	ClientConfig cfg = ConfigFind(identifier);
+        	System.out.println(cfg.isSensorActive());
+    		if (cfg.isSensorActive())  {
+    			t2bool = true;
+    			server.sendMessage(new StreamingMessage("Telling to start streaming",cfg, true));
+    		} else {
+    			t2bool = false;
+    		}
+
     	}
     }
     public void AddSensor() {
@@ -336,28 +352,34 @@ public class AutoAwareControlPanel extends JFrame {//implements Observer {
 	    	newSensor.SetName("New Sensor");
 	    	
 	    	
-	    	//TODO remove
+	    	//TODO start remove for server
 	    	configs.add(newSensor);
 	    	createNew(controlIndex, newSensor);
 	    	refreshSensorList();
+	    	// end remove for server
 	    	
 	    	//get a return message from the server, if sensor type is null then blah
-	    	/*TODO: Add for server connection TODO Message m = server.AddSensor(new ConfigMessage("Updating config",newSensor));
+	    	
+	    	/*TODO start: Add for server 
+	    	Message m = server.AddSensor(new ConfigMessage("Updating config",newSensor));
 	    	if (m.message == "Shit succeeded") {
 	    		configs.add(newSensor);
 		    	createNew(controlIndex, newSensor);
 		    	refreshSensorList();
 	    	} else {
 	    		JOptionPane.showMessageDialog(null,m.message, "error", JOptionPane.ERROR_MESSAGE, null);
-	    	}*/
+	    	}
+	    	 end add for server:*/
 
     	}
     }
     public void InitConfigs() {
     	//request to database, add sensors
     	//manually adding sensors for now
-    	      //TODO: uncommentnew Thread(new GetConfigsListener()).start();
-    	       configs = new ArrayList<ClientConfig>();
+    	
+    	//TODO uncomment for server: new Thread(new GetConfigsListener()).start();
+    	configs = new ArrayList<ClientConfig>();
+    	
     	/*ClientConfig firstConfig = new ClientConfig();
     	
     	firstConfig.ip = "128.211.255.32";
@@ -369,7 +391,6 @@ public class AutoAwareControlPanel extends JFrame {//implements Observer {
     }
     public void refreshSensorList() {
     	//System.out.println("updating");
-    	//TODO uncomment: 
     	new Thread(new RefreshListener()).start();
     	
     
@@ -395,9 +416,12 @@ public class AutoAwareControlPanel extends JFrame {//implements Observer {
     	refreshSensorList();
     }
     public void StopStream(String address) {
+    	StopStream(ConfigFind(address));
+    }
+    public void StopStream(ClientConfig cfg) {
     	System.out.println("Stopping stream now");
-    	ClientConfig cfg = ConfigFind(address);
 		server.sendMessage(new StreamingMessage("Telling to stop streaming",cfg, false));
+		t2bool = false;
 
     }
     public ClientConfig ConfigFind(String identifier) {
@@ -415,7 +439,7 @@ public class AutoAwareControlPanel extends JFrame {//implements Observer {
     }
     public void SaveSensors() {
     	//save sensors to database
-    	//TODO
+    	//
     	System.out.println("Sensors saved");
     }
     class GetConfigsListener implements Runnable {
@@ -425,7 +449,7 @@ public class AutoAwareControlPanel extends JFrame {//implements Observer {
     }
     class RefreshListener implements Runnable { 
     	public void run() {
-    		//configs = server.GetSensors();
+    		//TODO uncomment for server: configs = server.GetSensors();
     		if (configs == null) return;
     		//if we have not yet 
 
@@ -483,7 +507,7 @@ public class AutoAwareControlPanel extends JFrame {//implements Observer {
         return exitListener;
 	}
     private void CloseOperation() {
-    	int confirm = JOptionPane.showOptionDialog(
+    	/*int confirm = JOptionPane.showOptionDialog(
                 null, "Save sensor information?", 
                 "Exit Confirmation", JOptionPane.YES_NO_OPTION, 
                 JOptionPane.QUESTION_MESSAGE, null, null, null);
@@ -492,7 +516,8 @@ public class AutoAwareControlPanel extends JFrame {//implements Observer {
               SaveSensors();
            } 
            dispose();
-    	
+    	*/
+    	dispose();
     }
     public void OpenStream(SensorType s, String address) {
 		ClientConfig cfg = ConfigFind(address);
@@ -565,7 +590,7 @@ public class AutoAwareControlPanel extends JFrame {//implements Observer {
 				}
 			}
     	}
-    	SaveSensors();
+//   	SaveSensors();
     	refreshSensorList();
     }
     public void SendConfigToSensor(ClientConfig cfg) {
@@ -585,8 +610,8 @@ public class AutoAwareControlPanel extends JFrame {//implements Observer {
     	@SuppressWarnings("unused")
 		final
     	AutoAwareControlPanel ex = new AutoAwareControlPanel();
-    	/*final Random r = new Random();
-    	Thread t1 = new Thread(new Runnable(){
+    	final Random r = new Random();
+    	/*Thread t1 = new Thread(new Runnable(){
     		public void run(){
     			int num = 8;
     			while(true) {
@@ -613,6 +638,7 @@ public class AutoAwareControlPanel extends JFrame {//implements Observer {
     			}
     		}
     	});
+    	t2bool = false;
     	Thread t2 = new Thread(new Runnable(){
     		public void run(){
     			while(true) {
@@ -621,19 +647,67 @@ public class AutoAwareControlPanel extends JFrame {//implements Observer {
 					} catch (InterruptedException e) {
 						e.printStackTrace();
 					}
-	    			BaseConfig cfg = new BaseConfig();
-	    			ReadingMessage rd = new ReadingMessage("", cfg);
-	    			rd.setFrom("1234"); 
-	    			
-	    			rd.setCurrentThreshold(r.nextFloat());
-	    			ex.update(null, rd);
+	    			if (t2bool) {
+		    			ClientConfig cfg = new ClientConfig();
+		    			ReadingMessage rd = new ReadingMessage("", cfg);
+		    			rd.setFrom("1234"); 
+		    			
+		    			rd.setCurrentThreshold(r.nextFloat() * 100);
+		    			ex.ProcessMessage(rd);
+	    			}
     			}
-	    		}
-	    	});
+	    	}
+	    });
     	//t1.start();
-    	//t2.start();
+    	t2.start();*/
     	//ex.Notify("1234");*/
-        
+    	Thread t3 = new Thread(new Runnable(){
+    		public void run(){
+    			while(true) {
+	    			try {
+						Thread.sleep(2500);
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+		    			ClientConfig cfg = new ClientConfig();
+		    			AudioMessage am = new AudioMessage("", cfg);
+		    			am.setFrom("1234"); 
+		    			try {
+							am.clip = Applet.newAudioClip(new URL("file:///C:/Users/Lonswaya/workspace/CS307-MailBox-Sensor/resources/pink.wav"));
+						} catch (MalformedURLException e) {
+							e.printStackTrace();
+						}
+		    			ex.ProcessMessage(am);
+	    			
+    			}
+	    	}
+	    });
+        t3.start();
+    	final boolean t4bool = true;
+    	Thread t4 = new Thread(new Runnable(){
+    		public void run(){
+    			while(true) {
+    				Random r = new Random();
+	    			try {
+						Thread.sleep(4000);
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+	    			if (t4bool) {
+		    			ClientConfig cfg = new ClientConfig();
+		    			cfg.SetColor(Color.cyan);
+		    			cfg.ip = "1234";
+		    			//cfg.name = r.n
+		    			ConfigMessage rd = new ConfigMessage("", cfg);
+		    			rd.setFrom("1234"); 
+		    			
+		    			ex.ProcessMessage(rd);
+	    			}
+    			}
+	    	}
+	    });
+    	//t1.start();
+    	///t4.start();
     }
     public void Notify() {
     	String names = "";
@@ -664,10 +738,10 @@ public class AutoAwareControlPanel extends JFrame {//implements Observer {
 		Message gotMessage = arg1;
 		ClientConfig myClient = ConfigFind(gotMessage.from);
 		if (myClient == null) {
-			System.out.println("Message recieved for incorrect sensor, please try again");
+			System.out.println("Message recieved for incorrect sensor, please try again.\n " + gotMessage);
 			return;
 		}
-		System.out.println("Message recieved, says to: " + gotMessage.message + " with the type of" + gotMessage.type);
+		//System.out.println("Message recieved, says to: " + gotMessage.message + " with the type of" + gotMessage.type);
 		
 		
 		switch (gotMessage.type) {
@@ -687,6 +761,7 @@ public class AutoAwareControlPanel extends JFrame {//implements Observer {
 				//include checking the sensor type, in case a message is sent and doesn't have the correct information (i.e. switching from light to video)
 				
 				if (Streamers.get(gotMessage.from) != null) ((ValueStreamBox)(Streamers.get(gotMessage.from).myPanel)).value = f;
+				else if (cf != null) cf.currentThreshold.setValue(Math.round(f * 100));
 				else {
 					//close the stream, it does not exist
 					server.sendMessage(new StreamingMessage("Telling to stop streaming",gotMessage.config, false));
@@ -699,7 +774,15 @@ public class AutoAwareControlPanel extends JFrame {//implements Observer {
 				}
 				break;
 			case AUDIO:
+				//System.out.println("Audio Clip got");
 				//audio clip in .wav format
+				AudioClip audio = ((AudioMessage)gotMessage).clip;
+				if (Streamers.get(gotMessage.from) != null) ((ValueStreamBox)(Streamers.get(gotMessage.from).myPanel)).addClip(audio);
+				else {
+					//close the stream, it does not exist
+					server.sendMessage(new StreamingMessage("Telling to stop streaming",gotMessage.config, false));
+					
+				}
 				break;
 			case PICTURE: 
 				//Actual picture, updated on a normal basis
@@ -710,8 +793,9 @@ public class AutoAwareControlPanel extends JFrame {//implements Observer {
 				}
 				break;
 			case CONFIG:
-				//  *shudder*
-				configs.set(configs.indexOf(ConfigFind((gotMessage.getConfig().serverIP))), gotMessage.config);
+				//this code....  *shudder*
+				//can't use gotMessage.from because it may be from another client interface
+				configs.set(configs.indexOf(ConfigFind((gotMessage.config.ip))), gotMessage.config);
 				refreshSensorList();
 				break;
 			default:

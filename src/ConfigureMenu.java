@@ -1,5 +1,6 @@
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
@@ -24,12 +25,15 @@ public class ConfigureMenu extends JFrame {
 	private JTextField startH, startM, endH, endM;
 	private JLabel startTH, endTH, startTM, endTM;
 	private JRadioButton light, sound, motion;
-	private JTextPane leftThreshold, rightThreshold;
+	private JLabel leftThreshold, rightThreshold;
 	private JSlider threshold;
+	public JSlider currentThreshold;
 	private JCheckBox desktop, magicMirror, text, email;
 	private JTextField phoneNum, emailAddress;
 	
-	private SensorType type;
+
+	
+	private SensorType type, firstType;
 	private boolean desktopBool, magicMirrorBool, textBool, emailBool;
 	private boolean usesScheduledTimes;
 
@@ -72,8 +76,7 @@ public class ConfigureMenu extends JFrame {
 	        JTextArea nameText = new JTextArea("Name: ");
 		    nameText.setBackground(nameAndSchedule.getBackground());
 	        nameText.setEditable(false);
-	        //System.out.println(configs);
-	        System.out.println(parent.configs);
+	        
 	        ClientConfig input = parent.configs.get(inputNum);
 	        name = new JTextField(input.name);
 		    name.setPreferredSize(new Dimension(100, 25));
@@ -158,12 +161,13 @@ public class ConfigureMenu extends JFrame {
 	        JPanel sensorFields = new JPanel();
 	        
 	        JPanel gridRadio = new JPanel(new GridLayout(4,1));
+	        JPanel thresholds = new JPanel();
 		    
-		    
+		    type = input.sensor_type;
+		    firstType = type;
 		    light = new JRadioButton("Light Sensor");
 		    light.setActionCommand("light");
 		    if (input.sensor_type == SensorType.LIGHT) light.setSelected(true);
-		    type = input.sensor_type;
 		    sound = new JRadioButton("Sound Sensor");
 		    sound.setActionCommand("sound");
 		    if (input.sensor_type == SensorType.AUDIO) sound.setSelected(true);
@@ -192,18 +196,30 @@ public class ConfigureMenu extends JFrame {
 	        
 	       // System.out.println((input.sensing_threshold));
 		    threshold = new JSlider(JSlider.HORIZONTAL, 0, 100, Math.round(input.sensing_threshold * 100));
+		    
+		    
+		    /*JTextPane currentLabel = new JTextPane();
+		    currentLabel.setText("Current:");
+		    currentLabel.setEnabled(false);
+		    currentLabel.setBackground(sensorFields.getBackground());*/
+		    
+		    JLabel leftBuffer = new JLabel("Current: " + (input.isSensorActive()?"":"(Disabled)"));
 
-		    leftThreshold = new JTextPane();
+
+		    currentThreshold = new JSlider(JSlider.HORIZONTAL, 0, 100, 0); //the updating slider 
+		    
+		    
+		    currentThreshold.setEnabled(false);
+
+		    leftThreshold = new JLabel("Threshold:");
 		    //leftThreshold.setText(leftThresholdLight);
-		    leftThreshold.setEditable(false);
-		    leftThreshold.setBackground(sensorFields.getBackground());
+//		    leftThreshold.setBackground(sensorFields.getBackground());
 		    
-		    rightThreshold = new JTextPane();
+//		    rightThreshold = new JLabel();
 		    //rightThreshold.setText(rightThresholdLight);
-		    rightThreshold.setEditable(false);
-		    rightThreshold.setBackground(sensorFields.getBackground());
+//		    rightThreshold.setBackground(sensorFields.getBackground());
 		    
-		    if (input.sensor_type == SensorType.LIGHT) {
+		   /* if (input.sensor_type == SensorType.LIGHT) {
 				leftThreshold.setText(leftThresholdLight);
 				rightThreshold.setText(rightThresholdLight);
 				type = SensorType.LIGHT;
@@ -215,11 +231,25 @@ public class ConfigureMenu extends JFrame {
 				leftThreshold.setText(leftThresholdMotion);
 				rightThreshold.setText(rightThresholdMotion);
 				type = SensorType.VIDEO;
-			}
+			}*/
 		    
-		    sensorFields.add(leftThreshold);
-		    sensorFields.add(threshold);
-		    sensorFields.add(rightThreshold);
+		    JPanel labelThresholds = new JPanel(new GridLayout(2,1)); 
+		    JPanel sliderThresholds = new JPanel(new GridLayout(2,1));
+		    
+		    
+		    labelThresholds.add(leftThreshold);
+		    sliderThresholds.add(threshold);
+		    //setThreshold.add(rightThreshold);
+		    
+		    
+		    labelThresholds.add(leftBuffer); 
+		    sliderThresholds.add(currentThreshold);
+		    
+		    
+		    thresholds.add(labelThresholds);
+		    thresholds.add(sliderThresholds);
+		    sensorFields.add(thresholds);
+		    
 		    
 		    
 		    JPanel notificationLevel = new JPanel(new GridBagLayout());
@@ -304,7 +334,8 @@ public class ConfigureMenu extends JFrame {
                 if (confirm == 0) {
                 	//close menu, do not close application
             	   setEnabled(false);
-
+            	   UpdateTypeOnly(firstType);
+           		   parent.StopStream(parent.configs.get(inputNum)); //stop the stream, pointless
                    dispose();
                 } else {
                 	setVisible(true);
@@ -348,18 +379,30 @@ public class ConfigureMenu extends JFrame {
 	private class RadioListener implements ActionListener {
 		@SuppressWarnings("unused")
 		public void actionPerformed(ActionEvent e) {
-			
+			currentThreshold.setValue(0); //indicate buffering
 			if (e.getActionCommand().equals("light")) {
-				leftThreshold.setText(leftThresholdLight);
-				rightThreshold.setText(rightThresholdLight);
+				if (type != SensorType.LIGHT) {
+	            	UpdateTypeOnly(SensorType.LIGHT);
+					//send cfg to change into light sensor
+				}
+//				leftThreshold.setText(leftThresholdLight);
+//				rightThreshold.setText(rightThresholdLight);
 				type = SensorType.LIGHT;
 			} else if (e.getActionCommand().equals("sound")) {
-				leftThreshold.setText(leftThresholdSound);
-				rightThreshold.setText(rightThresholdSound);
+				if (type != SensorType.AUDIO) {
+	            	UpdateTypeOnly(SensorType.AUDIO);
+					//send cfg to change into audio sensor
+				}
+//				leftThreshold.setText(leftThresholdSound);
+//				rightThreshold.setText(rightThresholdSound);
 				type = SensorType.AUDIO;
 			} else if (e.getActionCommand().equals("motion")) {
-				leftThreshold.setText(leftThresholdMotion);
-				rightThreshold.setText(rightThresholdMotion);
+				if (type != SensorType.VIDEO) {
+	            	UpdateTypeOnly(SensorType.VIDEO);
+	            	//send cfg to change into video sensor
+				}
+//				leftThreshold.setText(leftThresholdMotion);
+//				rightThreshold.setText(rightThresholdMotion);
 				type = SensorType.VIDEO;
 			}
 		}
@@ -424,10 +467,24 @@ public class ConfigureMenu extends JFrame {
 		this.setEnabled(false);
 		parent.configs.set(inputNum, toSubmit);
 		System.out.println(toSubmit);
+		parent.StopStream(lastCfg); //stop the stream, pointless
 		parent.SendConfigToSensor(toSubmit);
 		parent.refreshSensorList();
     	dispose();
     }
-	
+	private void UpdateTypeOnly(final SensorType t) {
+		//send a config to a sensor to update only the sensortype, since streaming
+		Thread thr = new Thread(new Runnable(){
+			public void run(){
+				ClientConfig cfg = new ClientConfig();
+				cfg.ip = parent.configs.get(inputNum).ip;
+				cfg.sensor_type = t;
+				parent.SendConfigToSensor(cfg);
+			}
+		});
+		thr.start();
+		
+		
+	}
 	
 }

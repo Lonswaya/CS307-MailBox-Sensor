@@ -1,3 +1,4 @@
+import java.applet.AudioClip;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -5,9 +6,12 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.LinkedList;
+import java.util.Queue;
 import java.util.Random;
 
 import javax.swing.BoxLayout;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.SwingUtilities;
@@ -24,9 +28,13 @@ public class ValueStreamBox extends JPanel {
 	 * 
 	 */
 	public String address;
+	private boolean playingSound;
+	private Queue<AudioClip> audioQueue;
 	public float value;
 	private float threshold;
 	private SensorType sensorType;
+	private Thread playerThread;
+	private JButton audioToggle;
 	private Timer t;
 		
 	private int[] pointsX1, pointsX2, pointsY1, pointsY2, thresholdPointX, thresholdPointY;
@@ -47,6 +55,19 @@ public class ValueStreamBox extends JPanel {
 		title.setFont(new Font(title.getName(), Font.BOLD, 20));
 		System.out.println(title.getBounds());
 		title.setBounds(200, 30, 500, 300);
+		
+		if (sensorType == SensorType.AUDIO) {
+			audioToggle = new JButton(new ImageIcon("resources/soundOff.png"));
+			audioToggle.setBounds(550,520,40,40);
+			playingSound = false;
+			audioToggle.addActionListener(new muter());
+			this.add(audioToggle);
+			audioQueue = new LinkedList<AudioClip>();
+			playerThread = new Thread(new AudioPlayer());
+			playerThread.start();
+			//System.out.println("thread started");
+		}
+		
 		this.add(exit);
 		this.add(title);
 		this.setLayout(null);
@@ -61,6 +82,20 @@ public class ValueStreamBox extends JPanel {
 	private class repainter implements ActionListener {
         public void actionPerformed(ActionEvent e) {
         	repaint();
+        }
+	}
+	private class muter implements ActionListener {
+        public void actionPerformed(ActionEvent e) {
+        	System.out.println(playingSound);
+        	playingSound = !playingSound;
+        	if (playingSound) {
+        		//audioToggle.set
+        		audioToggle.setIcon(new ImageIcon("resources/soundOn.png"));
+        	} else {
+        		audioToggle.setIcon(new ImageIcon("resources/soundOff.png"));
+        	}
+        	//
+        	
         }
 	}
 	public void paintComponent(Graphics g) {
@@ -115,11 +150,43 @@ public class ValueStreamBox extends JPanel {
 		g.setColor(Color.black);
 		g.drawLine(getWidth() / 5, getHeight()/2, getWidth() * 4/5, getHeight()/2);
 	}
+	public void addClip(AudioClip clip) {
+		audioQueue.add(clip);
+		//System.out.println("Clip added, queue size is " + audioQueue.size());
+	}
 	public float GetSensorValue() {
 		//Random r = new Random();
 		//currently filler value
 		//return r.nextFloat();
 		return value;
+	}
+	class AudioPlayer implements Runnable {
+
+		@Override
+		public void run() {
+			while(true) {
+				//System.out.println("looping thread");
+				boolean played = false;
+				if (audioQueue.size() > 0) {
+					AudioClip nextClip = audioQueue.remove();
+					played = true;
+					if (playingSound)
+						nextClip.play();
+					//long time = nextClip.
+					//assuming all clips are going to me 3000 ms
+					System.out.println("played next clip, size is now " + audioQueue.size() + " and info is " + nextClip);
+
+				}
+				try {
+					//if played, pause the right amount of time, otherwise pause for 0 ms
+					Thread.sleep(played?3000:0);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+			
+		}
+		
 	}
 	
 }
