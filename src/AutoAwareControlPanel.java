@@ -251,12 +251,15 @@ public class AutoAwareControlPanel extends JFrame {//implements Observer {
             @Override
             public void actionPerformed(ActionEvent event) {
             	//aveSensors();
-            	String address = JOptionPane.showInputDialog("Enter IP Address of server", "");
-            	while(!checkIPFormat(address))
+            	String address = null;
+            	do
             	{
+            		if (address != null) JOptionPane.showMessageDialog(null,"Invalid address", "error", JOptionPane.ERROR_MESSAGE, null);
+
             		address = JOptionPane.showInputDialog("Enter IP Address of server", ""); //Do ip parsing here.
             		if (address == null) break;
             	}
+            	while(!checkIPFormat(address));
             	//System.out.println(address);
         		//do your ip parsing here boi
 
@@ -349,12 +352,17 @@ public class AutoAwareControlPanel extends JFrame {//implements Observer {
     	}
     }
     public void AddSensor() {
-    	String address = JOptionPane.showInputDialog("Enter IP Address of sensor", "");
-    	while(!checkIPFormat(address))
+    	
+    	String address = null;
+    	do
     	{
+    		if (address != null) JOptionPane.showMessageDialog(null,"Invalid address", "error", JOptionPane.ERROR_MESSAGE, null);
+
     		address = JOptionPane.showInputDialog("Enter IP Address of sensor", ""); //Do ip parsing here.
     		if (address == null) break;
     	}
+    	while(!checkIPFormat(address));
+
     	//System.out.println(ConfigFind(address));
     	ClientConfig finder = ConfigFind(address);
     	if (finder != null) {

@@ -1,4 +1,5 @@
 import java.awt.Graphics;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
@@ -23,6 +24,7 @@ public class StreamBox extends JFrame {
 		 hRef = h;
 		 this.aRef = aRef;
 		 setTitle("You shouldn't be seeing this");
+	     setIconImage(Toolkit.getDefaultToolkit().getImage("resources/icon.png"));
 	     setSize(600, 600);
 	     setVisible(true);
 	     setLocationRelativeTo(null);
