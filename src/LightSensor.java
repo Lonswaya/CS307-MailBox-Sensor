@@ -46,24 +46,7 @@ public class LightSensor extends BaseSensor {
 	public Message form_message(){		
 		System.out.println("forming light message");
 		ReadingMessage msg = new ReadingMessage("Light above threshold", null);
-		try {
-			NetworkInterface ni = NetworkInterface.getByName("eth0");
-	        Enumeration<InetAddress> inetAddresses =  ni.getInetAddresses();
-	        String address = "";
-	        while(inetAddresses.hasMoreElements()) {
-	            InetAddress ia = inetAddresses.nextElement();
-	            if(!ia.isLinkLocalAddress()) {
-	                address = ia.getHostAddress();
-	            }
-	        }
-	        
-			//String address = InetAddress.getLocalHost().toString();
-			//address = address.substring(address.indexOf('/') + 1);
-			msg.setFrom(address);
-			
-		} catch (SocketException e) {
-			e.printStackTrace();
-		}
+		msg.setFrom(this.getIP());
 		msg.setCurrentThreshold(this.light_intensity);
 		return msg;
 	}

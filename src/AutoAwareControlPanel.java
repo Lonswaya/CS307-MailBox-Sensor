@@ -19,13 +19,22 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Hashtable;
-import java.util.Observable;
-import java.util.Observer;
 import java.util.Random;
 import java.util.Stack;
 
-import javax.imageio.ImageIO;
-import javax.swing.*;
+import javax.swing.AbstractButton;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.Timer;
 
 
 
@@ -243,13 +252,19 @@ public class AutoAwareControlPanel extends JFrame {//implements Observer {
             public void actionPerformed(ActionEvent event) {
             	//aveSensors();
             	String address = JOptionPane.showInputDialog("Enter IP Address of server", "");
-            	System.out.println(address);
+            	while(!checkIPFormat(address))
+            	{
+            		address = JOptionPane.showInputDialog("Enter IP Address of server", ""); //Do ip parsing here.
+            		if (address == null) break;
+            	}
+            	//System.out.println(address);
         		//do your ip parsing here boi
 
-            	if(address != null)
+            	if(address != null && !address.isEmpty())
             	{
             		server.seperateIP = address;
-            		
+            		System.out.println(address);
+            		System.out.println("Correct Ip format!");
             	}
                 //System.out.println("Save sensors");
             }
@@ -294,7 +309,7 @@ public class AutoAwareControlPanel extends JFrame {//implements Observer {
             public void actionPerformed(ActionEvent event) {
             	JDialog dialog = new JDialog();     
                 dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-                dialog.setTitle("h̵͙̮̥̞̱̺̰͕̟̫̺͓͙̻̣̀ͧ͊̊͛ͥ̑͒̇̿̆͛ͫ̚͝ȇ̴̴̶̡̪̭̞̖̰̫̣̲̞͉̥̝̟̥͓͉͈ͯ̈́ͯͣ̉̓ͧ̒̽̆̾͘ͅl̹̟̺̼͖̪͖̠͎̳̻̯͙͈̯̦̞͌̊ͥ̃̓̾̂ͩ̒ͨ̾̚͜͜͜͡ͅp̢̨̗̞̻̗̗ͨ̔̔ͦ͐ͤͩ̾ͧ̏̽͊̆̆ͥ́͐ͤͅ ̵̜̲͓̲̜̼̦̹̠̬̻̂̅ͯ̆ͤ͆ͧ̿̃ͥ̚̕͢mͨͭ̉͂ͤ̌́͂̔͒̾̔͋͏̸̱̲̜͓͎̞͇̞͢eͫͩ̾͂ͨ̿͒ͩ͂̑͌̚͏̶҉̳͍̗͇͖̱͈͉͇");
+                dialog.setTitle("help me");
                 dialog.add(new JLabel(new ImageIcon("resources/help.png")));
                 dialog.pack();
                 dialog.setLocationByPlatform(true);
@@ -335,13 +350,18 @@ public class AutoAwareControlPanel extends JFrame {//implements Observer {
     }
     public void AddSensor() {
     	String address = JOptionPane.showInputDialog("Enter IP Address of sensor", "");
+    	while(!checkIPFormat(address))
+    	{
+    		address = JOptionPane.showInputDialog("Enter IP Address of sensor", ""); //Do ip parsing here.
+    		if (address == null) break;
+    	}
     	//System.out.println(ConfigFind(address));
     	ClientConfig finder = ConfigFind(address);
     	if (finder != null) {
     		//System.out.println("error");
     		JOptionPane.showMessageDialog(null,"Sensor already added, named \"" + finder.name + "\"", "error", JOptionPane.ERROR_MESSAGE, null);
 
-    	} else {
+    	} else if (address != null) {
 	    	ClientConfig newSensor = new ClientConfig();
 	    	newSensor.force_off = true;
 	    	newSensor.force_on = false;
@@ -610,8 +630,8 @@ public class AutoAwareControlPanel extends JFrame {//implements Observer {
     	@SuppressWarnings("unused")
 		final
     	AutoAwareControlPanel ex = new AutoAwareControlPanel();
-    	final Random r = new Random();
-    	/*Thread t1 = new Thread(new Runnable(){
+    	/*final Random r = new Random();
+    	Thread t1 = new Thread(new Runnable(){
     		public void run(){
     			int num = 8;
     			while(true) {
@@ -659,8 +679,8 @@ public class AutoAwareControlPanel extends JFrame {//implements Observer {
 	    	}
 	    });
     	//t1.start();
-    	t2.start();*/
-    	//ex.Notify("1234");*/
+    	t2.start();
+    	//ex.Notify("1234");
     	Thread t3 = new Thread(new Runnable(){
     		public void run(){
     			while(true) {
@@ -705,7 +725,7 @@ public class AutoAwareControlPanel extends JFrame {//implements Observer {
 	    			}
     			}
 	    	}
-	    });
+	    });*/
     	//t1.start();
     	///t4.start();
     }
@@ -803,6 +823,37 @@ public class AutoAwareControlPanel extends JFrame {//implements Observer {
 				System.out.println(gotMessage.message);
 				break;
 		}
+	}
+	public boolean checkIPFormat(String ip)
+	{
+		//debug, I like using 1234
+		if (ip.equals("1234")) return true;
+		
+		try {
+	        if ( ip == null || ip.isEmpty() ) {
+	            return true;
+	        }
+
+	        String[] parts = ip.split( "\\." );
+	        if ( parts.length != 4 ) {
+	            return false;
+	        }
+
+	        for ( String s : parts ) {
+	            int i = Integer.parseInt( s );
+	            if ( (i < 0) || (i > 255) ) {
+	                return false;
+	            }
+	        }
+	        if ( ip.endsWith(".") ) {
+	            return false;
+	        }
+
+	        return true;
+	    } catch (NumberFormatException nfe) {
+	        return false;
+	    }
+		
 	}
     
     

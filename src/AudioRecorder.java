@@ -1,20 +1,14 @@
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
 //import java.io.DataOutputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
 //import java.io.FileOutputStream;
 import java.io.InputStream;
-
 
 import javax.sound.sampled.AudioFileFormat.Type;
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
-import javax.sound.sampled.Clip;
 import javax.sound.sampled.DataLine;
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.TargetDataLine;
@@ -27,7 +21,7 @@ public class AudioRecorder {
 		AudioFormat.Encoding encoding = AudioFormat.Encoding.PCM_SIGNED;
 		float rate = 44100.0f;
 		int channels = 2;
-		int frameSize = 4;
+		//int frameSize = 4;
 		int sampleSize = 16;
 		boolean bigEndian = true;
     
@@ -40,7 +34,7 @@ public class AudioRecorder {
     //Check to see if the format is supported
     if(!AudioSystem.isLineSupported(info))
     {
-        System.out.println("I'm sorry but " + info + " isn't supported.");
+        System.out.println("I'm sorry but " + info + " isn't supported. Bitch.");
         return -2.0f;
     }
     System.out.println(info + " is in fact supported.");

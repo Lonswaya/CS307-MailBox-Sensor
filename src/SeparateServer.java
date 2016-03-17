@@ -28,7 +28,7 @@ public class SeparateServer {
 	    
 		SSLServerSocketFactory f = (SSLServerSocketFactory)SSLServerSocketFactory.getDefault(); //initialize the factory for creating our server socket
 		try {
-			ss = f.createServerSocket(9999); //create our server socket
+			ss = f.createServerSocket(8888); //create our server socket
 		} catch (IOException e) {
 			e.printStackTrace();
 			System.out.println("Yeah something's gone super wrong");
@@ -76,7 +76,6 @@ public class SeparateServer {
 				e.printStackTrace();
 			}
 		}
-		
 		return true;	
 	}
 	
