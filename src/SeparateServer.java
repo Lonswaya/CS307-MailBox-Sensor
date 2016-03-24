@@ -1,4 +1,4 @@
-package src;
+
 import java.io.*;
 import java.net.*;
 import java.util.ArrayList;
@@ -124,7 +124,7 @@ public class SeparateServer {
 		SeparateServer server = new SeparateServer(); 			//initialize server
 		do {
 			Socket sock = server.getNextConnection();			//get a new connection from the server
-			if(sock == null)									//if there was an error getting a new connection
+			if(sock == null)									//if there was an error getting  a new connection
 				continue;										//restart to wait for a new, valid connection
 									
 			new Thread(new ServerListener(sock)).start();		//creates a new thread that handles that socket

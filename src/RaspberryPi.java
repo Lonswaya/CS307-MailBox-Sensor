@@ -17,7 +17,8 @@ public class RaspberryPi {
 	private ServerSocket receiveServer;
 
 	private String ip;
-	private int port = 9999;
+	//this is the port and IP for the separate server 
+	private int port = 8888;
 
 	boolean streaming = false;
 	
@@ -66,7 +67,7 @@ public class RaspberryPi {
 						sock = receiveServer.accept();
 						in = new ObjectInputStream(sock.getInputStream());
 						Message msg = (Message) in.readObject();
-						if (ip == null) ip = msg.config.serverIP;
+						if (ip == null) ip = msg.getFrom();
 						//System.out.println(msg.config.toString() + " " +  msg);
 						
 						switch(msg.type) {

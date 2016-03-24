@@ -1,10 +1,11 @@
-package src;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 
 /*
  * Handles individual requests from clients
@@ -117,13 +118,18 @@ public class ServerListener implements Runnable {
 			return;
 		}
 		
-		//if(msg.type == MessageType.CONFIG || msg.type == MessageType.STREAMING) // TODO: add other sensor type shit
-		//	addUI(msg.from);													//add ip to list of gui ips
+		if(msg.type == MessageType.CONFIG || 
+				msg.type == MessageType.STREAMING || 
+				msg.type == MessageType.GET_SENSORS ||
+				msg.type == MessageType.ADD_SENSOR) 
+			addUI(msg.from);													//add ip to list of gui ips
 		
 		if (msg.getString().equalsIgnoreCase("quit")) {							//if the message told the server to quit
 			SeparateServer.run = false;											//make the server quit running
 			return;
 		}
+		
+		
 		
 		if(msg.type == null) {
 			System.out.println(msg);
@@ -133,10 +139,51 @@ public class ServerListener implements Runnable {
 			switch(msg.type) {
 				
 				case VIDEO:
-					break;
-				case AUDIO:
+					//unused
 					break;
 				case LIGHT:
+					//unused
+					break;
+				
+				case READING:
+					//TODO notification parsing
+					//forward to client
+				case AUDIO:
+					//forward to client
+				case PICTURE:
+					//forward to client
+					//as of now, we just forward every single message to the client. May cause desync issues otherwise.
+					for (String s : SeparateServer.ui_ips) {
+						try {
+							//TODO assume this is threaded
+							SeparateServer.sendMessage(msg, s, 9999);
+						} catch (Exception e) {
+							System.out.println("Unable to send to user with ip " + s);
+							SeparateServer.ui_ips.remove(s);
+						}
+					}
+					
+					break;
+				case CONFIG:
+					// TODO: update database?
+					ConfigMessage cm3 = (ConfigMessage)msg;
+					System.out.println(cm3);
+					notify_uis(cm3.config);
+					//send to sensor
+				case STREAMING:
+					//send to sensor
+					String address = "";
+					try {
+						address = InetAddress.getLocalHost().toString();
+					} catch (UnknownHostException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+						return;
+					}
+					address = address.substring(address.indexOf('/') + 1);
+					msg.setFrom(address);
+					//set the from to this address, so the sensor knows to reply to the server
+					SeparateServer.sendMessage(msg, msg.config.ip, 9999);
 					break;
 				case ADD_SENSOR:
 					
@@ -152,19 +199,19 @@ public class ServerListener implements Runnable {
 					msg.type = MessageType.CONFIG;
 					ConfigMessage cm = (ConfigMessage)msg;
 					
-					//if(SeparateServer.sendMessage(msg, cm.getConfig().serverIP, 9999)) {
-						SeparateServer.sendMessage(out, new Message("Shit succeeded", MessageType.CONFIG), msg.from, 9999); // TODO: create msg type for this
-						//notify_uis(cm.getConfig());
-					//} else {
-					//	SeparateServer.sendMessage(out, new Message("Shit failed", null), msg.from, 9999);    // TODO: create msg type for this
-					//}
+					//if proper connection, use the outputstream and send back a new successful message
+					
+					if(SeparateServer.sendMessage(msg, cm.config.ip, 9999)) {
+						SeparateServer.sendMessage(out, new Message("Connection succeeded", null, null), msg.from, 9999); // msg type can be null, no biggie
+						notify_uis(cm.config);
+					} else {
+						SeparateServer.sendMessage(out, new Message("Sensor connection failed", null, null), msg.from, 9999);    //
+					}
 					break;
-				case CONFIG:
-					// TODO: update database?
-					ConfigMessage cm3 = (ConfigMessage)msg;
-					System.out.println(cm3);
-					//notify_uis(cm.getConfig());
-					//send to sensor that is in config
+				case GET_SENSORS:
+					//TODO: get all configs from database, store in a regular array for maximum compression at the moment
+					ClientConfig[] ar = null;
+					SeparateServer.sendMessage(out, new SensorsMessage("Here's your sensors, yo", ar), msg.from, 9999); 
 					break;
 				default:
 					break;

@@ -164,6 +164,6 @@ public abstract class BaseSensor{
 		System.out.println("After compress len: " + ba2.length);
 		ba = BaseSensor.uncompressByteArray(ba2, len);
 		
-		System.out.println("Original String: \t" + str + "\nAfter String: \t\t" + newStr + "\nMatch: " + newStr.equals(str));
+		//System.out.println("Original String: \t" + str + "\nAfter String: \t\t" + newStr + "\nMatch: " + newStr.equals(str));
 	}
 }

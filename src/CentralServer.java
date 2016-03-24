@@ -7,6 +7,7 @@ import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Observable;
 import java.util.Scanner;
 import java.util.Observer;
@@ -24,7 +25,7 @@ public class CentralServer extends Observable implements Runnable {
 	private Observer obs = null;
 	
 	public String seperateIP = "localhost";
-	public int seperatePort = 9999;
+	public int seperatePort = 8888;
 	public CentralServer(AutoAwareControlPanel obs) {
 	    System.setProperty("javax.net.ssl.keyStore", "mySrvKeystore");
 	    System.setProperty("javax.net.ssl.keyStorePassword", "sensor");
@@ -184,12 +185,8 @@ public class CentralServer extends Observable implements Runnable {
 			out.writeObject(cfg);
 			out.flush();
 			
-			
 			ObjectInputStream os = new ObjectInputStream(sock.getInputStream());
-			
-			
 			m = (Message)os.readObject();
-			//ar = (ArrayList<ClientConfig>)os.readObject();
 			
 			
 			os.close();
@@ -220,7 +217,9 @@ public class CentralServer extends Observable implements Runnable {
 			
 			ObjectInputStream os = new ObjectInputStream(sock.getInputStream());
 			
-			ar = (ArrayList<ClientConfig>)os.readObject();
+			ClientConfig[] inArr = (ClientConfig[])os.readObject();
+			
+			ar = new ArrayList<ClientConfig>(Arrays.asList(inArr));
 			
 			
 			os.close();

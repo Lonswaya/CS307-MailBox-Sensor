@@ -52,8 +52,10 @@ public class AutoAwareControlPanel extends JFrame {//implements Observer {
     private Stack<String> notificationStack;
     private boolean t1bool;
 	private static boolean t2bool;
+	private static boolean debug = true;
 	public AutoAwareControlPanel() {
         initUI();
+        //TODO ask to start up server if the server does not exist
     }
 
     private void initUI() {
@@ -374,30 +376,30 @@ public class AutoAwareControlPanel extends JFrame {//implements Observer {
 	    	newSensor.force_off = true;
 	    	newSensor.force_on = false;
 	    	newSensor.SetIP(address);
-	    	newSensor.serverPort = 9999;
+	    	newSensor.serverPort = server.seperatePort;
 	    	Random r = new Random();
 	    	newSensor.SetColor(new Color(r.nextInt(255),r.nextInt(255),r.nextInt(255)));
 	    	newSensor.SetName("New Sensor");
 	    	
 	    	
-	    	//TODO start remove for server
-	    	configs.add(newSensor);
-	    	createNew(controlIndex, newSensor);
-	    	refreshSensorList();
-	    	// end remove for server
-	    	
-	    	//get a return message from the server, if sensor type is null then blah
-	    	
-	    	/*TODO start: Add for server 
-	    	Message m = server.AddSensor(new ConfigMessage("Updating config",newSensor));
-	    	if (m.message == "Shit succeeded") {
+	    	if (debug) {
 	    		configs.add(newSensor);
 		    	createNew(controlIndex, newSensor);
 		    	refreshSensorList();
 	    	} else {
-	    		JOptionPane.showMessageDialog(null,m.message, "error", JOptionPane.ERROR_MESSAGE, null);
+	    		//should get a message back after trying to add a sensor
+	    		Message m = server.AddSensor(new ConfigMessage("Updating config",newSensor));
+		    	if (m.message == "Connection succeeded") {
+		    		configs.add(newSensor);
+			    	createNew(controlIndex, newSensor);
+			    	refreshSensorList();
+		    	} else {
+		    		JOptionPane.showMessageDialog(null,m.message, "error", JOptionPane.ERROR_MESSAGE, null);
+		    	}
 	    	}
-	    	 end add for server:*/
+	    	
+	    	//get a return message from the server, if sensor type is null then blah
+	    	
 
     	}
     }
@@ -405,8 +407,11 @@ public class AutoAwareControlPanel extends JFrame {//implements Observer {
     	//request to database, add sensors
     	//manually adding sensors for now
     	
-    	//TODO uncomment for server: new Thread(new GetConfigsListener()).start();
-    	configs = new ArrayList<ClientConfig>();
+    	if (debug) {
+        	configs = new ArrayList<ClientConfig>();
+    	} else {
+    		new Thread(new GetConfigsListener()).start();
+    	}
     	
     	/*ClientConfig firstConfig = new ClientConfig();
     	
@@ -472,12 +477,12 @@ public class AutoAwareControlPanel extends JFrame {//implements Observer {
     }
     class GetConfigsListener implements Runnable {
     	public void run() {
-    		configs = server.GetSensors();
+    		server.GetSensors();
     	}
     }
     class RefreshListener implements Runnable { 
     	public void run() {
-    		//TODO uncomment for server: configs = server.GetSensors();
+    		
     		if (configs == null) return;
     		//if we have not yet 
 
@@ -792,7 +797,10 @@ public class AutoAwareControlPanel extends JFrame {//implements Observer {
 				else if (cf != null) cf.currentThreshold.setValue(Math.round(f * 100));
 				else {
 					//close the stream, it does not exist
-					server.sendMessage(new StreamingMessage("Telling to stop streaming",gotMessage.config, false));
+					//server.sendMessage(new StreamingMessage("Telling to stop streaming",gotMessage.config, false));
+
+					//we probably shouldn't close the stream, as if we get a sensor that we aren't trying to stream but another is,
+					//we will tell that one to stop streaming.
 					
 				}
 				//if we have a higher threshold, and the item was not already added to the list
@@ -808,8 +816,10 @@ public class AutoAwareControlPanel extends JFrame {//implements Observer {
 				if (Streamers.get(gotMessage.from) != null) ((ValueStreamBox)(Streamers.get(gotMessage.from).myPanel)).addClip(audio);
 				else {
 					//close the stream, it does not exist
-					server.sendMessage(new StreamingMessage("Telling to stop streaming",gotMessage.config, false));
+					//server.sendMessage(new StreamingMessage("Telling to stop streaming",gotMessage.config, false));
 					
+					//we probably shouldn't close the stream, as if we get a sensor that we aren't trying to stream but another is,
+					//we will tell that one to stop streaming.
 				}
 				break;
 			case PICTURE: 
@@ -817,7 +827,10 @@ public class AutoAwareControlPanel extends JFrame {//implements Observer {
 				if (Streamers.get(gotMessage.from) != null) ((VideoStreamBox)(Streamers.get(gotMessage.from).myPanel)).SetImage(((PictureMessage)gotMessage).getImage()); 
 				else {
 					//close the stream, it does not exist
-			    	server.sendMessage(new StreamingMessage("Telling to stop streaming",gotMessage.config, false));
+			    	//server.sendMessage(new StreamingMessage("Telling to stop streaming",gotMessage.config, false));
+					
+					//we probably shouldn't close the stream, as if we get a sensor that we aren't trying to stream but another is,
+					//we will tell that one to stop streaming.
 				}
 				break;
 			case CONFIG:
