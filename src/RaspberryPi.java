@@ -18,7 +18,7 @@ public class RaspberryPi {
 
 	private String ip;
 	//this is the port and IP for the separate server 
-	private int port = 8888;
+	private int port = StaticPorts.serverPort;
 
 	boolean streaming = false;
 	
@@ -59,7 +59,7 @@ public class RaspberryPi {
 				SSLServerSocketFactory factory = (SSLServerSocketFactory) SSLServerSocketFactory.getDefault();
 
 				try {
-					receiveServer = factory.createServerSocket(9999);
+					receiveServer = factory.createServerSocket(StaticPorts.piPort);
 
 					
 					while (true) {

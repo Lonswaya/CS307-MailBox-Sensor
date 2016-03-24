@@ -102,7 +102,7 @@ public class ServerListener implements Runnable {
 	private void notify_uis(ClientConfig config) {
 		for (String ip : SeparateServer.ui_ips) {
 			ConfigMessage msg = new ConfigMessage(ip, config);
-			SeparateServer.sendMessage(msg, ip, 9999);
+			SeparateServer.sendMessage(msg, ip, StaticPorts.clientPort);
 		}
 	}
 	
@@ -156,7 +156,7 @@ public class ServerListener implements Runnable {
 					for (String s : SeparateServer.ui_ips) {
 						try {
 							//TODO assume this is threaded
-							SeparateServer.sendMessage(msg, s, 9999);
+							SeparateServer.sendMessage(msg, s, StaticPorts.clientPort);
 						} catch (Exception e) {
 							System.out.println("Unable to send to user with ip " + s);
 							SeparateServer.ui_ips.remove(s);
@@ -183,14 +183,14 @@ public class ServerListener implements Runnable {
 					address = address.substring(address.indexOf('/') + 1);
 					msg.setFrom(address);
 					//set the from to this address, so the sensor knows to reply to the server
-					SeparateServer.sendMessage(msg, msg.config.ip, 9999);
+					SeparateServer.sendMessage(msg, msg.config.ip, StaticPorts.piPort);
 					break;
 				case ADD_SENSOR:
 					
 					//if (msg.from already in database) {// TODO: Add database support
 					//	return;			
 					//} else {
-					//	SeparateServer.sendMessage(out, new Message("Adding sensor already in db",  null), msg.from, 9999);
+					//	SeparateServer.sendMessage(out, new Message("Adding sensor already in db",  null, null), msg.from, StaticPorts.clientPort);
 					//	return;
 					//}
 					
@@ -201,17 +201,17 @@ public class ServerListener implements Runnable {
 					
 					//if proper connection, use the outputstream and send back a new successful message
 					
-					if(SeparateServer.sendMessage(msg, cm.config.ip, 9999)) {
-						SeparateServer.sendMessage(out, new Message("Connection succeeded", null, null), msg.from, 9999); // msg type can be null, no biggie
+					if(SeparateServer.sendMessage(msg, cm.config.ip, StaticPorts.piPort)) {
+						SeparateServer.sendMessage(out, new Message("Connection succeeded", null, null), msg.from, StaticPorts.clientPort); // msg type can be null, no biggie
 						notify_uis(cm.config);
 					} else {
-						SeparateServer.sendMessage(out, new Message("Sensor connection failed", null, null), msg.from, 9999);    //
+						SeparateServer.sendMessage(out, new Message("Sensor connection failed", null, null), msg.from, StaticPorts.clientPort);    //
 					}
 					break;
 				case GET_SENSORS:
 					//TODO: get all configs from database, store in a regular array for maximum compression at the moment
 					ClientConfig[] ar = null;
-					SeparateServer.sendMessage(out, new SensorsMessage("Here's your sensors, yo", ar), msg.from, 9999); 
+					SeparateServer.sendMessage(out, new SensorsMessage("Here's your sensors, yo", ar), msg.from, StaticPorts.clientPort); 
 					break;
 				default:
 					break;

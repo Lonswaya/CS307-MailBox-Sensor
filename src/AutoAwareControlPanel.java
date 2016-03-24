@@ -419,7 +419,7 @@ public class AutoAwareControlPanel extends JFrame {//implements Observer {
     	firstConfig.SetName("First Config");
     	firstConfig.force_off = true;
     	configs.add(firstConfig);
-    	server.sendMessage(new ConfigMessage("Updating config",firstConfig), firstConfig.ip, 9999);*/
+    	server.sendMessage(new ConfigMessage("Updating config",firstConfig), firstConfig.ip, StaticPorts.serverPort);*/
     	
     }
     public void refreshSensorList() {

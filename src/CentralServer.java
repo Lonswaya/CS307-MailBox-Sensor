@@ -25,7 +25,7 @@ public class CentralServer extends Observable implements Runnable {
 	private Observer obs = null;
 	
 	public String seperateIP = "localhost";
-	public int seperatePort = 8888;
+	public int seperatePort = StaticPorts.serverPort;
 	public CentralServer(AutoAwareControlPanel obs) {
 	    System.setProperty("javax.net.ssl.keyStore", "mySrvKeystore");
 	    System.setProperty("javax.net.ssl.keyStorePassword", "sensor");
@@ -40,7 +40,7 @@ public class CentralServer extends Observable implements Runnable {
 	    
 		SSLServerSocketFactory f = (SSLServerSocketFactory)SSLServerSocketFactory.getDefault();
 		try {
-			ss = f.createServerSocket(9999);
+			ss = f.createServerSocket(StaticPorts.clientPort);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
