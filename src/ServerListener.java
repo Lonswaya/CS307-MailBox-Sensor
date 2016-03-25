@@ -89,7 +89,7 @@ public class ServerListener implements Runnable {
 	 */
 	private void addUI(String from) {
 		
-		if(from == null || from != "" || SeparateServer.ui_ips.contains(from)) {
+		if(from == null || !from.equals("") || SeparateServer.ui_ips.contains(from)) {
 			return;
 		} else {
 			SeparateServer.ui_ips.add(from);
@@ -169,6 +169,11 @@ public class ServerListener implements Runnable {
 					ConfigMessage cm3 = (ConfigMessage)msg;
 					System.out.println(cm3);
 					notify_uis(cm3.config);
+					if (cm3.delete) {
+						//remove sensor
+						SeparateServer.sensorConfigs.remove(SeparateServer.ConfigFind(cm3.config.ip));
+						break;
+					}
 					//send to sensor
 				case STREAMING:
 					//send to sensor
@@ -176,7 +181,6 @@ public class ServerListener implements Runnable {
 					try {
 						address = InetAddress.getLocalHost().toString();
 					} catch (UnknownHostException e) {
-						// TODO Auto-generated catch block
 						e.printStackTrace();
 						return;
 					}
@@ -187,12 +191,11 @@ public class ServerListener implements Runnable {
 					break;
 				case ADD_SENSOR:
 					
-					//if (msg.from already in database) {// TODO: Add database support
-					//	return;			
-					//} else {
-					//	SeparateServer.sendMessage(out, new Message("Adding sensor already in db",  null, null), msg.from, StaticPorts.clientPort);
-					//	return;
-					//}
+					if (SeparateServer.ConfigFind(msg.config.ip) == null) {// TODO: Add database support
+						SeparateServer.sendMessage(out, new Message("Adding sensor already in db",  null, null), msg.from, StaticPorts.clientPort);
+						return;			
+					} 
+					
 					
 					System.out.println(msg);
 					
@@ -201,16 +204,18 @@ public class ServerListener implements Runnable {
 					
 					//if proper connection, use the outputstream and send back a new successful message
 					
-					if(SeparateServer.sendMessage(msg, cm.config.ip, StaticPorts.piPort)) {
+					if(cm.config.ip.equals("1234")/*TODO remove debug*/ || SeparateServer.sendMessage(msg, cm.config.ip, StaticPorts.piPort)) {
+						System.out.println("adding new sensor");
 						SeparateServer.sendMessage(out, new Message("Connection succeeded", null, null), msg.from, StaticPorts.clientPort); // msg type can be null, no biggie
-						notify_uis(cm.config);
+						SeparateServer.sensorConfigs.add(cm.config); //TODO remove once database established
+						notify_uis(cm.config); 
 					} else {
 						SeparateServer.sendMessage(out, new Message("Sensor connection failed", null, null), msg.from, StaticPorts.clientPort);    //
 					}
 					break;
 				case GET_SENSORS:
-					//TODO: get all configs from database, store in a regular array for maximum compression at the moment
-					ClientConfig[] ar = null;
+					//get all configs from database, store in a regular array for maximum compression at the moment
+					ArrayList<ClientConfig> ar = SeparateServer.sensorConfigs; //TODO remove once database established
 					SeparateServer.sendMessage(out, new SensorsMessage("Here's your sensors, yo", ar), msg.from, StaticPorts.clientPort); 
 					break;
 				default:

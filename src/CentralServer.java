@@ -42,6 +42,7 @@ public class CentralServer extends Observable implements Runnable {
 		try {
 			ss = f.createServerSocket(StaticPorts.clientPort);
 		} catch (IOException e) {
+			
 			e.printStackTrace();
 		}
 	}
@@ -217,15 +218,13 @@ public class CentralServer extends Observable implements Runnable {
 			
 			ObjectInputStream os = new ObjectInputStream(sock.getInputStream());
 			
-			ClientConfig[] inArr = (ClientConfig[])os.readObject();
-			
-			ar = new ArrayList<ClientConfig>(Arrays.asList(inArr));
-			
+			ar = ((SensorsMessage)os.readObject()).ar;			
 			
 			os.close();
 			out.close();
 		} catch (Exception e) {
-			e.printStackTrace();
+			//e.printStackTrace();
+			System.out.println("New sensor not found");
 			return null;
 		}
 		

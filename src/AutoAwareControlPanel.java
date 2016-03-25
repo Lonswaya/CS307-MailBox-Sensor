@@ -52,7 +52,12 @@ public class AutoAwareControlPanel extends JFrame {//implements Observer {
     private Stack<String> notificationStack;
     private boolean t1bool;
 	private static boolean t2bool;
-	private static boolean debug = true;
+	
+	//true: GUI test to build things 
+	//false: full on, real connection
+	private static boolean debug = false;
+	
+	
 	public AutoAwareControlPanel() {
         initUI();
         //TODO ask to start up server if the server does not exist
@@ -92,9 +97,11 @@ public class AutoAwareControlPanel extends JFrame {//implements Observer {
         setVisible(true);
     }
     void CreateControlPanel(JPanel panelHolder) {
-        for (int i = 0; i < configs.size(); i++) {
-    		//init panels
-        	createNew(i, configs.get(i));
+    	if (configs != null) {
+	        for (int i = 0; i < configs.size(); i++) {
+	    		//init panels
+	        	createNew(i, configs.get(i));
+	    	}
     	}
     }
     public void createNew(int i, ClientConfig c) {
@@ -128,7 +135,7 @@ public class AutoAwareControlPanel extends JFrame {//implements Observer {
 		remove.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent event) {
-            	RemoveSensor(identifier);
+            	RemoveSensor(identifier, false);
                 //System.out.println("Remove sensor " + identifier);
             }
         });
@@ -389,7 +396,7 @@ public class AutoAwareControlPanel extends JFrame {//implements Observer {
 	    	} else {
 	    		//should get a message back after trying to add a sensor
 	    		Message m = server.AddSensor(new ConfigMessage("Updating config",newSensor));
-		    	if (m.message == "Connection succeeded") {
+		    	if (m.message.equals("Connection succeeded")) {
 		    		configs.add(newSensor);
 			    	createNew(controlIndex, newSensor);
 			    	refreshSensorList();
@@ -428,11 +435,16 @@ public class AutoAwareControlPanel extends JFrame {//implements Observer {
     	
     
     }
-    public void RemoveSensor(String identifier) {
-    	int confirm = JOptionPane.showOptionDialog(
+    public void RemoveSensor(String identifier, boolean force) {
+    	int confirm;
+    	if (!force) {
+    		confirm = JOptionPane.showOptionDialog(
                 null, "Remove sensor?", 
                 "Remove Confirmation", JOptionPane.YES_NO_OPTION, 
                 JOptionPane.QUESTION_MESSAGE, null, null, null);
+    	} else {
+    		confirm = 0;
+    	}
     	if (confirm == 0) {
     		controlIndex--;
     		ClientConfig cfg = ConfigFind(identifier);
@@ -442,7 +454,9 @@ public class AutoAwareControlPanel extends JFrame {//implements Observer {
     		int index = configs.indexOf(cfg);
     		panelHolder.remove(index);
     		configs.remove(index);
-    		server.sendMessage(new ConfigMessage("Updating config, turning off",cfg));
+    		ConfigMessage cfgMessage = new ConfigMessage("Updating config, turning off",cfg);
+    		cfgMessage.delete = true;
+    		server.sendMessage(cfgMessage);
     		JOptionPane.showMessageDialog(null, "Deleted sensor " + name, "Deleted sensor " + name, JOptionPane.INFORMATION_MESSAGE, null);
 	    	
     	}
@@ -477,7 +491,21 @@ public class AutoAwareControlPanel extends JFrame {//implements Observer {
     }
     class GetConfigsListener implements Runnable {
     	public void run() {
-    		server.GetSensors();
+    		configs = server.GetSensors();
+    		if (configs == null) {
+    			int confirm = JOptionPane.showOptionDialog(
+                        null, "Server not found. Launch new server?", 
+                        "Exit Confirmation", JOptionPane.YES_NO_OPTION, 
+                        JOptionPane.QUESTION_MESSAGE, null, null, null);
+                   if (confirm == 0) {
+                	   System.out.println("starting new server");
+                	   //TODO start new server seperately
+                	   //TODO wait until server is fully started up
+                	   //TODO configs = server.GetSensors();
+                   }
+            }
+                   
+    		refreshSensorList();
     	}
     }
     class RefreshListener implements Runnable { 
@@ -490,36 +518,44 @@ public class AutoAwareControlPanel extends JFrame {//implements Observer {
             	
         		//System.out.println(i);
         		//JPanel myPanel = controlPanels[i];
-        		JPanel myPanel = (JPanel) panelHolder.getComponent(i);
-        		//System.out.println(panelHolder.getComponent(i));
-        		//myPanel.setBackground(Color.red);
-        		myPanel.setBackground(configs.get(i).color);
-        		JButton icon = (JButton) ((Container) myPanel.getComponent(3)).getComponent(0);
-        		if (configs.get(i).sensor_type == SensorType.AUDIO) {
-        			icon.setIcon(new ImageIcon("resources/mic.png"));
+        		try {
+        			JPanel myPanel = (JPanel) panelHolder.getComponent(i);
+            		//System.out.println(panelHolder.getComponent(i));
+            		//myPanel.setBackground(Color.red);
+            		myPanel.setBackground(configs.get(i).color);
+            		JButton icon = (JButton) ((Container) myPanel.getComponent(3)).getComponent(0);
+            		if (configs.get(i).sensor_type == SensorType.AUDIO) {
+            			icon.setIcon(new ImageIcon("resources/mic.png"));
+            		}
+                    if (configs.get(i).sensor_type == SensorType.VIDEO) {
+                    	icon.setIcon(new ImageIcon("resources/camera.png"));
+                    }
+                    if (configs.get(i).sensor_type == SensorType.LIGHT) {
+                    	icon.setIcon(new ImageIcon("resources/light.png"));
+                    }
+                    if (configs.get(i).isSensorActive()) {
+                    	if (icon.getBackground() == Color.gray) {
+        	            	icon.setBackground(Color.white);
+                    	}
+                    } else {
+                    	if (icon.getBackground() != Color.gray) {
+        	            	icon.setBackground(Color.gray);
+                    	}
+                    }
+                    JButton enabled = (JButton)((Container)myPanel.getComponent(2)).getComponent(1);
+                    enabled.setText(configs.get(i).isSensorActive()?"Disable":"Enable");
+                    //System.out.println("enabled : " + enabled.getText());
+                    //System.out.println(configs.get(i).sensor_type);
+                    //System.out.println("look here eugene you fucking prick " + configs.get(i).isSensorActive());
+            		JLabel title = (JLabel) myPanel.getComponent(0);
+            		title.setText("<html>" + configs.get(i).name + (configs.get(i).isSensorActive()?"":" <br />(Disabled)</html>"));
+        		} catch (ArrayIndexOutOfBoundsException e) {
+        			//Its okay, we just make a new sensor and add it in
+			    	createNew(controlIndex, configs.get(i));
+        		} catch (Exception e) {
+        			//Okay, now something bad is happening
         		}
-                if (configs.get(i).sensor_type == SensorType.VIDEO) {
-                	icon.setIcon(new ImageIcon("resources/camera.png"));
-                }
-                if (configs.get(i).sensor_type == SensorType.LIGHT) {
-                	icon.setIcon(new ImageIcon("resources/light.png"));
-                }
-                if (configs.get(i).isSensorActive()) {
-                	if (icon.getBackground() == Color.gray) {
-    	            	icon.setBackground(Color.white);
-                	}
-                } else {
-                	if (icon.getBackground() != Color.gray) {
-    	            	icon.setBackground(Color.gray);
-                	}
-                }
-                JButton enabled = (JButton)((Container)myPanel.getComponent(2)).getComponent(1);
-                enabled.setText(configs.get(i).isSensorActive()?"Disable":"Enable");
-                //System.out.println("enabled : " + enabled.getText());
-                //System.out.println(configs.get(i).sensor_type);
-                //System.out.println("look here eugene you fucking prick " + configs.get(i).isSensorActive());
-        		JLabel title = (JLabel) myPanel.getComponent(0);
-        		title.setText("<html>" + configs.get(i).name + (configs.get(i).isSensorActive()?"":" <br />(Disabled)</html>"));
+        		
         	}	
     		panelHolder.revalidate();
     		panelHolder.repaint();
@@ -774,6 +810,7 @@ public class AutoAwareControlPanel extends JFrame {//implements Observer {
 			System.out.println("Message recieved for incorrect sensor, please try again.\n " + gotMessage);
 			return;
 		}
+		System.out.println(gotMessage);
 		//System.out.println("Message recieved, says to: " + gotMessage.message + " with the type of" + gotMessage.type);
 		
 		
@@ -836,7 +873,17 @@ public class AutoAwareControlPanel extends JFrame {//implements Observer {
 			case CONFIG:
 				//this code....  *shudder*
 				//can't use gotMessage.from because it may be from another client interface
-				configs.set(configs.indexOf(ConfigFind((gotMessage.config.ip))), gotMessage.config);
+				if (((ConfigMessage)gotMessage).delete) {
+					//remove sensor
+					RemoveSensor(gotMessage.config.ip, true);
+				} else if (ConfigFind(gotMessage.config.ip) != null) {
+					//add new sensor
+					configs.add(gotMessage.config);
+			    	createNew(controlIndex, gotMessage.config);
+				} else {
+					//otherewise update sensor
+					configs.set(configs.indexOf(ConfigFind((gotMessage.config.ip))), gotMessage.config);
+				}
 				refreshSensorList();
 				break;
 			default:

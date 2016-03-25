@@ -18,6 +18,8 @@ public class SeparateServer {
 	
 	static ArrayList<String> ui_ips = new ArrayList<String>();
 	
+	static ArrayList<ClientConfig> sensorConfigs = new ArrayList<ClientConfig>(); //TODO remove once database is established
+	
 	public SeparateServer() {
 		
 	    System.setProperty("javax.net.ssl.keyStore", "mySrvKeystore");    //get ssl working
@@ -66,6 +68,7 @@ public class SeparateServer {
 			out.writeObject(msg);									//write our message over the socket
 			out.flush();											//flush to ensure the message is sent
 		} catch (Exception e) {
+			System.out.println("Message sending failed");
 			e.printStackTrace();
 			return false;
 		} finally {													//cleaning up
@@ -118,12 +121,27 @@ public class SeparateServer {
 			return null;
 		}
 	}
+	public static ClientConfig ConfigFind(String identifier) { //TODO remove when adding database
+    	//System.out.println(configs);
+    	for (int i = 0; i < sensorConfigs.size(); i++) {
+    		//System.out.println(configs.get(i).ip);
+    		if (sensorConfigs.get(i) != null) {
+	    		if ((sensorConfigs.get(i).ip).equals(identifier)) {
+	    			return sensorConfigs.get(i);
+	    		}
+    		}
+    	}
+    	//was not found
+    	return null;
+    }
 	
 	public static void main(String[] args) {
-
 		SeparateServer server = new SeparateServer(); 			//initialize server
+		System.out.println("Booting up server");
+
 		do {
 			Socket sock = server.getNextConnection();			//get a new connection from the server
+			System.out.println("Next Connection");
 			if(sock == null)									//if there was an error getting  a new connection
 				continue;										//restart to wait for a new, valid connection
 									
