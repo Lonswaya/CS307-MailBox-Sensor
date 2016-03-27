@@ -1,7 +1,11 @@
 
+import java.applet.AudioClip;
+import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.*;
 import java.util.ArrayList;
+import java.util.Hashtable;
+import java.util.Queue;
 
 import javax.net.ssl.SSLServerSocket;
 import javax.net.ssl.SSLServerSocketFactory;
@@ -18,7 +22,17 @@ public class SeparateServer {
 	
 	static ArrayList<String> ui_ips = new ArrayList<String>();
 	
-	static ArrayList<ClientConfig> sensorConfigs = new ArrayList<ClientConfig>(); //TODO remove once database is established
+	static Hashtable<String, SensorSendingList> sendingList = new Hashtable<String, SensorSendingList>();
+	
+	//static ArrayList<String> valueSendingUI = new ArrayList<String>();
+	//static ArrayList<String> pictureSendingUI = new ArrayList<String>();
+	//static ArrayList<String> audioSendingUI = new ArrayList<String>();
+	
+	//static Hashtable<String, Float> readingTable = new Hashtable<String, Float>();
+	//static Hashtable<String, Queue<AudioClip>> audioTable = new Hashtable<String, Queue<AudioClip>>();
+	//static Hashtable<String, BufferedImage> pictureTable = new Hashtable<String, BufferedImage>();
+	
+	//static ArrayList<ClientConfig> sensorConfigs = new ArrayList<ClientConfig>(); //TODO remove once database is established
 	
 	public SeparateServer() {
 		
@@ -29,6 +43,7 @@ public class SeparateServer {
 	    System.setProperty("javax.net.ssl.trustStorePassword", "sensor"); //get ssl working
 	    
 		SSLServerSocketFactory f = (SSLServerSocketFactory)SSLServerSocketFactory.getDefault(); //initialize the factory for creating our server socket
+		socketFactory = (SSLSocketFactory)SSLSocketFactory.getDefault();
 		try {
 			ss = f.createServerSocket(StaticPorts.serverPort); //create our server socket
 		} catch (IOException e) {
@@ -62,7 +77,7 @@ public class SeparateServer {
 			String address = InetAddress.getLocalHost().toString(); //get the local ip address
 			address = address.substring(address.indexOf('/') + 1);  //strip off the unnecessary bits
 			msg.setFrom(address);									//set the sent from property of message
-			
+			System.out.println("Sending message to ip: " + ip + " and port: " + port);
 			sock = SeparateServer.socketFactory.createSocket(ip, port);			//create a socket to send the message over
 			out = new ObjectOutputStream(sock.getOutputStream());	//get the output stream from the socket	
 			out.writeObject(msg);									//write our message over the socket
@@ -93,7 +108,7 @@ public class SeparateServer {
 	}
 	
 	//sends message without closing socket
-	static boolean sendMessage(ObjectOutputStream out, Message msg, String ip, int port) {
+	static boolean sendMessage(ObjectOutputStream out, Message msg, int port) {
 		try {
 			String address = InetAddress.getLocalHost().toString(); //get the local ip address
 			address = address.substring(address.indexOf('/') + 1);  //strip off the unnecessary bits
@@ -121,7 +136,7 @@ public class SeparateServer {
 			return null;
 		}
 	}
-	public static ClientConfig ConfigFind(String identifier) { //TODO remove when adding database
+	/*public static ClientConfig ConfigFind(String identifier) { //TODO remove when adding database
     	//System.out.println(configs);
     	for (int i = 0; i < sensorConfigs.size(); i++) {
     		//System.out.println(configs.get(i).ip);
@@ -133,7 +148,7 @@ public class SeparateServer {
     	}
     	//was not found
     	return null;
-    }
+    }*/
 	
 	public static void main(String[] args) {
 		SeparateServer server = new SeparateServer(); 			//initialize server

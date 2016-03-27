@@ -25,10 +25,12 @@ public class VideoStreamBox extends JPanel {
 	private Timer t;
 	private boolean found;
 	private String path;
+	private CentralServer server;
 
-	public VideoStreamBox(String address) {
+	public VideoStreamBox(String address, CentralServer server) {
 		this.setLayout(null);
 		found = false;
+		this.server = server;
 		this.address = address;
 		t  = new Timer(10, new repainter());
 		t.start();

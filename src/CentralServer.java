@@ -1,3 +1,5 @@
+import java.applet.AudioClip;
+import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.*;
 
@@ -231,6 +233,95 @@ public class CentralServer extends Observable implements Runnable {
 		return ar;
 		
 	}
+	/*public BufferedImage getImage(String ip) {
+		BufferedImage img = null;
+		try {
+			GetReadingMessage msg = new GetReadingMessage("Hey give it to me", MessageType.PICTURE, ip);
+			
+			
+			String address = InetAddress.getLocalHost().toString();
+			address = address.substring(address.indexOf('/') + 1);
+			msg.setFrom(address);
+			
+			Socket sock = socketFactory.createSocket(seperateIP, seperatePort);
+			ObjectOutputStream out = new ObjectOutputStream(sock.getOutputStream());
+			out.writeObject(msg);
+			out.flush();
+			
+			
+			ObjectInputStream os = new ObjectInputStream(sock.getInputStream());
+			
+			img = ((PictureMessage)os.readObject()).getImage();			
+			
+			os.close();
+			out.close();
+		} catch (Exception e) {
+			//e.printStackTrace();
+			System.err.println("Could not get streaming message");
+			return null;
+		}
+		return img;
+	}
+	public AudioClip getClip(String ip) {
+
+		AudioClip clip = null;
+		try {
+			GetReadingMessage msg = new GetReadingMessage("Hey give it to me", MessageType.AUDIO, ip);
+			
+			
+			String address = InetAddress.getLocalHost().toString();
+			address = address.substring(address.indexOf('/') + 1);
+			msg.setFrom(address);
+			
+			Socket sock = socketFactory.createSocket(seperateIP, seperatePort);
+			ObjectOutputStream out = new ObjectOutputStream(sock.getOutputStream());
+			out.writeObject(msg);
+			out.flush();
+			
+			
+			ObjectInputStream os = new ObjectInputStream(sock.getInputStream());
+			
+			clip = ((AudioMessage)os.readObject()).clip;			
+			
+			os.close();
+			out.close();
+		} catch (Exception e) {
+			//e.printStackTrace();
+			System.err.println("Could not get streaming message");
+			return null;
+		}
+		return clip;
+	}
+	public float getValue(String ip) {
+		float value = 0;
+		try {
+			GetReadingMessage msg = new GetReadingMessage("Hey give it to me", MessageType.READING, ip);
+			
+			
+			String address = InetAddress.getLocalHost().toString();
+			address = address.substring(address.indexOf('/') + 1);
+			msg.setFrom(address);
+			
+			Socket sock = socketFactory.createSocket(seperateIP, seperatePort);
+			ObjectOutputStream out = new ObjectOutputStream(sock.getOutputStream());
+			out.writeObject(msg);
+			out.flush();
+			
+			
+			ObjectInputStream os = new ObjectInputStream(sock.getInputStream());
+			
+			value = ((ReadingMessage)os.readObject()).getCurrentThreshold();			
+			
+			os.close();
+			out.close();
+		} catch (Exception e) {
+			//e.printStackTrace();
+			System.err.println("Could not get streaming message");
+			return 0;
+		}
+		return value;
+		
+	}*/
 	
 	
 }

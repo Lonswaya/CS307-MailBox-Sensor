@@ -36,10 +36,12 @@ public class ValueStreamBox extends JPanel {
 	private Thread playerThread;
 	private JButton audioToggle;
 	private Timer t;
+	private CentralServer server;
 		
 	private int[] pointsX1, pointsX2, pointsY1, pointsY2, thresholdPointX, thresholdPointY;
-	public ValueStreamBox(SensorType sensorType, float threshold, String address) {
+	public ValueStreamBox(SensorType sensorType, float threshold, String address, CentralServer server) {
 		super();
+		this.server = server;
 		this.address = address;
 		t  = new Timer(1000, new repainter());
 		t.start();
@@ -82,6 +84,13 @@ public class ValueStreamBox extends JPanel {
 	private class repainter implements ActionListener {
         public void actionPerformed(ActionEvent e) {
         	repaint();
+        	/*value = server.getValue(address);
+        	if (sensorType == SensorType.AUDIO) {
+        		AudioClip clip = server.getClip(address);
+        		if (clip != null) {
+        			audioQueue.add(clip);
+        		}
+        	}*/
         }
 	}
 	private class muter implements ActionListener {
@@ -168,7 +177,7 @@ public class ValueStreamBox extends JPanel {
 				//System.out.println("looping thread");
 				boolean played = false;
 				if (audioQueue.size() > 0) {
-					AudioClip nextClip = audioQueue.remove();
+					AudioClip nextClip = audioQueue.poll();
 					played = true;
 					if (playingSound)
 						nextClip.play();

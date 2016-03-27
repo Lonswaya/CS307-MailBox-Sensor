@@ -1,4 +1,5 @@
 
+import java.applet.AudioClip;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -6,6 +7,8 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.Queue;
 
 /*
  * Handles individual requests from clients
@@ -147,22 +150,33 @@ public class ServerListener implements Runnable {
 				
 				case READING:
 					//TODO notification parsing
-					//forward to client
-				case AUDIO:
-					//forward to client
-				case PICTURE:
-					//forward to client
-					//as of now, we just forward every single message to the client. May cause desync issues otherwise.
-					for (String s : SeparateServer.ui_ips) {
-						try {
-							//TODO assume this is threaded
-							SeparateServer.sendMessage(msg, s, StaticPorts.clientPort);
-						} catch (Exception e) {
-							System.out.println("Unable to send to user with ip " + s);
-							SeparateServer.ui_ips.remove(s);
+					for (String client : SeparateServer.sendingList.get(msg.from).readingList) {
+						if (!SeparateServer.sendMessage(msg, client, StaticPorts.clientPort)) {
+							//remove
+							SeparateServer.sendingList.get(msg.from).readingList.remove(client);
 						}
+
 					}
-					
+					//Go through this sensor's list for reading clients to send to, send each 
+					break;
+				case AUDIO:
+					for (String client : SeparateServer.sendingList.get(msg.from).audioList) {
+						if (!SeparateServer.sendMessage(msg, client, StaticPorts.clientPort)) {
+							//remove
+							SeparateServer.sendingList.get(msg.from).audioList.remove(client);
+						}					}
+					//Go through this sensor's list for audio clients to send to, send each 
+
+					break;
+				case PICTURE:
+					for (String client : SeparateServer.sendingList.get(msg.from).pictureList) {
+						if (!SeparateServer.sendMessage(msg, client, StaticPorts.clientPort)) {
+							//remove
+							SeparateServer.sendingList.get(msg.from).pictureList.remove(client);
+						}				
+					}
+					//Go through this sensor's list for picture clients to send to, send each 
+
 					break;
 				case CONFIG:
 					// TODO: update database?
@@ -171,11 +185,52 @@ public class ServerListener implements Runnable {
 					notify_uis(cm3.config);
 					if (cm3.delete) {
 						//remove sensor
-						SeparateServer.sensorConfigs.remove(SeparateServer.ConfigFind(cm3.config.ip));
+						SeparateServer.sendingList.remove(cm3.config.ip); //TODO remove once database established
 						break;
 					}
 					//send to sensor
 				case STREAMING:
+					
+					StreamingMessage smsg = (StreamingMessage)msg;
+					switch (msg.config.sensor_type) {
+					case LIGHT:
+						// add or remove to value streaming list for this sensor
+						if (smsg.streaming) {
+							SeparateServer.sendingList.get(msg.config.ip).readingList.add(msg.from);
+						} else {
+							SeparateServer.sendingList.get(msg.config.ip).readingList.remove(msg.from);
+						}
+
+						//SeparateServer.audioSendingUI.add(msg.from);
+						break;
+					case AUDIO:
+						// add or remove to value streaming list for this sensor
+						// add or remove audio streaming list for this sensor
+						if (smsg.streaming) {
+							SeparateServer.sendingList.get(msg.config.ip).audioList.add(msg.from);
+							SeparateServer.sendingList.get(msg.config.ip).readingList.add(msg.from);
+						} else {
+							SeparateServer.sendingList.get(msg.config.ip).audioList.remove(msg.from);
+							SeparateServer.sendingList.get(msg.config.ip).readingList.remove(msg.from);
+						}
+
+						
+						//SeparateServer.videoSendingUI.add(msg.from);
+
+					case PICTURE:
+						// add to picture streaming list for this sensor
+						if (smsg.streaming) {
+							SeparateServer.sendingList.get(msg.config.ip).pictureList.add(msg.from);
+						} else {
+							SeparateServer.sendingList.get(msg.config.ip).pictureList.remove(msg.from);
+						}
+						//SeparateServer.lightSendingUI.add(msg.from);
+
+						break;
+					default:
+						break;
+					
+					}
 					//send to sensor
 					String address = "";
 					try {
@@ -188,13 +243,18 @@ public class ServerListener implements Runnable {
 					msg.setFrom(address);
 					//set the from to this address, so the sensor knows to reply to the server
 					SeparateServer.sendMessage(msg, msg.config.ip, StaticPorts.piPort);
+					
 					break;
 				case ADD_SENSOR:
 					
-					if (SeparateServer.ConfigFind(msg.config.ip) == null) {// TODO: Add database support
-						SeparateServer.sendMessage(out, new Message("Adding sensor already in db",  null, null), msg.from, StaticPorts.clientPort);
+					
+					if (SeparateServer.sendingList.get(msg.config.ip) != null) {// TODO: Add database support
+						SeparateServer.sendMessage(out, new Message("Adding sensor already in db",  null, null), StaticPorts.clientPort);
 						return;			
 					} 
+					
+					//add to the streaming list
+					
 					
 					
 					System.out.println(msg);
@@ -206,17 +266,23 @@ public class ServerListener implements Runnable {
 					
 					if(cm.config.ip.equals("1234")/*TODO remove debug*/ || SeparateServer.sendMessage(msg, cm.config.ip, StaticPorts.piPort)) {
 						System.out.println("adding new sensor");
-						SeparateServer.sendMessage(out, new Message("Connection succeeded", null, null), msg.from, StaticPorts.clientPort); // msg type can be null, no biggie
-						SeparateServer.sensorConfigs.add(cm.config); //TODO remove once database established
+						SeparateServer.sendMessage(out, new Message("Connection succeeded", null, null), StaticPorts.clientPort); // msg type can be null, no biggie
+						SeparateServer.sendingList.put(msg.config.ip, new SensorSendingList(cm.config));
 						notify_uis(cm.config); 
 					} else {
-						SeparateServer.sendMessage(out, new Message("Sensor connection failed", null, null), msg.from, StaticPorts.clientPort);    //
+						SeparateServer.sendMessage(out, new Message("Sensor connection failed", null, null), StaticPorts.clientPort);    //
 					}
 					break;
 				case GET_SENSORS:
 					//get all configs from database, store in a regular array for maximum compression at the moment
-					ArrayList<ClientConfig> ar = SeparateServer.sensorConfigs; //TODO remove once database established
-					SeparateServer.sendMessage(out, new SensorsMessage("Here's your sensors, yo", ar), msg.from, StaticPorts.clientPort); 
+					ArrayList<ClientConfig> cf = new ArrayList<ClientConfig>();
+					//SeparateServer.sendingList.forEach(action);
+					
+					for (String s : SeparateServer.sendingList.keySet()) {
+						cf.add(SeparateServer.sendingList.get(s).sensorInfo);
+					}
+					ArrayList<ClientConfig> ar = cf; //TODO remove once database established
+					SeparateServer.sendMessage(out, new SensorsMessage("Here's your sensors, yo", ar), StaticPorts.clientPort); 
 					break;
 				default:
 					break;

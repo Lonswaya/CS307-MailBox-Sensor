@@ -499,6 +499,15 @@ public class AutoAwareControlPanel extends JFrame {//implements Observer {
                         JOptionPane.QUESTION_MESSAGE, null, null, null);
                    if (confirm == 0) {
                 	   System.out.println("starting new server");
+                	   
+                	   //execute "lib/SeparateServer.jar"
+                	   try {
+                	   Process proc = Runtime.getRuntime().exec("java -jar lib/SeparateServer.jar");
+                	   } catch (Exception e) {
+                		   System.err.println("Error: Could not start server");
+                		   
+                	   }
+					
                 	   //TODO start new server seperately
                 	   //TODO wait until server is fully started up
                 	   //TODO configs = server.GetSensors();
@@ -597,7 +606,7 @@ public class AutoAwareControlPanel extends JFrame {//implements Observer {
 	    		boolean connection = server.sendMessage(new StreamingMessage("Setting image/video streaming to true",c,true));
 	    		if (connection) {
 		    		stream.setTitle("Video stream on sensor " + address);
-		    		VideoStreamBox newVid = new VideoStreamBox(address);
+		    		VideoStreamBox newVid = new VideoStreamBox(address, server);
 		    		stream.myPanel = newVid;
 			    	stream.add(newVid);
 			    	Streamers.put(address, stream);
@@ -613,7 +622,7 @@ public class AutoAwareControlPanel extends JFrame {//implements Observer {
 	    		boolean connection = server.sendMessage(new StreamingMessage("Setting streaming to true",c,true));
 	    		if (connection) {
 		    		stream.setTitle(c.sensor_type + " stream on sensor " + address);
-		    		ValueStreamBox newVal = new ValueStreamBox(c.sensor_type, c.sensing_threshold, address);
+		    		ValueStreamBox newVal = new ValueStreamBox(c.sensor_type, c.sensing_threshold, address, server);
 			    	stream.add(newVal);
 			    	stream.myPanel = newVal;
 			    	Streamers.put(address, stream);
