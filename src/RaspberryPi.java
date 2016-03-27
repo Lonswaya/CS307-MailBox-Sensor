@@ -114,6 +114,7 @@ public class RaspberryPi {
 	}
 
 	public void send_message(Message msg) {
+		long tempTime = System.currentTimeMillis();
 		System.out.println("start sending msg");
 		Socket sendSocket = null;
 		//System.out.println("sending message " + msg.toString() + " with config " + msg.config);
@@ -135,6 +136,7 @@ public class RaspberryPi {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		System.out.println("Debug: End compression, Time:" + (int) (System.currentTimeMillis() - tempTime) + "\n");
 		System.out.println("msg sent");
 	}
 
