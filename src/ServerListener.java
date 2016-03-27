@@ -7,6 +7,8 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 
+import com.twilio.sdk.TwilioRestException;
+
 /*
  * Handles individual requests from clients
  */
@@ -159,9 +161,16 @@ public class ServerListener implements Runnable {
 					}
 					
 					if (cc.textNotification == true) {
-						//TODO: get the twilio jar in the build path again, make this actually function
-						TwilioSender.send(cc.phoneNumber, rmsg.getString());
+						try {
+							TwilioSender.send(cc.phoneNumber, rmsg.getString());
+						} catch (TwilioRestException tre) {
+							//handle it
+						}
 					}
+					
+					notify_uis(cc);
+					
+					break;
 					
 					//forward to client
 				case AUDIO:
