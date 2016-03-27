@@ -190,7 +190,8 @@ public class ServerListener implements Runnable {
 						if (!SeparateServer.sendMessage(msg, client, StaticPorts.clientPort)) {
 							//remove
 							SeparateServer.sendingList.get(msg.from).audioList.remove(client);
-						}					}
+						}					
+					}
 					//Go through this sensor's list for audio clients to send to, send each 
 
 					break;
@@ -212,50 +213,7 @@ public class ServerListener implements Runnable {
 					if (cm3.delete) {
 						//remove sensor
 						SeparateServer.sendingList.remove(cm3.config.ip); //TODO remove once database established
-						break;
-					}
-					//send to sensor
-				case STREAMING:
-					
-					StreamingMessage smsg = (StreamingMessage)msg;
-					switch (msg.config.sensor_type) {
-					case LIGHT:
-						// add or remove to value streaming list for this sensor
-						if (smsg.streaming) {
-							SeparateServer.sendingList.get(msg.config.ip).readingList.add(msg.from);
-						} else {
-							SeparateServer.sendingList.get(msg.config.ip).readingList.remove(msg.from);
-						}
-
-						//SeparateServer.audioSendingUI.add(msg.from);
-						break;
-					case AUDIO:
-						// add or remove to value streaming list for this sensor
-						// add or remove audio streaming list for this sensor
-						if (smsg.streaming) {
-							SeparateServer.sendingList.get(msg.config.ip).audioList.add(msg.from);
-							SeparateServer.sendingList.get(msg.config.ip).readingList.add(msg.from);
-						} else {
-							SeparateServer.sendingList.get(msg.config.ip).audioList.remove(msg.from);
-							SeparateServer.sendingList.get(msg.config.ip).readingList.remove(msg.from);
-						}
-
 						
-						//SeparateServer.videoSendingUI.add(msg.from);
-
-					case PICTURE:
-						// add to picture streaming list for this sensor
-						if (smsg.streaming) {
-							SeparateServer.sendingList.get(msg.config.ip).pictureList.add(msg.from);
-						} else {
-							SeparateServer.sendingList.get(msg.config.ip).pictureList.remove(msg.from);
-						}
-						//SeparateServer.lightSendingUI.add(msg.from);
-
-						break;
-					default:
-						break;
-					
 					}
 					//send to sensor
 					String address = "";
@@ -267,6 +225,64 @@ public class ServerListener implements Runnable {
 					}
 					address = address.substring(address.indexOf('/') + 1);
 					msg.setFrom(address);
+					//set the from to this address, so the sensor knows to reply to the server
+					SeparateServer.sendMessage(msg, msg.config.ip, StaticPorts.piPort);
+					
+					break;
+					
+					//send to sensor
+				case STREAMING:
+					System.out.println(msg);
+					StreamingMessage smsg = (StreamingMessage)msg;
+					switch (msg.config.sensor_type) {
+						case LIGHT:
+							// add or remove to value streaming list for this sensor
+							if (smsg.streaming) {
+								SeparateServer.sendingList.get(msg.config.ip).readingList.add(msg.from);
+							} else {
+								SeparateServer.sendingList.get(msg.config.ip).readingList.remove(msg.from);
+							}
+	
+							//SeparateServer.audioSendingUI.add(msg.from);
+							break;
+						case AUDIO:
+							// add or remove to value streaming list for this sensor
+							// add or remove audio streaming list for this sensor
+							if (smsg.streaming) {
+								SeparateServer.sendingList.get(msg.config.ip).audioList.add(msg.from);
+								SeparateServer.sendingList.get(msg.config.ip).readingList.add(msg.from);
+							} else {
+								SeparateServer.sendingList.get(msg.config.ip).audioList.remove(msg.from);
+								SeparateServer.sendingList.get(msg.config.ip).readingList.remove(msg.from);
+							}
+	
+							break;
+							//SeparateServer.videoSendingUI.add(msg.from);
+	
+						case PICTURE:
+							// add to picture streaming list for this sensor
+							if (smsg.streaming) {
+								SeparateServer.sendingList.get(msg.config.ip).pictureList.add(msg.from);
+							} else {
+								SeparateServer.sendingList.get(msg.config.ip).pictureList.remove(msg.from);
+							}
+							//SeparateServer.lightSendingUI.add(msg.from);
+	
+							break;
+						default:
+							break;
+					
+					}
+					//send to sensor
+					String address1 = "";
+					try {
+						address1 = InetAddress.getLocalHost().toString();
+					} catch (UnknownHostException e) {
+						e.printStackTrace();
+						return;
+					}
+					address1 = address1.substring(address1.indexOf('/') + 1);
+					msg.setFrom(address1);
 					//set the from to this address, so the sensor knows to reply to the server
 					SeparateServer.sendMessage(msg, msg.config.ip, StaticPorts.piPort);
 					

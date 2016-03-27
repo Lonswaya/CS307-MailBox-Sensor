@@ -57,7 +57,8 @@ public class Message implements Serializable {
 		String s;
 		s = "Message: " + this.message +
 			"\nFrom: " + this.from +
-			"\nCreated at: " + this.creationTime;
+			"\nCreated at: " + this.creationTime + 
+			"\nType: " + this.type;
 		return s;
 	}
 	
