@@ -8,5 +8,6 @@
 	<classpathentry kind="lib" path="C:/Users/Lonswaya/workspace/CS307-MailBox-Sensor/resources/v4l4j-0.9.1-r507.jar"/>
 	<classpathentry kind="lib" path="C:/Users/Lonswaya/workspace/CS307-MailBox-Sensor/resources/webcam-capture-0.3.11.jar"/>
 	<classpathentry kind="lib" path="C:/Users/Lonswaya/workspace/CS307-MailBox-Sensor/resources/webcam-capture-driver-v4l4j-0.3.11.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Lonswaya/workspace/CS307-MailBox-Sensor/lib/twilio-java-sdk-5.9.0-jar-with-dependencies.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

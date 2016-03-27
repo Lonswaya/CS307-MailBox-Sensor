@@ -10,6 +10,8 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Queue;
 
+import com.twilio.sdk.TwilioRestException;
+
 /*
  * Handles individual requests from clients
  */
@@ -149,7 +151,31 @@ public class ServerListener implements Runnable {
 					break;
 				
 				case READING:
-					//TODO notification parsing
+					//TODO notification parsing for UI
+					
+					ReadingMessage rmsg = (ReadingMessage) msg;
+					float threshold = rmsg.getCurrentThreshold()/100;
+					ClientConfig cc = rmsg.getConfig();
+					if (cc.sensing_threshold <= threshold) {
+						if (cc.emailNotification == true) {
+							try {
+								Sender.send(cc.emailAddress, rmsg.getString());
+							} catch (IOException e){
+							//handle the exception
+							}
+						}
+		
+						if (cc.textNotification == true) {
+							try {
+								TwilioSender.send(cc.phoneNumber, rmsg.getString());
+							} catch (TwilioRestException tre) {
+							//handle it
+							}
+						}
+					}
+					notify_uis(cc);
+					 
+					
 					for (String client : SeparateServer.sendingList.get(msg.from).readingList) {
 						if (!SeparateServer.sendMessage(msg, client, StaticPorts.clientPort)) {
 							//remove
