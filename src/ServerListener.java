@@ -146,7 +146,23 @@ public class ServerListener implements Runnable {
 					break;
 				
 				case READING:
-					//TODO notification parsing
+					ReadingMessage rmsg = (ReadingMessage) msg;
+					float threshold = rmsg.getCurrentThreshold();
+					ClientConfig cc = rmsg.getConfig();
+					
+					if (cc.emailNotification == true) {
+						try {
+							Sender.send(cc.emailAddress, rmsg.getString());
+						} catch (IOException e){
+							//handle the exception
+						}
+					}
+					
+					if (cc.textNotification == true) {
+						//TODO: get the twilio jar in the build path again, make this actually function
+						TwilioSender.send(cc.phoneNumber, rmsg.getString());
+					}
+					
 					//forward to client
 				case AUDIO:
 					//forward to client
