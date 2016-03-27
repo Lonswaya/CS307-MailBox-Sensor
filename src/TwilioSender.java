@@ -21,7 +21,7 @@ public class TwilioSender {
 		params.add(new BasicNameValuePair("From", "+17655889993")); 
 		params.add(new BasicNameValuePair("Body", textMessage));   
 		MessageFactory messageFactory = client.getAccount().getMessageFactory(); 
-		Message message = messageFactory.create(params); 
+		com.twilio.sdk.resource.instance.Message message = messageFactory.create(params); 
 		System.out.println(message.getSid()); 
 	} 
 }
