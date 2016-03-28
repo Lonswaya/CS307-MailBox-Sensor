@@ -60,6 +60,7 @@ public class SeparateServer {
 	}	
 	
 	
+	
 	/*
 	 * Purpose: Sends a message across ssl
 	 * Returns: True if the message sent successfully and false otherwise
@@ -68,7 +69,8 @@ public class SeparateServer {
 	 * 				IP:		 the ip address to send the message to
 	 * 				Port: 	 the port over which to send the message
 	 */
-	static boolean sendMessage(Message msg, String ip, int port) { 	// TODO: make it threaded
+	/*
+	static boolean sendMessage(Message msg, String ip, int port, boolean setFrom) { 	// TODO: make it threaded
 		
 		Socket sock = null; 		   								//declared out here to maintain scope
 		ObjectOutputStream out = null; 								//same
@@ -76,7 +78,7 @@ public class SeparateServer {
 		try {
 			String address = InetAddress.getLocalHost().toString(); //get the local ip address
 			address = address.substring(address.indexOf('/') + 1);  //strip off the unnecessary bits
-			msg.setFrom(address);									//set the sent from property of message
+			if (setFrom) msg.setFrom(address);									//set the sent from property of message
 			System.out.println("Sending message to ip: " + ip + " and port: " + port);
 			sock = SeparateServer.socketFactory.createSocket(ip, port);			//create a socket to send the message over
 			out = new ObjectOutputStream(sock.getOutputStream());	//get the output stream from the socket	
@@ -96,6 +98,7 @@ public class SeparateServer {
 		}
 		return true;	
 	}
+	*/
 	
 	//receives message without closing socket
 	static Message receiveMessage(ObjectInputStream in) {
@@ -108,11 +111,13 @@ public class SeparateServer {
 	}
 	
 	//sends message without closing socket
-	static boolean sendMessage(ObjectOutputStream out, Message msg, int port) {
+	static boolean sendMessage(ObjectOutputStream out, Message msg, boolean setFrom) {
+	
 		try {
 			String address = InetAddress.getLocalHost().toString(); //get the local ip address
 			address = address.substring(address.indexOf('/') + 1);  //strip off the unnecessary bits
-			msg.setFrom(address);									//set the sent from property of message
+			if (setFrom)
+				msg.setFrom(address);									//set the sent from property of message
 			
 			out.writeObject(msg);									//write our message over the socket
 			out.flush();											//flush to ensure the message is sent
