@@ -5,12 +5,13 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    >
+    android:background="#d8d8d8">
 
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:id="@+id/main_form">
+        android:id="@+id/main_form"
+        android:background="#d7d7d7">
 
         <RelativeLayout android:id="@+id/sensor_info_form" android:layout_width="match_parent"
             android:layout_height="wrap_content" android:orientation="vertical">
@@ -27,20 +28,23 @@
                 android:id="@+id/sensor_type_image"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="7dp"
-                android:padding="5dp"
-                android:layout_marginLeft="35dp"
+                android:layout_marginLeft="45dp"
+                android:paddingBottom="5dp"
                 android:layout_toRightOf="@id/sensor_name"
+                android:src="@mipmap/ic_bulb"
+                android:clickable="false"
                 />
 
             <ImageButton
                 android:id="@+id/rec_button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="7dp"
                 android:padding="5dp"
-                android:layout_marginLeft="100dp"
+                android:layout_marginLeft="45dp"
                 android:layout_toRightOf="@id/sensor_type_image"
+                android:src="@mipmap/ic_rec"
+                android:background="#e6e6e6"
+                android:clickable="true"
                 />
 
             <SeekBar
@@ -48,6 +52,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_below="@id/sensor_name"
+                android:layout_marginTop="10dp"
+                android:clickable="false"
                 />
 
             <Button
@@ -55,11 +61,12 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/button1_string"
-                android:textSize="10dp"
+                android:textSize="12dp"
                 android:padding="5dp"
                 android:layout_below="@id/current_val_bar"
                 android:layout_marginTop="15dp"
                 android:layout_marginLeft="160dp"
+                android:clickable="true"
                 />
 
             <Button
@@ -67,11 +74,13 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/button2_string"
-                android:textSize="10dp"
+                android:textSize="12dp"
                 android:padding="5dp"
+                android:layout_below="@id/current_val_bar"
                 android:layout_toRightOf="@id/button1"
-                android:layout_marginTop="86dp"
+                android:layout_marginTop="15dp"
                 android:layout_marginLeft="10dp"
+                android:clickable="true"
                 />
 
         </RelativeLayout>
