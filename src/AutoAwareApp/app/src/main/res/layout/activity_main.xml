@@ -34,6 +34,7 @@
                 />
 
             <ImageButton
+                android:id="@+id/rec_button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="7dp"
@@ -42,9 +43,36 @@
                 android:layout_toRightOf="@id/sensor_type_image"
                 />
 
+            <SeekBar
+                android:id="@+id/current_val_bar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/sensor_name"
+                />
+
             <Button
-                android:layout_width=""
-                android:layout_height="" />
+                android:id="@+id/button1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/button1_string"
+                android:textSize="10dp"
+                android:padding="5dp"
+                android:layout_below="@id/current_val_bar"
+                android:layout_marginTop="15dp"
+                android:layout_marginLeft="160dp"
+                />
+
+            <Button
+                android:id="@+id/button2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/button2_string"
+                android:textSize="10dp"
+                android:padding="5dp"
+                android:layout_toRightOf="@id/button1"
+                android:layout_marginTop="86dp"
+                android:layout_marginLeft="10dp"
+                />
 
         </RelativeLayout>
     </ScrollView>
