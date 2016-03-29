@@ -1,4 +1,3 @@
-import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -9,20 +8,20 @@ import java.util.Calendar;
 import java.util.Enumeration;
 import java.util.Queue;
 import java.util.Random;
+import java.util.concurrent.BlockingQueue;
 import java.util.zip.DataFormatException;
 import java.util.zip.Deflater;
 import java.util.zip.Inflater;
-
 import javax.imageio.ImageIO;
 
 public abstract class BaseSensor{
 	
-	//config shit
 	protected BaseConfig config;
 	protected SensorType sType;
 	protected float upperBound; //some meaningful boundary values used to calculate percentage
 	protected float lowerBound;
-	protected Queue<byte[]> byteQueue;
+	protected BlockingQueue<byte[]> byteQueue;
+	protected Thread sendFromQueue;
 	
 	public BaseSensor(BaseConfig config){
 		this.config = config;
@@ -91,6 +90,7 @@ public abstract class BaseSensor{
 	}
 	
 	public abstract void sense();
+	//public abstract void streamData(boolean streaming);
 	public abstract boolean check_threshold();
 	public abstract Message form_message();
 	public abstract void close();
@@ -132,7 +132,7 @@ public abstract class BaseSensor{
 		i.inflate(decompressed);
 		i.end();
 	
-		System.out.println("Debug: End compression, Time:" + (int) (System.currentTimeMillis() - tempTime) + "\n");
+		System.out.println("Debug: End decompression, Time:" + (int) (System.currentTimeMillis() - tempTime) + "\n");
 		return decompressed;
 	}
 	
