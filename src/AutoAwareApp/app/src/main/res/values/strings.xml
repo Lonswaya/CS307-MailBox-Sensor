@@ -1,8 +1,9 @@
 <resources>
     <string name="app_name">AutoAware App</string>
-    <string name="title_activity_main">MainActivity</string>
+    <string name="title_activity_main">Sensors</string>
 
     <string name="hello_world">Hello world!</string>
+    <string name="sensor_name">Sensor Name</string>
     <string name="action_settings">Settings</string>
     <string name="title_activity_setting">SettingActivity</string>
     <string name="title_activity_settings">SettingsActivity</string>
