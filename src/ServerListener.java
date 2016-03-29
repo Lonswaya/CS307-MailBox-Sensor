@@ -63,7 +63,7 @@ public class ServerListener implements Runnable {
 	 * Parameters:	message to send
 	 * Returns:		true if the message was successfully sent
 	 * 				false if the message was unsuccessfully sent
-	 */
+	 
 	public boolean sendMessage(Message msg) {
 		try {
 			out.writeObject(msg);							//write the message over the socket
@@ -73,7 +73,7 @@ public class ServerListener implements Runnable {
 			e.printStackTrace();
 		}
 		return false;										//failed sending so return false
-	}
+	}*/
 	
 	/*
 	 * Purpose: 	Closes all sockets/socket related things
@@ -197,9 +197,6 @@ public class ServerListener implements Runnable {
 						//send one to every client, we reached a threshold
 						for (String client : SeparateServer.ui_ips) {
 							System.out.println("Sending message to client " + client + " , reading message");
-							Socket sock = SeparateServer.socketFactory.createSocket(client, StaticPorts.clientPort);
-							
-							ObjectOutputStream out = (ObjectOutputStream)sock.getOutputStream();
 							
 							if (!SeparateServer.sendMessage(out, msg, true)) {
 								//remove
@@ -211,9 +208,7 @@ public class ServerListener implements Runnable {
 					//also send it to everyone who is streaming
 					for (String client : SeparateServer.sendingList.get(msg.from).readingList) {
 						System.out.println("Sending message to client " + client + " , reading message");
-						Socket sock = SeparateServer.socketFactory.createSocket(client, StaticPorts.clientPort);
-						ObjectOutputStream out = (ObjectOutputStream)sock.getOutputStream();
-						if (!SeparateServer.sendMessage(out, msg, false)) {
+						if (!SeparateServer.sendMessage(msg, client, StaticPorts.clientPort, false)) {
 							//remove
 							SeparateServer.sendingList.get(msg.from).readingList.remove(client);
 						}
@@ -223,8 +218,7 @@ public class ServerListener implements Runnable {
 					break;
 				case AUDIO:
 					for (String client : SeparateServer.sendingList.get(msg.from).audioList) {
-						Socket sock = SeparateServer.socketFactory.createSocket(client, StaticPorts.clientPort);
-						if (!SeparateServer.sendMessage(out, msg, false)) {
+						if (!SeparateServer.sendMessage(msg, client, StaticPorts.clientPort, false)) {
 							//remove
 							SeparateServer.sendingList.get(msg.from).audioList.remove(client);
 						}					
@@ -234,8 +228,7 @@ public class ServerListener implements Runnable {
 					break;
 				case PICTURE:
 					for (String client : SeparateServer.sendingList.get(msg.from).pictureList) {
-						Socket sock = SeparateServer.socketFactory.createSocket(client, StaticPorts.clientPort);
-						if (!SeparateServer.sendMessage(out, msg,false)) {
+						if (!SeparateServer.sendMessage(msg, client, StaticPorts.clientPort, false)) {
 							//remove
 							SeparateServer.sendingList.get(msg.from).pictureList.remove(client);
 						}				
@@ -264,9 +257,7 @@ public class ServerListener implements Runnable {
 					address = address.substring(address.indexOf('/') + 1);
 					msg.setFrom(address);
 					//set the from to this address, so the sensor knows to reply to the server
-					Socket sock = SeparateServer.socketFactory.createSocket(msg.config.ip, StaticPorts.piPort);
-					ObjectOutputStream out = (ObjectOutputStream)sock.getOutputStream();
-					SeparateServer.sendMessage(out, msg, false);
+					SeparateServer.sendMessage(msg, msg.config.ip, StaticPorts.piPort, false);
 					
 					break;
 					
@@ -326,15 +317,15 @@ public class ServerListener implements Runnable {
 					address1 = address1.substring(address1.indexOf('/') + 1);
 					msg.setFrom(address1);
 					//set the from to this address, so the sensor knows to reply to the server
-					Socket sock = SeparateServer.socketFactory.createSocket(msg.config.ip, StaticPorts.piPort);
-					SeparateServer.sendMessage(out, msg, false);
+					SeparateServer.sendMessage(msg, msg.config.ip, StaticPorts.piPort, false);
 					
 					break;
 				case ADD_SENSOR:
 					
 					
 					if (SeparateServer.sendingList.get(msg.config.ip) != null) {// TODO: Add database support
-						SeparateServer.sendMessage(out, new Message("Adding sensor already in db",  null, null), StaticPorts.clientPort);
+						
+						SeparateServer.sendMessage(out, new Message("Adding sensor already in db",  null, null), true);
 						return;			
 					} 
 					
@@ -348,14 +339,14 @@ public class ServerListener implements Runnable {
 					ConfigMessage cm = (ConfigMessage)msg;
 					
 					//if proper connection, use the outputstream and send back a new successful message
-					
+					System.out.println("Sending message to " + cm.config.ip + ":" + StaticPorts.piPort);
 					if(cm.config.ip.equals("1234")/*TODO remove debug*/ || SeparateServer.sendMessage(msg, cm.config.ip, StaticPorts.piPort, true)) {
 						System.out.println("adding new sensor");
-						SeparateServer.sendMessage(out, new Message("Connection succeeded", null, null), StaticPorts.clientPort); // msg type can be null, no biggie
+						SeparateServer.sendMessage(out, new Message("Connection succeeded", null, null), true); // msg type can be null, no biggie
 						SeparateServer.sendingList.put(msg.config.ip, new SensorSendingList(cm.config));
 						notify_uis(cm.config); 
 					} else {
-						SeparateServer.sendMessage(out, new Message("Sensor connection failed", null, null), StaticPorts.clientPort);    //
+						SeparateServer.sendMessage(out, new Message("Sensor connection failed", null, null), true);    //
 					}
 					break;
 				case GET_SENSORS:
@@ -367,7 +358,7 @@ public class ServerListener implements Runnable {
 						cf.add(SeparateServer.sendingList.get(s).sensorInfo);
 					}
 					ArrayList<ClientConfig> ar = cf; //TODO remove once database established
-					SeparateServer.sendMessage(out, new SensorsMessage("Here's your sensors, yo", ar), StaticPorts.clientPort); 
+					SeparateServer.sendMessage(out, new SensorsMessage("Here's your sensors, yo", ar), true); 
 					break;
 				default:
 					break;

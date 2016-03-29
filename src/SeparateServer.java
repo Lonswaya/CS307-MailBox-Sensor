@@ -109,6 +109,19 @@ public class SeparateServer {
 			return null;
 		}
 	}
+	static boolean sendMessage(Message msg, String address, int port, boolean setFrom) {
+		try {
+			Socket mySock = SeparateServer.socketFactory.createSocket(address, port);
+			ObjectOutputStream myOut = new ObjectOutputStream(mySock.getOutputStream());	
+			sendMessage(myOut, msg, setFrom);
+			return true;
+		} catch (Exception e) {
+			e.printStackTrace();
+			return false;
+		}
+		
+	}
+	
 	
 	//sends message without closing socket
 	static boolean sendMessage(ObjectOutputStream out, Message msg, boolean setFrom) {

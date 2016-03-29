@@ -7,7 +7,9 @@ public class SensorSendingList {
 		pictureList = new ArrayList<String>();
 		readingList = new ArrayList<String>();
 		sensorInfo = cfg;
+		streaming = false;
 	}
+	protected boolean streaming;
 	protected ClientConfig sensorInfo;
 	protected ArrayList<String> audioList;
 	protected ArrayList<String> pictureList;
