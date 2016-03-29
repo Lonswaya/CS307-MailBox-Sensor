@@ -260,25 +260,7 @@ public class AutoAwareControlPanel extends JFrame {//implements Observer {
             @Override
             public void actionPerformed(ActionEvent event) {
             	//aveSensors();
-            	String address = null;
-            	do
-            	{
-            		if (address != null) JOptionPane.showMessageDialog(null,"Invalid address", "error", JOptionPane.ERROR_MESSAGE, null);
-
-            		address = JOptionPane.showInputDialog("Enter IP Address of server", ""); //Do ip parsing here.
-            		if (address == null) break;
-            	}
-            	while(!checkIPFormat(address));
-            	//System.out.println(address);
-        		//do your ip parsing here boi
-
-            	if(address != null && !address.isEmpty())
-            	{
-            		server.seperateIP = address;
-            		System.out.println(address);
-            		System.out.println("Correct Ip format!");
-            	}
-                //System.out.println("Save sensors");
+            	NewServer();
             }
         });
         
@@ -491,29 +473,7 @@ public class AutoAwareControlPanel extends JFrame {//implements Observer {
     }
     class GetConfigsListener implements Runnable {
     	public void run() {
-    		configs = server.GetSensors();
-    		if (configs == null) {
-    			int confirm = JOptionPane.showOptionDialog(
-                        null, "Server not found. Launch new server?", 
-                        "Exit Confirmation", JOptionPane.YES_NO_OPTION, 
-                        JOptionPane.QUESTION_MESSAGE, null, null, null);
-                   if (confirm == 0) {
-                	   System.out.println("starting new server");
-                	   
-                	   //execute "lib/SeparateServer.jar"
-                	   try {
-                	   Process proc = Runtime.getRuntime().exec("java -jar lib/SeparateServer.jar");
-                	   } catch (Exception e) {
-                		   System.err.println("Error: Could not start server");
-                		   
-                	   }
-					
-                	   //TODO start new server seperately
-                	   //TODO wait until server is fully started up
-                	   //TODO configs = server.GetSensors();
-                   }
-            }
-                   
+    		while(!NewServer());    //keep asking for server, nothing can run without server	
     		refreshSensorList();
     	}
     }
@@ -809,8 +769,43 @@ public class AutoAwareControlPanel extends JFrame {//implements Observer {
 		//UIManager.put("OptionPanel.background", oldColor );
 		//UIManager.put("OptionPanel.foreground", oldColor );
 	}
-    
-   
+    public boolean NewServer() {
+    	String address = null;
+    	do
+    	{
+    		if (address != null) JOptionPane.showMessageDialog(null,"Invalid address", "error", JOptionPane.ERROR_MESSAGE, null);
+
+    		address = JOptionPane.showInputDialog("Enter IP Address of server", ""); //Do ip parsing here.
+    		if (address == null) break;
+    	}
+    	while(!checkIPFormat(address));
+    	//System.out.println(address);
+		//do your ip parsing here boi
+
+    	if(address != null && !address.isEmpty())
+    	{
+    		String lastIP = server.seperateIP;
+    		server.seperateIP = address;
+    		configs = server.GetSensors();
+    		if (configs == null) {
+    			//System.out.println("server not found");
+    			server.seperateIP = lastIP;
+        		JOptionPane.showMessageDialog(null,"Server not found", "error", JOptionPane.ERROR_MESSAGE, null);
+        		return false;
+    		} else {
+        		JOptionPane.showMessageDialog(null,"Server found, sensors updated", "success", JOptionPane.INFORMATION_MESSAGE, null);
+        		return true;
+    		}
+    		
+    		/*server.seperateIP = address;
+    		System.out.println(address);
+    		System.out.println("Correct Ip format!");*/
+    		
+    	}
+    	return false;
+        //System.out.println("Save sensors");
+
+    }
   
 	public void ProcessMessage(Message arg1) {
 		Message gotMessage = arg1;
@@ -904,7 +899,7 @@ public class AutoAwareControlPanel extends JFrame {//implements Observer {
 	public boolean checkIPFormat(String ip)
 	{
 		//debug, I like using 1234
-		if (ip.equals("1234")) return true;
+		if (ip.equals("1234") || ip.equals("localhost")) return true;
 		
 		try {
 	        if ( ip == null || ip.isEmpty() ) {

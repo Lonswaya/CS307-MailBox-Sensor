@@ -226,7 +226,7 @@ public class CentralServer extends Observable implements Runnable {
 			out.close();
 		} catch (Exception e) {
 			//e.printStackTrace();
-			System.out.println("New sensor not found");
+			System.out.println("Server not found");
 			return null;
 		}
 		
