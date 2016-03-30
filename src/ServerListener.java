@@ -18,7 +18,7 @@ import com.twilio.sdk.TwilioRestException;
 
 public class ServerListener implements Runnable {
 
-	private Socket sock = null;													//used for sending data
+	//private Socket sock;
 	private ObjectOutputStream out = null;										//same
 	private ObjectInputStream in = null;											//same
 	
@@ -27,15 +27,17 @@ public class ServerListener implements Runnable {
 	 * Parameters:
 	 * 				sock: a socket to handle the request from
 	 */
-	public ServerListener(Socket sock) {
-		this.sock = sock;															
+	public ServerListener(ObjectInputStream in, ObjectOutputStream out) {
+		/*if (sock == null || sock.isClosed() || !sock.isConnected()) {
+			System.err.println("shit's fucked" + sock);
+			System.exit(69696969);
+		}*/
 		try {
-			out = new ObjectOutputStream(sock.getOutputStream());					//initialize the input and output streams
-			in = new ObjectInputStream(sock.getInputStream());
-			if(in == null) {
-				System.out.println("Error getting ObjectInputStream");
-			}
-		} catch (IOException e) {
+			this.out = out;
+			this.in = in;
+			//out = new ObjectOutputStream(sock.getOutputStream());					//initialize the input and output streams
+			//in = new ObjectInputStream(sock.getInputStream());
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
@@ -46,7 +48,7 @@ public class ServerListener implements Runnable {
 	 * 			Message if successful
 	 * 			Null if unsuccessful
 	 */
-	public Message receiveMessage() {
+	public synchronized Message receiveMessage() {
 		try {
 			return (Message)in.readObject();				//try to read the message
 		} catch (ClassNotFoundException e) {				//if the class wasn't found something is seriously wrong
@@ -83,7 +85,7 @@ public class ServerListener implements Runnable {
 		try {
 			in.close();
 			out.close();
-			sock.close();
+			//sock.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -107,23 +109,7 @@ public class ServerListener implements Runnable {
 	private void notify_uis(ClientConfig config) {
 		for (String ip : SeparateServer.ui_ips) {
 			ConfigMessage msg = new ConfigMessage(ip, config);
-			Socket sock;
-			try {
-				sock = SeparateServer.socketFactory.createSocket(ip, StaticPorts.clientPort);
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-				continue;
-			}
-			ObjectOutputStream out;
-			try {
-				out = (ObjectOutputStream)sock.getOutputStream();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-				continue;
-			}
-			SeparateServer.sendMessage(out, msg, true);
+			SeparateServer.sendMessage(msg, ip, StaticPorts.clientPort, true);
 		}
 	}
 	
@@ -151,7 +137,6 @@ public class ServerListener implements Runnable {
 			SeparateServer.run = false;											//make the server quit running
 			return;
 		}
-		
 		
 		
 		if(msg.type == null) {
@@ -198,7 +183,7 @@ public class ServerListener implements Runnable {
 						for (String client : SeparateServer.ui_ips) {
 							System.out.println("Sending message to client " + client + " , reading message");
 							
-							if (!SeparateServer.sendMessage(out, msg, true)) {
+							if (!SeparateServer.sendMessage(out, in, msg, true)) {
 								//remove
 								
 								SeparateServer.ui_ips.remove(client);
@@ -325,7 +310,7 @@ public class ServerListener implements Runnable {
 					
 					if (SeparateServer.sendingList.get(msg.config.ip) != null) {// TODO: Add database support
 						
-						SeparateServer.sendMessage(out, new Message("Adding sensor already in db",  null, null), true);
+						SeparateServer.sendMessage(out, in, new Message("Adding sensor already in db",  null, null), true);
 						return;			
 					} 
 					
@@ -339,34 +324,37 @@ public class ServerListener implements Runnable {
 					ConfigMessage cm = (ConfigMessage)msg;
 					
 					//if proper connection, use the outputstream and send back a new successful message
-					System.out.println("Sending message to " + cm.config.ip + ":" + StaticPorts.piPort);
 					if(cm.config.ip.equals("1234")/*TODO remove debug*/ || SeparateServer.sendMessage(msg, cm.config.ip, StaticPorts.piPort, true)) {
 						System.out.println("adding new sensor");
-						SeparateServer.sendMessage(out, new Message("Connection succeeded", null, null), true); // msg type can be null, no biggie
+						SeparateServer.sendMessage(out, in,new Message("Connection succeeded", null, null), true); // msg type can be null, no biggie
 						SeparateServer.sendingList.put(msg.config.ip, new SensorSendingList(cm.config));
 						notify_uis(cm.config); 
 					} else {
-						SeparateServer.sendMessage(out, new Message("Sensor connection failed", null, null), true);    //
+						SeparateServer.sendMessage(out, in, new Message("Sensor connection failed", null, null), true);    //
 					}
 					break;
 				case GET_SENSORS:
 					//get all configs from database, store in a regular array for maximum compression at the moment
 					ArrayList<ClientConfig> cf = new ArrayList<ClientConfig>();
 					//SeparateServer.sendingList.forEach(action);
-					
 					for (String s : SeparateServer.sendingList.keySet()) {
 						cf.add(SeparateServer.sendingList.get(s).sensorInfo);
 					}
 					ArrayList<ClientConfig> ar = cf; //TODO remove once database established
-					SeparateServer.sendMessage(out, new SensorsMessage("Here's your sensors, yo", ar), true); 
+					SeparateServer.sendMessage(out, in, new SensorsMessage("Here's your sensors, yo", ar), true); 
 					break;
 				default:
 					break;
-					
 			}
 		
 		}
-			close();		
+		try {
+			//Send confirmation that we are done
+			out.writeObject(new Message("Confirmed connection",null,null));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		close();		
 		 
 	}
 }

@@ -16,6 +16,7 @@ public class SeparateServer {
 			
 	protected ServerSocket ss = null; 			     //SSL Server socket for accepting connections
 	
+	
 	static SSLSocketFactory socketFactory = null; //factory for creating new SSL conections to other ServerSockets
 	
 	static boolean run = true; 					 	 //used to allow the ServerListener thread end the main server's execution by setting this to false
@@ -43,9 +44,10 @@ public class SeparateServer {
 	    System.setProperty("javax.net.ssl.trustStorePassword", "sensor"); //get ssl working
 	    
 		SSLServerSocketFactory f = (SSLServerSocketFactory)SSLServerSocketFactory.getDefault(); //initialize the factory for creating our server socket
+	
 		socketFactory = (SSLSocketFactory)SSLSocketFactory.getDefault();
 		try {
-			ss = f.createServerSocket(StaticPorts.serverPort); //create our server socket
+			ss = f.createServerSocket(StaticPorts.serverPort, 6969); //create our server socket
 		} catch (IOException e) {
 			e.printStackTrace();
 			System.out.println("Yeah something's gone super wrong");
@@ -101,7 +103,7 @@ public class SeparateServer {
 	*/
 	
 	//receives message without closing socket
-	static Message receiveMessage(ObjectInputStream in) {
+	static synchronized Message receiveMessage(ObjectInputStream in) {
 		try {
 			return (Message)in.readObject();
 		} catch (Exception e) {
@@ -109,11 +111,23 @@ public class SeparateServer {
 			return null;
 		}
 	}
-	static boolean sendMessage(Message msg, String address, int port, boolean setFrom) {
+	
+	static synchronized Socket getSocket(String host, int port) {
 		try {
-			Socket mySock = SeparateServer.socketFactory.createSocket(address, port);
-			ObjectOutputStream myOut = new ObjectOutputStream(mySock.getOutputStream());	
-			sendMessage(myOut, msg, setFrom);
+			return SeparateServer.socketFactory.createSocket(host, port);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+	
+	static synchronized boolean sendMessage(Message msg, String address, int port, boolean setFrom) {
+		try {
+			Socket ss = SeparateServer.getSocket(address, port);
+			ObjectOutputStream out = new ObjectOutputStream(ss.getOutputStream());
+			ObjectInputStream in = new ObjectInputStream(ss.getInputStream());
+			sendMessage(out, in, msg, setFrom);
+			out.close();
 			return true;
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -124,19 +138,23 @@ public class SeparateServer {
 	
 	
 	//sends message without closing socket
-	static boolean sendMessage(ObjectOutputStream out, Message msg, boolean setFrom) {
+	static synchronized boolean sendMessage(ObjectOutputStream out, ObjectInputStream in, Message msg, boolean setFrom) {
 	
 		try {
 			String address = InetAddress.getLocalHost().toString(); //get the local ip address
 			address = address.substring(address.indexOf('/') + 1);  //strip off the unnecessary bits
 			if (setFrom)
 				msg.setFrom(address);									//set the sent from property of message
-			
+			System.out.println("Sending message " + msg.message);
 			out.writeObject(msg);									//write our message over the socket
-			out.flush();											//flush to ensure the message is sent
+			out.flush();									//flush to ensure the message is sent
+			System.out.println("Message sent successfully");
+			//Wait for the connection to respond
+			System.out.println(((Message)in.readObject()).message);
 			return true;
 		} catch (Exception e) {
 			e.printStackTrace();
+			System.err.println("Message not correctly sent");
 			return false;
 		}
 	}
@@ -168,7 +186,7 @@ public class SeparateServer {
     	return null;
     }*/
 	
-	public static void main(String[] args) {
+	public static void main(String[] args) throws IOException {
 		SeparateServer server = new SeparateServer(); 			//initialize server
 		System.out.println("Booting up server");
 
@@ -177,8 +195,9 @@ public class SeparateServer {
 			System.out.println("Next Connection");
 			if(sock == null)									//if there was an error getting  a new connection
 				continue;										//restart to wait for a new, valid connection
-									
-			new Thread(new ServerListener(sock)).start();		//creates a new thread that handles that socket
+			ObjectInputStream in = new ObjectInputStream(sock.getInputStream());
+			ObjectOutputStream out = new ObjectOutputStream(sock.getOutputStream());
+			new Thread(new ServerListener(in, out)).start();		//creates a new thread that handles that socket
 			
 		} while (SeparateServer.run);							//as long as the server is running, loop
 	}

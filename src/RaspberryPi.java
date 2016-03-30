@@ -50,6 +50,7 @@ public class RaspberryPi {
 
 			private ServerSocket receiveServer;
 			private ObjectInputStream in;
+			private ObjectOutputStream out;
 			private Socket sock;
 			private RaspberryPi ref;
 			
@@ -66,8 +67,9 @@ public class RaspberryPi {
 						//System.out.println("from receive thread");
 						sock = receiveServer.accept();
 						in = new ObjectInputStream(sock.getInputStream());
+						out = new ObjectOutputStream(sock.getOutputStream());
 						Message msg = (Message) in.readObject();
-						if (ip == null) ip = msg.getFrom();
+						if (msg.getFrom() != null) ip = msg.getFrom();
 						//System.out.println(msg.config.toString() + " " +  msg);
 						
 						switch(msg.type) {
@@ -91,7 +93,14 @@ public class RaspberryPi {
 								break;
 								
 						}
+						try {
+							//Send confirmation that we are done
+							out.writeObject(new Message("Confirmed connection",null,null));
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
 						in.close();
+						out.close();
 						sock.close();
 					}
 
@@ -129,9 +138,11 @@ public class RaspberryPi {
 			//System.out.println("3");
 			outputStream.flush();
 			//System.out.println("4");
-			Thread.sleep(50); //pause to let the central server get info
-			
-			outputStream.close();
+			//Thread.sleep(50); //pause to let the central server get info
+			ObjectInputStream in = new ObjectInputStream(sendSocket.getInputStream());
+			//Wait for the connection to respond
+			System.out.println(((Message)in.readObject()).message);
+			//outputStream.close();
 			sendSocket.close();
 		} catch (Exception e) {
 			e.printStackTrace();

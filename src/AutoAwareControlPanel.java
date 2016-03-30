@@ -50,7 +50,7 @@ public class AutoAwareControlPanel extends JFrame {//implements Observer {
     private int controlIndex;
     private boolean isNotifying;
     private Stack<String> notificationStack;
-    private boolean t1bool;
+    private boolean t1bool, lostServer, notificationDialog;
 	private static boolean t2bool;
 	
 	//true: GUI test to build things 
@@ -451,7 +451,7 @@ public class AutoAwareControlPanel extends JFrame {//implements Observer {
     	System.out.println("Stopping stream now");
 		server.sendMessage(new StreamingMessage("Telling to stop streaming",cfg, false));
 		t2bool = false;
-
+		
     }
     public ClientConfig ConfigFind(String identifier) {
     	//System.out.println(configs);
@@ -480,9 +480,28 @@ public class AutoAwareControlPanel extends JFrame {//implements Observer {
     class RefreshListener implements Runnable { 
     	public void run() {
     		
-    		if (configs == null) return;
+    		if (configs == null) {
+    			return;
+    		}
     		//if we have not yet 
-
+    		
+    		if (!server.sendMessage(new Message("Are you still there?", null, null))) {
+    			configs.removeAll(configs);
+    			lostServer = true;
+    			if (!notificationDialog) {
+	    			notificationDialog = true;
+	        		JOptionPane.showMessageDialog(getContentPane(), "Lost server connection, retrying in 5 seconds", "error", JOptionPane.ERROR_MESSAGE, null);
+	        		notificationDialog = false;
+    			}
+    		} else {
+    			
+    			if (lostServer) {
+        			lostServer = false;
+    				JOptionPane.showMessageDialog(null, "Connection restored");
+    				configs = server.GetSensors();
+    			}
+    		}
+    		
         	for (int i = 0; i < configs.size(); i++) {
             	
         		//System.out.println(i);
@@ -895,6 +914,7 @@ public class AutoAwareControlPanel extends JFrame {//implements Observer {
 				System.out.println(gotMessage.message);
 				break;
 		}
+		
 	}
 	public boolean checkIPFormat(String ip)
 	{

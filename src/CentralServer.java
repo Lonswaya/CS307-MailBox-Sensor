@@ -66,6 +66,12 @@ public class CentralServer extends Observable implements Runnable {
 			ObjectOutputStream out = new ObjectOutputStream(sock.getOutputStream());
 			out.writeObject(msg);
 			out.flush();
+			
+			ObjectInputStream in = new ObjectInputStream(sock.getInputStream());
+			//Wait for the connection to respond
+			System.out.println(((Message)in.readObject()).message);
+			
+			
 			out.close();
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -121,6 +127,7 @@ public class CentralServer extends Observable implements Runnable {
 		public void run() {
 			try {
 				in = new ObjectInputStream(sock.getInputStream());
+				out = new ObjectOutputStream(sock.getOutputStream());
 				Message msg = (Message)in.readObject();
 				//System.out.println("MESSAGE RECIEVED, type " + msg.type);
 				//if(msg.getString().equalsIgnoreCase("quit"))
@@ -143,6 +150,14 @@ public class CentralServer extends Observable implements Runnable {
 					break;
 					
 				}
+				try {
+					//Send confirmation that we are done
+					out.writeObject(new Message("Confirmed connection",null,null));
+
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+				
 				in.close();
 				sock.close();
 				
@@ -188,11 +203,15 @@ public class CentralServer extends Observable implements Runnable {
 			out.writeObject(cfg);
 			out.flush();
 			
-			ObjectInputStream os = new ObjectInputStream(sock.getInputStream());
-			m = (Message)os.readObject();
+			ObjectInputStream in = new ObjectInputStream(sock.getInputStream());
+
+			m = (Message)in.readObject();
 			
+			out.writeObject(new Message("Confirmed connection",null,null));
 			
-			os.close();
+			System.out.println(((Message)in.readObject()).message);
+			
+			in.close();
 			out.close();
 		} catch (Exception e) {
 			//e.printStackTrace();
@@ -218,11 +237,15 @@ public class CentralServer extends Observable implements Runnable {
 			out.flush();
 			
 			
-			ObjectInputStream os = new ObjectInputStream(sock.getInputStream());
+			ObjectInputStream in = new ObjectInputStream(sock.getInputStream());
 			
-			ar = ((SensorsMessage)os.readObject()).ar;			
+			ar = ((SensorsMessage)in.readObject()).ar;
 			
-			os.close();
+			out.writeObject(new Message("Confirmed connection",null,null));
+			
+			System.out.println(((Message)in.readObject()).message);
+
+			in.close();
 			out.close();
 		} catch (Exception e) {
 			//e.printStackTrace();
