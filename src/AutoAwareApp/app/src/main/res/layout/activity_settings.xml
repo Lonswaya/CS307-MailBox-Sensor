@@ -41,10 +41,153 @@
             
             <Button
                 android:id="@+id/set_name_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
                 android:layout_marginLeft="10dp"
                 android:layout_toRightOf="@id/set_name_text"
+                android:text="Set Name"
                 />
+
+
+            <CheckBox
+                android:id="@+id/timer_check_box"
+                android:padding="5dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/settings_name_tag"
+                android:layout_marginTop="20dp"
+                android:layout_marginLeft="10dp"
+                />
+
+            <TextView
+                android:id="@+id/checkbox_tag"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/set_name_text"
+                android:layout_toRightOf="@id/timer_check_box"
+                android:layout_marginTop="24dp"
+                android:text="Schedule Time"
+                android:textSize="22dp"
+                android:textColor="#000000"
+                />
+
+            //Start time
+
+            <TextView
+                android:id="@+id/start_time_tag"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/checkbox_tag"
+                android:layout_marginLeft="20dp"
+                android:layout_marginTop="17dp"
+                android:text="Turn on at"
+                android:textSize="18dp" />
+
+            <EditText
+                android:id="@+id/start_time_hour"
+                android:layout_width="50dp"
+                android:layout_height="40dp"
+                android:padding="5dp"
+                android:layout_below="@id/checkbox_tag"
+                android:layout_toRightOf="@id/start_time_tag"
+                android:layout_marginTop="10dp"
+                android:layout_marginLeft="13dp"
+                android:hint="@string/start_time_hour"
+                android:background="@drawable/edittext_bg"
+                android:textColorHint="#7d7d7d"
+                android:gravity="center"
+                android:textSize="20dp"
+                />
+
+            <TextView
+                android:id="@+id/hour_minute_separator_tag"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_toRightOf="@id/start_time_hour"
+                android:layout_below="@id/checkbox_tag"
+                android:padding="5dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginLeft="5dp"
+                android:text="@string/colon"
+                android:textSize="25dp"
+                />
+
+            <EditText
+                android:id="@+id/start_time_minute"
+                android:layout_width="50dp"
+                android:layout_height="40dp"
+                android:padding="5dp"
+                android:layout_below="@id/checkbox_tag"
+                android:layout_toRightOf="@id/hour_minute_separator_tag"
+                android:layout_marginTop="10dp"
+                android:layout_marginLeft="10dp"
+                android:hint="@string/start_time_minute"
+                android:background="@drawable/edittext_bg"
+                android:textColorHint="#7d7d7d"
+                android:gravity="center"
+                android:textSize="20dp"
+                />
+
+
+
+            //End time
+
+            <TextView
+                android:id="@+id/end_time_tag"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/start_time_tag"
+                android:layout_marginLeft="20dp"
+                android:layout_marginTop="35dp"
+                android:text="Turn off at"
+                android:textSize="18dp" />
+
+            <EditText
+                android:id="@+id/end_time_hour"
+                android:layout_width="50dp"
+                android:layout_height="40dp"
+                android:padding="5dp"
+                android:layout_below="@id/start_time_hour"
+                android:layout_toRightOf="@id/end_time_tag"
+                android:layout_marginTop="15dp"
+                android:layout_marginLeft="10dp"
+                android:hint="@string/end_time_hour"
+                android:background="@drawable/edittext_bg"
+                android:textColorHint="#7d7d7d"
+                android:gravity="center"
+                android:textSize="20dp"
+                />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_toRightOf="@id/end_time_hour"
+                android:layout_below="@id/hour_minute_separator_tag"
+                android:padding="5dp"
+                android:layout_marginTop="13dp"
+                android:layout_marginLeft="5dp"
+                android:text="@string/colon"
+                android:textSize="25dp"
+                />
+
+            <EditText
+                android:id="@+id/end_time_minute"
+                android:layout_width="50dp"
+                android:layout_height="40dp"
+                android:padding="5dp"
+                android:layout_below="@id/start_time_minute"
+                android:layout_toRightOf="@id/hour_minute_separator_tag"
+                android:layout_marginTop="15dp"
+                android:layout_marginLeft="10dp"
+                android:hint="@string/end_time_minute"
+                android:background="@drawable/edittext_bg"
+                android:textColorHint="#7d7d7d"
+                android:gravity="center"
+                android:textSize="20dp"
+                />
+
+
 
         </RelativeLayout>
     </ScrollView>
