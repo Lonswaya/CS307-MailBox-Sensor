@@ -4,8 +4,9 @@
 
     <string name="hello_world">Hello world!</string>
     <string name="sensor_name">Sensor Name</string>
-    <string name="button1_string">Button 1</string>
-    <string name="button2_string">Button 2</string>
+    <string name="button1_string">Configure</string>
+    <string name="button2_string">Enable</string>
+    <string name="sensor_name_hint">New Sensor</string>
     <string name="action_settings">Settings</string>
     <string name="title_activity_setting">SettingActivity</string>
     <string name="title_activity_settings">SettingsActivity</string>
