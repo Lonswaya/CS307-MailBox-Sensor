@@ -145,7 +145,7 @@ public class SeparateServer {
 			address = address.substring(address.indexOf('/') + 1);  //strip off the unnecessary bits
 			if (setFrom)
 				msg.setFrom(address);									//set the sent from property of message
-			System.out.println("Sending message " + msg.message);
+			if (msg.type != null) System.out.println("Sending message " + msg.message);
 			out.writeObject(msg);									//write our message over the socket
 			out.flush();									//flush to ensure the message is sent
 			System.out.println("Message sent successfully");

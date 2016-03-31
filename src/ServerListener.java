@@ -100,9 +100,10 @@ public class ServerListener implements Runnable {
 	 */
 	private void addUI(String from) {
 		
-		if(from == null || !from.equals("") || SeparateServer.ui_ips.contains(from)) {
+		if(from == null || from.equals("") || SeparateServer.ui_ips.contains(from)) {
 			return;
 		} else {
+			System.out.println("Added user " + from + " to list");
 			SeparateServer.ui_ips.add(from);
 		}
 	}
@@ -112,8 +113,9 @@ public class ServerListener implements Runnable {
 	
 	private void notify_uis(ClientConfig config) {
 		for (String ip : SeparateServer.ui_ips) {
+			System.out.println("sending config to user " + ip);
 			ConfigMessage msg = new ConfigMessage(ip, config);
-			SeparateServer.sendMessage(msg, ip, StaticPorts.clientPort, true);
+			new Thread(new ClientNotifier(msg, ip, MessageType.READING)).start();
 		}
 	}
 	
@@ -130,7 +132,7 @@ public class ServerListener implements Runnable {
 			return;
 		}
 		
-		System.out.println("New message recieved:+\n" + msg);
+		if (msg.type != null) System.out.println("New message recieved:+\n" + msg);
 		
 		if(msg.type == MessageType.CONFIG || 
 				msg.type == MessageType.STREAMING || 
@@ -203,30 +205,21 @@ public class ServerListener implements Runnable {
 						for (String client : SeparateServer.ui_ips) {
 							System.out.println("Sending message to client " + client + " , reading message");
 							
-							if (!SeparateServer.sendMessage(out, in, msg, true)) {
-								//remove
-								
-								SeparateServer.ui_ips.remove(client);
-							}
+							new Thread(new ClientNotifier(msg, client, MessageType.READING)).start();
 						}
 					}
 					//also send it to everyone who is streaming
 					for (String client : SeparateServer.sendingList.get(msg.from).readingList) {
 						System.out.println("Sending message to client " + client + " , reading message");
-						if (!SeparateServer.sendMessage(msg, client, StaticPorts.clientPort, false)) {
-							//remove
-							SeparateServer.sendingList.get(msg.from).readingList.remove(client);
-						}
+						new Thread(new ClientNotifier(msg, client, MessageType.STREAMING)).start();
+						
 
 					}
 					//Go through this sensor's list for reading clients to send to, send each 
 					break;
 				case AUDIO:
 					for (String client : SeparateServer.sendingList.get(msg.from).audioList) {
-						if (!SeparateServer.sendMessage(msg, client, StaticPorts.clientPort, false)) {
-							//remove
-							SeparateServer.sendingList.get(msg.from).audioList.remove(client);
-						}					
+						new Thread(new ClientNotifier(msg, client, MessageType.AUDIO)).start();				
 					}
 					//Go through this sensor's list for audio clients to send to, send each 
 
@@ -234,10 +227,7 @@ public class ServerListener implements Runnable {
 				case PICTURE:
 					for (String client : SeparateServer.sendingList.get(msg.from).pictureList) {
 						System.out.println("SENDING PICTURE MESSAGE TO:  " + client);
-						if (!SeparateServer.sendMessage(msg, client, StaticPorts.clientPort, false)) {
-							//remove
-							SeparateServer.sendingList.get(msg.from).pictureList.remove(client);
-						}				
+						new Thread(new ClientNotifier(msg, client, MessageType.PICTURE)).start();				
 					}
 					//Go through this sensor's list for picture clients to send to, send each 
 
@@ -371,7 +361,7 @@ public class ServerListener implements Runnable {
 		}
 		try {
 			//Send confirmation that we are done
-		System.out.println("Confirm connection");
+		//System.out.println("Confirm connection");
 			out.writeObject(new Message("Confirmed connection",null,null));
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -379,4 +369,47 @@ public class ServerListener implements Runnable {
 		close();		
 		 
 	}
+	class ClientNotifier implements Runnable { 
+		Message msg;
+		String client;
+		MessageType type;
+		public ClientNotifier(Message msg, String client, MessageType type) {
+			this.msg = msg;
+			this.client = client;
+			this.type = type;
+		}
+		
+    	public void run() {
+    		System.out.println("sending message " + msg.message + " to client " + client);
+    		if (!SeparateServer.sendMessage(msg, client, StaticPorts.clientPort, true)) {
+    			System.err.printf("User %s not found, removing from list\n", client);
+				//remove
+				switch(type) {
+				case READING:
+					SeparateServer.ui_ips.remove(client);
+					break;
+				case STREAMING:
+					SeparateServer.sendingList.get(msg.from).readingList.remove(client);
+					break;
+				case PICTURE:
+					SeparateServer.sendingList.get(msg.from).pictureList.remove(client);
+					break;
+				case AUDIO:
+					SeparateServer.sendingList.get(msg.from).audioList.remove(client);
+					break;
+				default:
+					break;
+				
+				}
+				SeparateServer.ui_ips.remove(client);
+			} else {
+				System.out.println("Message sent successfully to " + client);
+			}
+    		
+    	
+
+		}
+    	
+	}
+    	
 }

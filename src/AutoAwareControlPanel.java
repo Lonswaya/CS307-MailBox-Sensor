@@ -655,7 +655,7 @@ public class AutoAwareControlPanel extends JFrame {//implements Observer {
     	//Send a message through the server to update a sensors config
     	
     	System.out.println("Updating info to a sensor with type "  + cfg.sensor_type);
-    	server.sendMessage(new ConfigMessage("Updating config",cfg));
+    	server.sendMessageThreaded(new ConfigMessage("Updating config",cfg));
     }
     public class Refresher implements ActionListener {
     	
@@ -830,10 +830,10 @@ public class AutoAwareControlPanel extends JFrame {//implements Observer {
 	public void ProcessMessage(Message arg1) {
 		Message gotMessage = arg1;
 		ClientConfig myClient = ConfigFind(gotMessage.from);
-		if (myClient == null) {
+		/*if (myClient == null) {
 			System.out.println("Message recieved for incorrect sensor, please try again.\n " + gotMessage);
 			return;
-		}
+		}*/ //if its a new sensor, we dont want this
 		System.out.println(gotMessage);
 		//System.out.println("Message recieved, says to: " + gotMessage.message + " with the type of" + gotMessage.type);
 		
@@ -896,11 +896,12 @@ public class AutoAwareControlPanel extends JFrame {//implements Observer {
 				break;
 			case CONFIG:
 				//this code....  *shudder*
+				System.out.println("Got config, updating/adding info now");
 				//can't use gotMessage.from because it may be from another client interface
 				if (((ConfigMessage)gotMessage).delete) {
 					//remove sensor
 					RemoveSensor(gotMessage.config.ip, true);
-				} else if (ConfigFind(gotMessage.config.ip) != null) {
+				} else if (ConfigFind(gotMessage.config.ip) == null) {
 					//add new sensor
 					configs.add(gotMessage.config);
 			    	createNew(controlIndex, gotMessage.config);

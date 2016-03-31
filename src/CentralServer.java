@@ -53,6 +53,12 @@ public class CentralServer extends Observable implements Runnable {
 		
 	}
 	
+	public void sendMessageThreaded(Message msg) {
+		
+		new Thread(new MessageSender(msg)).start();
+		
+	}
+	
 	public boolean sendMessage(Message msg) {
 		
 		try {
@@ -60,7 +66,7 @@ public class CentralServer extends Observable implements Runnable {
 			address = address.substring(address.indexOf('/') + 1);
 			msg.setFrom(address);
 			
-			System.out.println("Sending message: " + msg);
+			if (msg.type != null) System.out.println("Sending message: " + msg);
 
 			Socket sock = socketFactory.createSocket(this.seperateIP, this.seperatePort);
 			ObjectOutputStream out = new ObjectOutputStream(sock.getOutputStream());
@@ -255,6 +261,38 @@ public class CentralServer extends Observable implements Runnable {
 		
 		return ar;
 		
+	}
+	class MessageSender implements Runnable { 
+		Message msg;
+		public MessageSender(Message msg) {
+			this.msg = msg;
+		}
+		
+    	public void run() {
+    		
+    		try {
+    			String address = InetAddress.getLocalHost().toString();
+    			address = address.substring(address.indexOf('/') + 1);
+    			msg.setFrom(address);
+    			
+    			if (msg.type != null) System.out.println("Sending message: " + msg);
+
+    			Socket sock = socketFactory.createSocket(seperateIP, seperatePort);
+    			ObjectOutputStream out = new ObjectOutputStream(sock.getOutputStream());
+    			out.writeObject(msg);
+    			out.flush();
+    			
+    			ObjectInputStream in = new ObjectInputStream(sock.getInputStream());
+    			//Wait for the connection to respond
+    			System.out.println(((Message)in.readObject()).message);
+    			
+    			
+    			out.close();
+    		} catch (Exception e) {
+    			e.printStackTrace();
+    		}
+    		
+    	}
 	}
 	/*public BufferedImage getImage(String ip) {
 		BufferedImage img = null;

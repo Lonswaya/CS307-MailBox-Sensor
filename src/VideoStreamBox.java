@@ -46,16 +46,16 @@ public class VideoStreamBox extends JPanel {
 		    	SwingUtilities.getWindowAncestor(tempThis).dispose();
 		    }
 	    });
-		exit.setBounds(260, 520, 80, 30);
+		exit.setBounds(260, 670, 80, 30);
 		
-		JButton pathFinder = new JButton("<html>Save<br />Path</html>");
+		JButton pathFinder = new JButton("<html>Change<br />Path</html>");
 		pathFinder.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent event) {
 				PromptPath();
 			}
 			
 		});
-		pathFinder.setBounds(250,10,60,50);
+		pathFinder.setBounds(250,0,60,50);
 		
 		JButton saveButton = new JButton("<html>Save<br />Image</html>");
 		saveButton.addActionListener(new ActionListener() {
@@ -75,7 +75,7 @@ public class VideoStreamBox extends JPanel {
 			}
 			
 		});
-		saveButton.setBounds(310,10,60,50);
+		saveButton.setBounds(310,0,60,50);
 		
 		//setTitle("Video stream on sensor " + address);
 		add(exit);
