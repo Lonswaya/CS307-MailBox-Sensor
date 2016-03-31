@@ -361,7 +361,7 @@
                 android:layout_height="wrap_content"
                 android:text="@string/default_string"
                 android:textSize="15dp"
-                android:layout_marginTop="7dp"
+                android:layout_marginTop="10dp"
                 android:layout_below="@id/mobile_number"
                 android:layout_marginLeft="77dp"
                 />
@@ -373,7 +373,7 @@
                 android:text="@string/apply_string"
                 android:layout_toRightOf="@id/defualt_button"
                 android:textSize="15dp"
-                android:layout_marginTop="7dp"
+                android:layout_marginTop="10dp"
                 android:layout_below="@id/mobile_number"
                 android:layout_marginLeft="7dp"
                 />
