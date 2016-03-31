@@ -186,7 +186,7 @@ public class ServerListener implements Runnable {
 									}
 								}
 							};
-						t.scheduleAtFixedRate(tt, new Date(), cc.interval);
+						t.scheduleAtFixedRate(tt, new Date(System.currentTimeMillis() + 1000), cc.interval); //wait an extra second so the first one happens
 						timers.put(cc.ip, t);
 					}
 					//else if threshold is not exceeded but a timertask is running, stop it and remove it
