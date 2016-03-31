@@ -12,6 +12,7 @@ import java.util.Queue;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.Date;
+import java.util.HashMap;
 
 import com.twilio.sdk.TwilioRestException;
 
@@ -120,9 +121,7 @@ public class ServerListener implements Runnable {
 	@Override
 	public void run() {
 
-		TimerTask tt;
-		Timer t;
-		boolean isNotifying = false;
+		HashMap<String, Timer> timers = new HashMap<String, Timer>();
 	
 		
 		Message msg = receiveMessage();											//receive message from socket
@@ -165,30 +164,36 @@ public class ServerListener implements Runnable {
 					ReadingMessage rmsg = (ReadingMessage) msg;
 					float threshold = rmsg.getCurrentThreshold()/100;
 					ClientConfig cc = SeparateServer.sendingList.get(msg.from).sensorInfo;
-					if (!isNotifying) {
-						tt = new TimerTask() {
-							@Override
-							public void run() {
-								if (cc.emailNotification == true) {
-									try {
-										Sender.send(cc.emailAddress, rmsg.getString());
-									} catch (IOException e){
-									//handle the exception
+					//if threshold is exceeded and there is no timertask yet, start one
+					if (cc.sensing_threshold >= threshold && timers.get(cc.ip) == null) {
+						Timer t = new Timer(cc.ip);
+							TimerTask tt = new TimerTask() {
+								@Override
+								public void run() {
+									if (cc.emailNotification == true) {
+										try {
+											Sender.send(cc.emailAddress, rmsg.getString());
+										} catch (IOException e){
+										//handle the exception
+										}
+									}
+									if (cc.textNotification == true) {
+										try {
+											TwilioSender.send(cc.phoneNumber, rmsg.getString());
+										} catch (TwilioRestException tre) {
+										//handle it
+										}
 									}
 								}
-								if (cc.textNotification == true) {
-									try {
-										TwilioSender.send(cc.phoneNumber, rmsg.getString());
-									} catch (TwilioRestException tre) {
-									//handle it
-									}
-								}
-							}
-						};
-					}
-					if (cc.sensing_threshold <= threshold) {
-						t = new Timer();
+							};
 						t.scheduleAtFixedRate(tt, new Date(), cc.interval);
+						timers.put(cc.ip, t);
+					}
+					//else if threshold is not exceeded but a timertask is running, stop it and remove it
+					else if (cc.sensing_threshold < threshold && timers.get(cc.ip) != null) {
+						Timer t = timers.get(cc.ip);
+						t.cancel();
+						timers.remove(cc.ip);
 					}
 					
 					if (!SeparateServer.sendingList.get(msg.from).streaming) {
