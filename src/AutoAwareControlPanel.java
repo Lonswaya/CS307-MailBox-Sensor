@@ -78,7 +78,7 @@ public class AutoAwareControlPanel extends JFrame {//implements Observer {
     	Streamers = new Hashtable<String, StreamBox>();
     	this.setIconImage(Toolkit.getDefaultToolkit().getImage("resources/icon.png"));
 
-        Timer t = new Timer(5000, new Refresher());
+        Timer t = new Timer(10000, new Refresher());
         setTitle("AutoAware Control Panel");
         setSize(1000, 600);
         setLocationRelativeTo(null);
@@ -414,6 +414,7 @@ public class AutoAwareControlPanel extends JFrame {//implements Observer {
     public void refreshSensorList() {
     	//System.out.println("updating");
     	new Thread(new RefreshListener()).start();
+    	
     	
     
     }
@@ -909,7 +910,13 @@ public class AutoAwareControlPanel extends JFrame {//implements Observer {
 				}
 				refreshSensorList();
 				break;
+			case STREAMING:
+				//
+				
+				
+				break;
 			default:
+				
 				//null, error message
 				System.out.println(gotMessage.message);
 				break;

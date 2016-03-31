@@ -52,7 +52,7 @@ public class PictureSensor extends BaseSensor{
 		//webcam.close();
 		
 		PictureMessage msg = new PictureMessage("", null); //message will be set from setImage()
-		msg.setImage(this.image);						   //in picture message class
+		msg.setImage(this.image, false);						   //in picture message class
 		msg.setFrom(this.getIP());
 		System.out.println("Debug: End taking a picture");
 		return msg;

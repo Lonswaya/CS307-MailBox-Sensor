@@ -31,7 +31,7 @@ public class ClientConfig extends BaseConfig implements Serializable {
 		this.phoneNumber = "";
 		this.emailAddress = "";
 		this.desktopNotification = magicMirrorNotification = textNotification = emailNotification = false;
-		this.interval = 0;
+		this.interval = 1000;
 	}
 	@Override 
 	public String toString() {

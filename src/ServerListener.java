@@ -186,6 +186,7 @@ public class ServerListener implements Runnable {
 									}
 								}
 							};
+					
 						t.scheduleAtFixedRate(tt, new Date(System.currentTimeMillis() + 1000), cc.interval); //wait an extra second so the first one happens
 						timers.put(cc.ip, t);
 					}
@@ -232,6 +233,7 @@ public class ServerListener implements Runnable {
 					break;
 				case PICTURE:
 					for (String client : SeparateServer.sendingList.get(msg.from).pictureList) {
+						System.out.println("SENDING PICTURE MESSAGE TO:  " + client);
 						if (!SeparateServer.sendMessage(msg, client, StaticPorts.clientPort, false)) {
 							//remove
 							SeparateServer.sendingList.get(msg.from).pictureList.remove(client);
@@ -296,7 +298,7 @@ public class ServerListener implements Runnable {
 							break;
 							//SeparateServer.videoSendingUI.add(msg.from);
 	
-						case PICTURE:
+						case VIDEO:
 							// add to picture streaming list for this sensor
 							if (smsg.streaming) {
 								SeparateServer.sendingList.get(msg.config.ip).pictureList.add(msg.from);
@@ -369,6 +371,7 @@ public class ServerListener implements Runnable {
 		}
 		try {
 			//Send confirmation that we are done
+		System.out.println("Confirm connection");
 			out.writeObject(new Message("Confirmed connection",null,null));
 		} catch (IOException e) {
 			e.printStackTrace();

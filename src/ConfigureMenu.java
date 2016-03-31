@@ -462,7 +462,8 @@ public class ConfigureMenu extends JFrame {
 				magicMirrorBool,
 				textBool,
 				emailBool, 
-				phoneNum.getText(), emailAddress.getText()
+				phoneNum.getText(), emailAddress.getText(),
+				10000 //TODO get, in ms
 		);
 		this.setEnabled(false);
 		parent.configs.set(inputNum, toSubmit);
