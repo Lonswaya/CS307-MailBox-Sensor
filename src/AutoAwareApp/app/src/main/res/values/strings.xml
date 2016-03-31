@@ -15,4 +15,12 @@
     <string name="start_time_minute">00</string>
     <string name="end_time_hour">18</string>
     <string name="end_time_minute">30</string>
+    <string name="threshold_tag">Threshold</string>
+    <string name="notifications_tag">Notification Options</string>
+    <string name="desktop_tag">Desktop</string>
+    <string name="text_tag">Text</string>
+    <string name="email_tag">Email</string>
+    <string name="mobile_tag">App</string>
+    <string name="mobile_hint">xxx-xxx-xxxx</string>
+    <string name="email_hint">abc@email.com</string>
 </resources>
