@@ -8,9 +8,10 @@ public class ClientConfig extends BaseConfig implements Serializable {
 	protected Color color;
 	protected boolean desktopNotification, magicMirrorNotification, textNotification, emailNotification;
 	protected String phoneNumber, emailAddress, ip;
+	protected int interval;
 	
 	
-	public ClientConfig(String ip, String start, String stop, boolean force_on, boolean force_off, SensorType type, float threshold, String name, Color color, boolean desktopNotification, boolean magicMirrorNotification, boolean textNotification, boolean emailNotification, String phoneNumber, String emailAddress) {
+	public ClientConfig(String ip, String start, String stop, boolean force_on, boolean force_off, SensorType type, float threshold, String name, Color color, boolean desktopNotification, boolean magicMirrorNotification, boolean textNotification, boolean emailNotification, String phoneNumber, String emailAddress, int interval) {
 		super(start, stop, force_on, force_off , type, threshold);
 		this.ip = ip;
 		this.color = color;
@@ -21,6 +22,7 @@ public class ClientConfig extends BaseConfig implements Serializable {
 		this.emailNotification = emailNotification;
 		this.phoneNumber = phoneNumber;
 		this.emailAddress = emailAddress;
+		this.interval = interval;
 	}
 	public ClientConfig() {
 		super();
@@ -29,6 +31,7 @@ public class ClientConfig extends BaseConfig implements Serializable {
 		this.phoneNumber = "";
 		this.emailAddress = "";
 		this.desktopNotification = magicMirrorNotification = textNotification = emailNotification = false;
+		this.interval = 0;
 	}
 	@Override 
 	public String toString() {
@@ -46,7 +49,8 @@ public class ClientConfig extends BaseConfig implements Serializable {
 				+   "DESKTOP NOTIFICATIONS=" + desktopNotification + "\n"
 				+   "MAGIC MIRROR NOTIFICATION=" + magicMirrorNotification + "\n"
 				+   "TEXT NOTIFICATION=" + textNotification + ", NUMBER=" + phoneNumber + "\n"
-				+   "EMAIL NOTIFICATION=" + emailNotification + ", EMAIL ADDRESS=" + emailAddress + "\n";
+				+   "EMAIL NOTIFICATION=" + emailNotification + ", EMAIL ADDRESS=" + emailAddress + "\n"
+				+	"INTERVAL=" + interval + " minutes\n";
 	}
 	public void SetIP(String s) {
 		ip = s;

@@ -9,6 +9,9 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Queue;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.Date;
 
 import com.twilio.sdk.TwilioRestException;
 
@@ -117,6 +120,9 @@ public class ServerListener implements Runnable {
 	@Override
 	public void run() {
 
+		TimerTask tt;
+		Timer t;
+		boolean isNotifying = false;
 	
 		
 		Message msg = receiveMessage();											//receive message from socket
@@ -154,27 +160,35 @@ public class ServerListener implements Runnable {
 					break;
 				
 				case READING:
-					//TODO notification parsing for UI
+					//TODO multiple sensors
 					
 					ReadingMessage rmsg = (ReadingMessage) msg;
 					float threshold = rmsg.getCurrentThreshold()/100;
 					ClientConfig cc = SeparateServer.sendingList.get(msg.from).sensorInfo;
+					if (!isNotifying) {
+						tt = new TimerTask() {
+							@Override
+							public void run() {
+								if (cc.emailNotification == true) {
+									try {
+										Sender.send(cc.emailAddress, rmsg.getString());
+									} catch (IOException e){
+									//handle the exception
+									}
+								}
+								if (cc.textNotification == true) {
+									try {
+										TwilioSender.send(cc.phoneNumber, rmsg.getString());
+									} catch (TwilioRestException tre) {
+									//handle it
+									}
+								}
+							}
+						};
+					}
 					if (cc.sensing_threshold <= threshold) {
-						if (cc.emailNotification == true) {
-							try {
-								Sender.send(cc.emailAddress, rmsg.getString());
-							} catch (IOException e){
-							//handle the exception
-							}
-						}
-		
-						if (cc.textNotification == true) {
-							try {
-								TwilioSender.send(cc.phoneNumber, rmsg.getString());
-							} catch (TwilioRestException tre) {
-							//handle it
-							}
-						}
+						t = new Timer();
+						t.scheduleAtFixedRate(tt, new Date(), cc.interval);
 					}
 					
 					if (!SeparateServer.sendingList.get(msg.from).streaming) {
