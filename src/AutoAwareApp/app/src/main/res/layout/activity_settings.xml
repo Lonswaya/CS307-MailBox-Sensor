@@ -260,6 +260,7 @@
                 android:layout_height="wrap_content"
                 android:layout_toRightOf="@id/threshold_tag"
                 android:layout_below="@id/sensor_type_group"
+                android:layout_marginTop="7dp"
                 />
 
             <TextView
@@ -352,6 +353,29 @@
                 android:textColorHint="#7d7d7d"
                 android:gravity="center"
                 android:textSize="18dp"
+                />
+
+            <Button
+                android:id="@+id/defualt_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/default_string"
+                android:textSize="15dp"
+                android:layout_marginTop="7dp"
+                android:layout_below="@id/mobile_number"
+                android:layout_marginLeft="77dp"
+                />
+
+            <Button
+                android:id="@+id/apply_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/apply_string"
+                android:layout_toRightOf="@id/defualt_button"
+                android:textSize="15dp"
+                android:layout_marginTop="7dp"
+                android:layout_below="@id/mobile_number"
+                android:layout_marginLeft="7dp"
                 />
 
         </RelativeLayout>

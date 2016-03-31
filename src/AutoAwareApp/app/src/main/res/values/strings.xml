@@ -6,7 +6,7 @@
     <string name="title_activity_setting">SettingActivity</string>
     <string name="title_activity_settings">SettingsActivity</string>
     <string name="sensor_name">Sensor Name</string>
-    <string name="button1_string">Configure</string>
+    <string name="button1_string"> Configure </string>
     <string name="button2_string">Enable</string>
     <string name="sensor_name_hint">New Sensor</string>
     <string name="action_settings">Settings</string>
@@ -23,4 +23,6 @@
     <string name="mobile_tag">App</string>
     <string name="mobile_hint">xxx-xxx-xxxx</string>
     <string name="email_hint">abc@email.com</string>
+    <string name="default_string">Default</string>
+    <string name="apply_string">Apply</string>
 </resources>
