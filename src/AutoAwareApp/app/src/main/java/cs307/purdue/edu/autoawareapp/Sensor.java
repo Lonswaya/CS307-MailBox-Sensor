@@ -4,8 +4,19 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Button;
+import android.widget.SeekBar;
 
 public class Sensor extends AppCompatActivity {
+    private String sensorName;
+    private Button configureButton;
+    private Button enableDisableButton;
+    private SeekBar currentValBar;
+
+    public Sensor() {
+
+    }
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
