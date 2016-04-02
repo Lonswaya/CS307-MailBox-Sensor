@@ -261,6 +261,7 @@
                 android:layout_toRightOf="@id/threshold_tag"
                 android:layout_below="@id/sensor_type_group"
                 android:layout_marginTop="7dp"
+                style="@android:style/Widget.SeekBar"
                 />
 
             <TextView
