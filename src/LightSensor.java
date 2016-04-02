@@ -46,7 +46,7 @@ public class LightSensor extends BaseSensor {
 	public Message form_message(){		
 		System.out.println("forming light message");
 		ReadingMessage msg = new ReadingMessage("Light above threshold", null);
-		msg.setFrom(this.getIP());
+		msg.setFrom(this.ip);
 		msg.setCurrentThreshold(this.light_intensity);
 		return msg;
 	}
