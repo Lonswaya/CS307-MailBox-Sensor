@@ -22,6 +22,7 @@ public abstract class BaseSensor{
 	protected float lowerBound;
 	protected BlockingQueue<byte[]> byteQueue;
 	protected Thread sendFromQueue;
+	protected String ip;
 	
 	public BaseSensor(BaseConfig config){
 		this.config = config;
@@ -39,6 +40,8 @@ public abstract class BaseSensor{
 				break;
 			}
 		}
+		
+		this.ip = BaseSensor.getIP();
 	}
 	
 	public void setConfig(BaseConfig config) {
@@ -67,7 +70,7 @@ public abstract class BaseSensor{
 			return true;
 		}*/
 	}
-	public String getIP(){
+	public static String getIP(){
 		String address = "";
 		try{
 			NetworkInterface ni = NetworkInterface.getByName("eth0");
