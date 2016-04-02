@@ -109,7 +109,7 @@ public static float checkVolume(){
 		System.out.println("Forming Volume message");
 		
 		ReadingMessage msg = new ReadingMessage("Volume above threshold", null);
-		msg.setFrom(this.getIP());
+		msg.setFrom(this.ip);
 		msg.setCurrentThreshold(this.currentVolume);
 		return msg;
 		//return null;
