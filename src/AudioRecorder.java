@@ -12,7 +12,7 @@ import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.DataLine;
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.TargetDataLine;
-
+//Records the audio. #Exactlywhatitsaysonthetin
 public class AudioRecorder {
 	
 	public static float recordAudio (double duration)

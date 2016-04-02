@@ -1,4 +1,6 @@
+package Example;
 
+//This program continuously reads audio and checks the volume. Returns a float
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.TargetDataLine;

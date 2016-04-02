@@ -40,7 +40,6 @@ public abstract class BaseSensor{
 				break;
 			}
 		}
-		
 		this.ip = BaseSensor.getIP();
 	}
 	
@@ -70,6 +69,7 @@ public abstract class BaseSensor{
 			return true;
 		}*/
 	}
+	
 	public static String getIP(){
 		String address = "";
 		try{

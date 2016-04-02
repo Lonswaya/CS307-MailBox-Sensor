@@ -535,7 +535,7 @@ public class AutoAwareControlPanel extends JFrame {//implements Observer {
                     enabled.setText(configs.get(i).isSensorActive()?"Disable":"Enable");
                     //System.out.println("enabled : " + enabled.getText());
                     //System.out.println(configs.get(i).sensor_type);
-                    //System.out.println("look here eugene you fucking prick " + configs.get(i).isSensorActive());
+                    System.out.println("look here eugene you fucking prick " + configs.get(i).isSensorActive());
             		JLabel title = (JLabel) myPanel.getComponent(0);
             		title.setText("<html>" + configs.get(i).name + (configs.get(i).isSensorActive()?"":" <br />(Disabled)</html>"));
         		} catch (ArrayIndexOutOfBoundsException e) {

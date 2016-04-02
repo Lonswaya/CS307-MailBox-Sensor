@@ -45,7 +45,7 @@ public static float checkVolume(){
 			line = AudioSystem.getTargetDataLine(format);
 			line.open(format, 2048);
 		}catch(Exception e){
-			System.out.println("Pllug in the microphone you prick");
+			System.out.println("Plug in the microphone you prick");
 			e.printStackTrace();
 		}
 		
@@ -109,7 +109,7 @@ public static float checkVolume(){
 		System.out.println("Forming Volume message");
 		
 		ReadingMessage msg = new ReadingMessage("Volume above threshold", null);
-		msg.setFrom(this.ip);
+		msg.setFrom(this.getIP());
 		msg.setCurrentThreshold(this.currentVolume);
 		return msg;
 		//return null;
