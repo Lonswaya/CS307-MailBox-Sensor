@@ -107,7 +107,4 @@ public class SensorClient extends AppCompatActivity {
 //            messageList.scrollToPosition(messages.size()-1);
 //            mAdapter.notifyDataSetChanged();
 //        }
-    }
-}
-
 }
