@@ -12,7 +12,7 @@ import java.io.Serializable;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.charset.Charset;
-import java.nio.file.*;
+//import java.nio.file.*;
 
 public class BaseConfig implements Serializable {
 

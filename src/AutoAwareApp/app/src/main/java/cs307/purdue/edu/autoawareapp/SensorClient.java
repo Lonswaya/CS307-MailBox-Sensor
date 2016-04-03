@@ -19,15 +19,40 @@ import java.util.Date;
  * Created by Dhairya M. Doshi on 4/1/2016.
  */
 public class SensorClient extends AppCompatActivity {
-    RecyclerView sensorList;
+    private RecyclerView sensorList;
     RecyclerView.Adapter mAdapter = null;
-    ArrayList<Sensor> sensors = null;
+    private ArrayList<Sensor> sensors = null;
     int in_index = 0;
+    private int numOfSensors;
+    private ArrayList<SensorInfo> sensorInfoList;
+
+    public int getNumOfSensors() {
+        return numOfSensors;
+    }
+
+    public void setNumOfSensors(int numOfSensors) {
+        this.numOfSensors = numOfSensors;
+    }
+
+    public ArrayList<Sensor> getSensors() {
+        return sensors;
+    }
+
+    public void setSensors(ArrayList<Sensor> sensors) {
+        this.sensors = sensors;
+    }
+
+    public RecyclerView getSensorList() {
+        return sensorList;
+    }
+
+    public void setSensorList(RecyclerView sensorList) {
+        this.sensorList = sensorList;
+    }
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
 
         // messages = new ArrayList<String>();
         sensors = new ArrayList<Sensor>();
@@ -42,7 +67,30 @@ public class SensorClient extends AppCompatActivity {
         sensorList.setLayoutManager(llm);
         sensorList.setAdapter(mAdapter);
 
+        int ret = createSensors();
+        if (ret != 0) {
+            //TODO: Error handling
+        }
+
+
         Intent in = getIntent();
+
+    }
+
+    public int createSensors() {
+        Server s = new Server();
+        sensorInfoList = s.getSensors();
+        setNumOfSensors(sensorInfoList.size());
+        if (numOfSensors == 0) {
+            return 0;
+        }
+        else {
+            for (int i = 0; i < numOfSensors; i++) {
+
+            }
+        }
+
+        return 0;
     }
 
     @Override
