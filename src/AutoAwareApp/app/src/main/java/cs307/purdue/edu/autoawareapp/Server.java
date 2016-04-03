@@ -1,5 +1,8 @@
 package cs307.purdue.edu.autoawareapp;
 
+import android.support.annotation.RequiresPermission;
+import android.util.Log;
+
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.*;
@@ -13,6 +16,8 @@ public class Server implements Runnable {
     public ArrayList<SensorInfo> sensorList;
     public String server_ip;
     public int server_port;
+    public Thread receiveMessages;
+    private boolean newSensorListFlag = false;
 
     public Server() {
         System.setProperty("javax.net.ssl.trustStore", "mySrvKeystore");  //get ssl working
@@ -20,36 +25,41 @@ public class Server implements Runnable {
     }
 
     public void run() {
-        int interval = 5000;
 
-        long lastMilli = System.currentTimeMillis();
-        while(true){
-            if( (int) (System.currentTimeMillis() - lastMilli) >= interval) break;
-        }
-
-        this.sensorList = getSensors();
-    }
-
-    public ArrayList<SensorInfo> getSensors() {
-        ArrayList<SensorInfo> list = null;
         SSLServerSocketFactory factory = (SSLServerSocketFactory) SSLServerSocketFactory.getDefault();
-        Message msg;
         try {
-            ServerSocket server = factory.createServerSocket(server_port);
-            msg = new SensorsMessage("Get sensors", null);
-            GetMessage getThread = new GetMessage(msg, server);
-            getThread.start();
-            new SendMessage(msg, server_ip, server_port).start();
-            msg = null;
-            while(msg == null) msg = getThread.getMessage();
-            if(msg.type == MessageType.GET_SENSORS){
-                SensorsMessage sMsg = (SensorsMessage) msg;
-                list = sMsg.ar;
-            }
+            ServerSocket receiveSocket = factory.createServerSocket(9999); //what port number to create a receive server on android?
+            receiveMessages = new GetMessage(receiveSocket, this);
         }catch(Exception e){
             e.printStackTrace();
         }
-        return list;
+        receiveMessages.start(); //spawn a thread that constantly recerive messages
+
+        while(true) {
+            //shitty timer
+            int interval = 5000;
+
+            long lastMilli = System.currentTimeMillis();
+            while (true) {
+                if ((int) (System.currentTimeMillis() - lastMilli) >= interval) break;
+            }
+
+            this.sensorList = getSensors();
+        }
+    }
+
+    public ArrayList<SensorInfo> getSensors() {
+        Message msg;
+        try {
+            newSensorListFlag = false;
+            msg = new SensorsMessage("Get sensors", null);
+            new SendMessage(msg, server_ip, server_port).start();
+            while(newSensorListFlag != true);
+            newSensorListFlag = false;
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+        return this.sensorList;
     }
 
     class SendMessage extends Thread {
@@ -80,25 +90,54 @@ public class Server implements Runnable {
     }
 
     class GetMessage extends Thread{
-        public Message msg;
         public ServerSocket serverSocket;
-
-        public GetMessage(Message msg, ServerSocket serverSocket){
-            this.msg = msg;
+        private Server serverRef;
+        public GetMessage(ServerSocket serverSocket, Server serverRef){
             this.serverSocket = serverSocket;
-        }
-        public Message getMessage(){
-            return this.msg;
+            this.serverRef = serverRef;
         }
         public void run(){
+            while(true) {
+                try {
+                    Socket socket = serverSocket.accept();
+                    new MessageHandler(socket, serverRef);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    class MessageHandler extends Thread{
+        public Socket socket;
+        private Server serverRef;
+        public MessageHandler(Socket socket, Server serverRef){
+            this.socket = socket;
+            this.serverRef = serverRef;
+        }
+
+        public void run(){
             try{
-                Socket socket = serverSocket.accept();
-                ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
-                this.msg = (SensorsMessage) in.readObject();
-                //serverSocket.close();
+                ObjectInputStream in = new ObjectInputStream(this.socket.getInputStream());
+                Message msg = (Message) in.readObject();
+
+                switch(msg.type){
+                    case READING:
+                        ReadingMessage rMsg = (ReadingMessage) msg;
+                        float reading = rMsg.getCurrentThreshold();
+                        
+                        //update the reading. I don't know how do you want readings strutured ? in SensorInfo?
+
+                    case GET_SENSORS:
+                        serverRef.newSensorListFlag = true;
+                        SensorsMessage sMsg = (SensorsMessage) msg;
+                        serverRef.sensorList = sMsg.ar;
+                        break;
+                    default:
+                        System.out.println("Message type: " + msg.type + " not supported");
+                }
                 in.close();
                 socket.close();
-                serverSocket.close();
             }catch(Exception e){
                 e.printStackTrace();
             }
