@@ -1,4 +1,4 @@
-package test;
+package Example;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -17,74 +17,93 @@ public class Connections {
 	
 	final static int DEFAULT_TIMEOUT = 5;
 	
-	static SSLSocketFactory socketFact = (SSLSocketFactory)SocketFactory.getDefault();
-	static SSLServerSocketFactory serverSockFact = (SSLServerSocketFactory)ServerSocketFactory.getDefault();
+	//TODO: Use ssl eventually
 	
+	//static SSLSocketFactory socketFact = (SSLSocketFactory)SocketFactory.getDefault();
+	//static SSLServerSocketFactory serverSockFact = (SSLServerSocketFactory)ServerSocketFactory.getDefault();
+	
+	static SocketFactory socketFact 		  = SocketFactory.getDefault();
+	static ServerSocketFactory serverSockFact = ServerSocketFactory.getDefault();
+	
+	//returns a ServerSocket on that port. No need to check the return value.
 	static synchronized ServerSocket getServerSocket(final int port) {
-		try {	return Connections.serverSockFact.createServerSocket(port);	}
-		catch (Exception e) {	e.printStackTrace();	}
-		return null;
+		ServerSocket ss = null;
+		while (ss == null) {
+			try {	ss = Connections.serverSockFact.createServerSocket(port, 1000);	}
+			catch (Exception e) {	e.printStackTrace();    }
+		}
+		return ss;
 	}
 	
+	//returns a Socket connecting to a ServerSocket. No need to check the return value.
 	static synchronized Socket getSocket(final String ip, final int port) {		
-		return Connections.getSocket(ip, port, DEFAULT_TIMEOUT);
+		Socket sock = null;
+		while (sock == null) {
+			try {	sock = Connections.socketFact.createSocket(ip, port);	}
+			catch (Exception e) {	e.printStackTrace();    }
+		}
+		return sock;
 	}
 	
-	static synchronized Socket getSocket(final String ip, final int port, int readTimeout) {		
-		try {	
-			Socket sock = socketFact.createSocket(ip, port);
-			sock.setSoTimeout(readTimeout);
-			return sock;
-		} 
-		catch (Exception e) {	e.printStackTrace();	} 
-		return null;
-	}
-
-	static <T> T readObjectWithAck(ObjectInputStream in, ObjectOutputStream out, Object ack) {
-		try {
-			T read = Connections.<T>readObject(in);
-			if (read == null) return null;
-			Connections.send(out, ack);
-			return read;
-		} catch (Exception e) {		e.printStackTrace();	}
-		return null;
-	}
-	
+	//Reads an object of type T. No need to check return value.
+	//Usage: Message msg = Connections.<Message>readObject(in);
 	static <T> T readObject(ObjectInputStream in) {
-		try {	return (T)in.readObject();	} 
-		catch (Exception e) {	e.printStackTrace();	}
-		return null;
+		T read = null;
+		while (read == null) {
+			try {	read = (T)in.readObject();	}
+			catch (Exception e) {	e.printStackTrace();    }
+		}
+		return read;
+	}
+	
+	//same as before but only takes a Socket.
+	//no need to check return values
+	static <T> T readObject(Socket sock) {
+		ObjectInputStream in = Connections.getInputStream(sock);
+		return Connections.readObject(in);
 	}
 		
-	static void send(ObjectOutputStream out, Object toSend) {		
-		try {	out.writeObject(toSend);	} 
-		catch (IOException e) {		e.printStackTrace();	}
-	}
-	
-	static <Ack> void sendWithAck(ObjectOutputStream out, ObjectInputStream in, final Object toSend) {
-		Connections.<Ack>sendWithAck(out, in, toSend, DEFAULT_TIMEOUT);
-	}
-	
-	//timeout in secs
-	static <Ack> void sendWithAck(ObjectOutputStream out, ObjectInputStream in, final Object toSend, int timeOut) {
-		long startTime = System.currentTimeMillis();
-		while (true) { 
-			Connections.send(out, toSend);
-			Ack ack = (Ack)Connections.<Ack>readObject(in);
-			if (ack != null || (System.currentTimeMillis() - startTime)/1000 > timeOut) break;
+	//ensures that the message is sent 
+	static void send(ObjectOutputStream out, Object toSend) {
+		boolean sent = false;
+		while (!sent) {
+			try {
+				out.writeObject(toSend);
+				sent = true;
+			} catch (Exception e) {	e.printStackTrace();	}
 		}
 	}
 	
-	static <Ack> void sendTo(final String ip, final int port, final Object toSend) {
-		Socket sock = Connections.getSocket(ip, port);
-		if (sock == null) {
-			System.err.println("Error getting socket to: " + ip + " on port: " + port);
-			return;
+	//should be private but needs to be static. Try not to use
+	static ObjectOutputStream getOutputStream(Socket sock) {
+		ObjectOutputStream out = null;
+		while (out == null) {
+			try {	out = new ObjectOutputStream(sock.getOutputStream());	}
+			catch (Exception e) {	e.printStackTrace();    }
 		}
-		try {
-			ObjectOutputStream out = (ObjectOutputStream)sock.getOutputStream();
-			ObjectInputStream in = (ObjectInputStream)sock.getInputStream();
-			Connections.<Ack>sendWithAck(out, in, toSend);
-		} catch (Exception e) {		e.printStackTrace();	}
+		return out;
 	}
+	
+	//should be private but needs to be static. Try not to use
+	static ObjectInputStream getInputStream(Socket sock) {
+		ObjectInputStream in = null;
+		while (in == null) {
+			try {	in = new ObjectInputStream(sock.getInputStream());	}
+			catch (Exception e) {	e.printStackTrace();    }
+		}
+		return in;
+	}
+	
+	//ensures that a message is sent
+	static void send(Socket sock, Object toSend) {
+		ObjectOutputStream out = Connections.getOutputStream(sock);
+		Connections.send(out, toSend);
+	}
+	
+	//closes a socket and catches exceptions for you so closing is only one line
+	static void closeSocket(Socket sock) {
+		try {	sock.close();	} 
+		catch (Exception e) {    e.printStackTrace();    }
+	}
+	
 }
