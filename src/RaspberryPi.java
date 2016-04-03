@@ -123,32 +123,38 @@ public class RaspberryPi {
 	}
 
 	public void send_message(Message msg) {
-		long tempTime = System.currentTimeMillis();
-		System.out.println("start sending msg");
-		Socket sendSocket = null;
-		//System.out.println("sending message " + msg.toString() + " with config " + msg.config);
-		final SSLSocketFactory factory = (SSLSocketFactory) SSLSocketFactory.getDefault();
-		try {
-			//System.out.println("ip: " + this.ip + " port: " + this.port);
-			sendSocket = factory.createSocket(this.ip, this.port);
-			//System.out.println("1");
-			ObjectOutputStream outputStream = new ObjectOutputStream(sendSocket.getOutputStream());
-			//System.out.println("2");
-			outputStream.writeObject(msg);
-			//System.out.println("3");
-			outputStream.flush();
-			//System.out.println("4");
-			//Thread.sleep(50); //pause to let the central server get info
-			ObjectInputStream in = new ObjectInputStream(sendSocket.getInputStream());
-			//Wait for the connection to respond
-			System.out.println(((Message)in.readObject()).message);
-			//outputStream.close();
-			sendSocket.close();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		System.out.println("Debug: End compression, Time:" + (int) (System.currentTimeMillis() - tempTime) + "\n");
-		System.out.println("msg sent");
+		
+		new Thread(new Runnable(){
+    		public void run(){
+				long tempTime = System.currentTimeMillis();
+				System.out.println("start sending msg");
+				Socket sendSocket = null;
+				//System.out.println("sending message " + msg.toString() + " with config " + msg.config);
+				final SSLSocketFactory factory = (SSLSocketFactory) SSLSocketFactory.getDefault();
+				try {
+					msg.setFrom(BaseSensor.getIP());
+					//System.out.println("ip: " + this.ip + " port: " + this.port);
+					sendSocket = factory.createSocket(ip, port);
+					//System.out.println("1");
+					ObjectOutputStream outputStream = new ObjectOutputStream(sendSocket.getOutputStream());
+					//System.out.println("2");
+					outputStream.writeObject(msg);
+					//System.out.println("3");
+					outputStream.flush();
+					//System.out.println("4");
+					//Thread.sleep(50); //pause to let the central server get info
+					ObjectInputStream in = new ObjectInputStream(sendSocket.getInputStream());
+					//Wait for the connection to respond
+					System.out.println(((Message)in.readObject()).message);
+					//outputStream.close();
+					sendSocket.close();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+				System.out.println("Debug: End compression, Time:" + (int) (System.currentTimeMillis() - tempTime) + "\n");
+				System.out.println("msg sent");
+    		}
+		}).start();
 	}
-
+	
 }

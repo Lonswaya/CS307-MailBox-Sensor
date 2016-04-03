@@ -112,11 +112,12 @@ public class ServerListener implements Runnable {
 	// TODO: documentation
 	
 	private void notify_uis(ClientConfig config) {
+		/*
 		for (String ip : SeparateServer.ui_ips) {
 			System.out.println("sending config to user " + ip);
 			ConfigMessage msg = new ConfigMessage(ip, config);
 			new Thread(new ClientNotifier(msg, ip, MessageType.READING)).start();
-		}
+		} we are just going to have the users individually request for the sensors, manually*/
 	}
 	
 	
@@ -239,6 +240,7 @@ public class ServerListener implements Runnable {
 					notify_uis(cm3.config);
 					if (cm3.delete) {
 						//remove sensor
+						System.out.println("removing sensor from sendinglist");
 						SeparateServer.sendingList.remove(cm3.config.ip); //TODO remove once database established
 						
 					}
@@ -380,8 +382,8 @@ public class ServerListener implements Runnable {
 		}
 		
     	public void run() {
-    		System.out.println("sending message " + msg.message + " to client " + client);
-    		if (!SeparateServer.sendMessage(msg, client, StaticPorts.clientPort, true)) {
+    		//System.out.println("sending message " + msg.message + " to client " + client);
+    		if (!SeparateServer.sendMessage(msg, client, StaticPorts.clientPort, false)) {
     			System.err.printf("User %s not found, removing from list\n", client);
 				//remove
 				switch(type) {

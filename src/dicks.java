@@ -16,12 +16,15 @@ public class dicks {
 			} else {
 				
 				if (pi.sensor.isSensorActive()) {
+					//System.out.println("AHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH");
 					//System.out.println("sensor is active, " + pi.sensor.check_threshold() + " " + pi.streaming);
 					pi.sensor.sense(); // tell sensor to sense shit maybe a
 						// time interval in between, currently one second
 					if (pi.sensor.check_threshold() || pi.streaming) { //if the threshold is above, or if we are supposed to stream constantly
 						System.out.println("currently sending a message");
-						
+						if (pi.sensor.sType == SensorType.AUDIO) {
+							//pi.send_message(((AudioSensor)pi.sensor).stream());
+						}
 						pi.send_message(pi.sensor.form_message());
 						/*if (pi.sensor.sType == SensorType.PICTURE || pi.sensor.sType == SensorType.LIGHT)*/ sleepAmt = 0; //for lower latency
 					} else {

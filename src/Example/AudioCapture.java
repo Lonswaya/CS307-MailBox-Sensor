@@ -6,7 +6,7 @@ import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.TargetDataLine;
 
 public class AudioCapture {
-	public static void record(){
+	public static float record(){
 		
 		//AudioFormat format = new AudioFormat(AudioFormat.Encoding.PCM_SIGNED, 44100.0f, 16, );
 		AudioFormat format = new AudioFormat(44100.0f, 16, 2, true, false);
@@ -50,8 +50,10 @@ public class AudioCapture {
             }
 
             rms = (float)Math.sqrt(rms / samples.length)*100; //percentage
-            System.out.println("Amp: " + rms);
+            return rms;
+           // System.out.println("Amp: " + rms);
         }
+		return 0;
 	}
 	
 	public static void main(String[] args){

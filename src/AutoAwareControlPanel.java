@@ -232,6 +232,7 @@ public class AutoAwareControlPanel extends JFrame {//implements Observer {
         actions.setMnemonic(KeyEvent.VK_A);
         JMenu help = new JMenu("Help");
         help.setMnemonic(KeyEvent.VK_H);
+        
 
         JMenuItem eMenuItem = new JMenuItem("Exit", icon);
         eMenuItem.setMnemonic(KeyEvent.VK_E);
@@ -295,6 +296,17 @@ public class AutoAwareControlPanel extends JFrame {//implements Observer {
                 
             }
         });
+        JMenuItem RefreshSensors = new JMenuItem("Refresh Sensors", icon);
+        RefreshSensors.setMnemonic(KeyEvent.VK_R);
+        RefreshSensors.setToolTipText("Refresh Sensors");
+        RefreshSensors.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent event) {
+                System.out.println("RefreshSensors");
+                configs = server.GetSensors();
+                refreshSensorList();
+            }
+        });
         JMenuItem Helper = new JMenuItem("Help Menu", icon);
         Helper.setMnemonic(KeyEvent.VK_H);
         Helper.setToolTipText("Open Help");
@@ -313,6 +325,7 @@ public class AutoAwareControlPanel extends JFrame {//implements Observer {
         help.add(Helper);
         actions.add(TurnAllOn);
         actions.add(TurnAllOff);
+        actions.add(RefreshSensors);
         options.add(AddNewSensor);
         options.add(ChangeServer);
 //        file.add(SaveSensors);
@@ -535,7 +548,7 @@ public class AutoAwareControlPanel extends JFrame {//implements Observer {
                     enabled.setText(configs.get(i).isSensorActive()?"Disable":"Enable");
                     //System.out.println("enabled : " + enabled.getText());
                     //System.out.println(configs.get(i).sensor_type);
-                    System.out.println("look here eugene you fucking prick " + configs.get(i).isSensorActive());
+                   // System.out.println("look here eugene you fucking prick " + configs.get(i).isSensorActive());
             		JLabel title = (JLabel) myPanel.getComponent(0);
             		title.setText("<html>" + configs.get(i).name + (configs.get(i).isSensorActive()?"":" <br />(Disabled)</html>"));
         		} catch (ArrayIndexOutOfBoundsException e) {
@@ -668,8 +681,8 @@ public class AutoAwareControlPanel extends JFrame {//implements Observer {
     	@SuppressWarnings("unused")
 		final
     	AutoAwareControlPanel ex = new AutoAwareControlPanel();
-    	/*final Random r = new Random();
-    	Thread t1 = new Thread(new Runnable(){
+    	final Random r = new Random();
+    	/*Thread t1 = new Thread(new Runnable(){
     		public void run(){
     			int num = 8;
     			while(true) {
@@ -692,11 +705,11 @@ public class AutoAwareControlPanel extends JFrame {//implements Observer {
 						e.printStackTrace();
 					}
 	    			
-	    			ex.update(null, pm);
+	    			ex.ProcessMessage( pm);
     			}
     		}
     	});
-    	t2bool = false;
+    	/*t2bool = false;
     	Thread t2 = new Thread(new Runnable(){
     		public void run(){
     			while(true) {
@@ -742,7 +755,7 @@ public class AutoAwareControlPanel extends JFrame {//implements Observer {
 	    });
         t3.start();
     	final boolean t4bool = true;
-    	Thread t4 = new Thread(new Runnable(){
+    	*/Thread t4 = new Thread(new Runnable(){
     		public void run(){
     			while(true) {
     				Random r = new Random();
@@ -751,21 +764,21 @@ public class AutoAwareControlPanel extends JFrame {//implements Observer {
 					} catch (InterruptedException e) {
 						e.printStackTrace();
 					}
-	    			if (t4bool) {
+	    			if (true) {
 		    			ClientConfig cfg = new ClientConfig();
 		    			cfg.SetColor(Color.cyan);
 		    			cfg.ip = "1234";
 		    			//cfg.name = r.n
-		    			ConfigMessage rd = new ConfigMessage("", cfg);
+		    			ReadingMessage rd = new ReadingMessage("reading", cfg);
 		    			rd.setFrom("1234"); 
 		    			
 		    			ex.ProcessMessage(rd);
 	    			}
     			}
 	    	}
-	    });*/
+	    });
     	//t1.start();
-    	///t4.start();
+    	t4.start();
     }
     public void Notify() {
     	String names = "";
@@ -830,10 +843,10 @@ public class AutoAwareControlPanel extends JFrame {//implements Observer {
 	public void ProcessMessage(Message arg1) {
 		Message gotMessage = arg1;
 		ClientConfig myClient = ConfigFind(gotMessage.from);
-		/*if (myClient == null) {
-			System.out.println("Message recieved for incorrect sensor, please try again.\n " + gotMessage);
+		if (myClient == null && gotMessage.type != MessageType.CONFIG) {
+			System.out.printf("Message recieved for incorrect sensor, please try again.\n %s",gotMessage);
 			return;
-		}*/ //if its a new sensor, we dont want this
+		} //if its a new sensor, we dont want this
 		System.out.println(gotMessage);
 		//System.out.println("Message recieved, says to: " + gotMessage.message + " with the type of" + gotMessage.type);
 		
@@ -873,8 +886,8 @@ public class AutoAwareControlPanel extends JFrame {//implements Observer {
 			case AUDIO:
 				//System.out.println("Audio Clip got");
 				//audio clip in .wav format
-				AudioClip audio = ((AudioMessage)gotMessage).clip;
-				if (Streamers.get(gotMessage.from) != null) ((ValueStreamBox)(Streamers.get(gotMessage.from).myPanel)).addClip(audio);
+				byte[] recording = ((AudioMessage)gotMessage).recording;
+				if (Streamers.get(gotMessage.from) != null) ((ValueStreamBox)(Streamers.get(gotMessage.from).myPanel)).addClip(recording);
 				else {
 					//close the stream, it does not exist
 					//server.sendMessage(new StreamingMessage("Telling to stop streaming",gotMessage.config, false));

@@ -12,6 +12,8 @@ import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.SourceDataLine;
 import javax.sound.sampled.TargetDataLine;
 
+import Example.AudioCapture;
+
 public class AudioSensor extends BaseSensor
 {
 	//INSTANCE VARIABLES
@@ -22,11 +24,13 @@ public class AudioSensor extends BaseSensor
 	//private Capture listen = new Capture();
 	
 	String path = System.getProperty("user.home");
+	static AudioFormat format;
 	
 	//constructor: takes the config as parameter and sets the threshold
 	public AudioSensor(BaseConfig config)
 	{
 		super(config);
+		format = new AudioFormat(44100.0f, 16, 2, true, false);
 		threshold = config.sensing_threshold*100; //*100 because we convert decimal to percentage. FIX LATER
 	}
 	
@@ -38,23 +42,29 @@ public class AudioSensor extends BaseSensor
 	}
 	*/
 
+static TargetDataLine line = null;
+	
 	//THIS FUNCTION CHECKS THE VOLUME AT THE CURRENT MOMENT
 public static float checkVolume(){
 		
+		//return AudioCapture.record();
+		
 		//AudioFormat format = new AudioFormat(AudioFormat.Encoding.PCM_SIGNED, 44100.0f, 16, );
-		AudioFormat format = new AudioFormat(44100.0f, 16, 2, true, false);
-		TargetDataLine line = null;
+		System.out.println("Please be able to read thxis");
+		//TargetDataLine line = null;
 		
 		try{
-			line = AudioSystem.getTargetDataLine(format);
-			line.open(format, 2048);
+			if (line == null) {
+				line = AudioSystem.getTargetDataLine(format);
+				line.open(format, 2048);
+			}
 		}catch(Exception e){
 			System.out.println("Plug in the microphone you prick");
 			e.printStackTrace();
 		}
 		
 		byte[] buf = new byte[2048];
-        float[] samples = new float[1024];
+        float [] samples = new float[1024];
         
         float rms = 0f;
         
@@ -85,69 +95,77 @@ public static float checkVolume(){
             }
 
             rms = (float)Math.sqrt(rms / samples.length)*100; //percentage
+            line.stop();
+
             //System.out.println("Amp: " + rms);
             return rms;
         }
+        line.stop();
 		return rms;
-		
-	}
-
+			
+	
+}
 //Check the volume && send sound while streaming
-public static Message stream()
+public Message stream()
 {
-	AudioFormat format = new AudioFormat(44100.0f, 16, 2, true, false);
-	TargetDataLine line = null;	//Check Volume with this
-	TargetDataLine microphone;	//Read sound into this
-    SourceDataLine speakers;	//Play sound out of here
+	System.out.println("Start stream");
+	//AudioFormat format = new AudioFormat(AudioFormat.Encoding.PCM_SIGNED, 44100.0f, 16, 2, 4, 44100.0f,true);
+	//TargetDataLine microphone;	//Read sound into this
+    //SourceDataLine speakers;	//Play sound out of here
     AudioMessage aMessage = new AudioMessage("Streaming audio Message", null);
-	try{
-		line = AudioSystem.getTargetDataLine(format);
-		line.open(format, 2048);
+	
+    try{
+		if (line == null) {
+			line = AudioSystem.getTargetDataLine(format);
+			line.open(format, 2048);
+		}
 	}catch(Exception e){
-		System.out.println("line error");
+		System.out.println("Plug in the microphone you prick");
 		e.printStackTrace();
 	}
-	
-	try {
-        microphone = AudioSystem.getTargetDataLine(format);
+	//DataLine.Info info = new DataLine.Info(TargetDataLine.class, format);
 
-        DataLine.Info info = new DataLine.Info(TargetDataLine.class, format);
-        microphone = (TargetDataLine) AudioSystem.getLine(info);
-        microphone.open(format);
+	ByteArrayOutputStream out = new ByteArrayOutputStream();
+	int numBytesRead = 0;
+	int CHUNK_SIZE = 1024;
+	byte[] data = new byte[line.getBufferSize() / 5];
+	line.start();
 
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        int numBytesRead = 0;
-        int CHUNK_SIZE = 1024;
-        byte[] data = new byte[microphone.getBufferSize() / 5];
-        microphone.start();
+	int bytesRead = 0;
+	//DataLine.Info dataLineInfo = new DataLine.Info(SourceDataLine.class, format);
+	//speakers = (SourceDataLine) AudioSystem.getLine(dataLineInfo);
+	//speakers.open(format);
+	//speakers.start();
+	 int frameSizeInBytes = format.getFrameSize();
+	 int bufferLengthInFrames = line.getBufferSize() / 8;
+	 int bufferLengthInBytes = bufferLengthInFrames * frameSizeInBytes;
+	
+	long begin = System.currentTimeMillis();
+	double duration = 3.0f;
+	
+	while (true) {
+	    //numBytesRead = line.read(data, 0, CHUNK_SIZE);
+	    //bytesRead += numBytesRead;
+	    // write the mic data to a stream for use later
+	    //out.write(data, 0, numBytesRead); 
+		
+		long current = System.currentTimeMillis();
+	        
+	    long difference = (current - begin) / 1000;
+	    try {
+	    	numBytesRead = line.read(data, 0, bufferLengthInBytes);
+	    	if (difference > duration) throw new Exception();
+	    } catch (Exception e) {
+	    	break;
+	    }
+			
+	    out.write(data, 0, numBytesRead);
+	    //Send this in the AudioMessage
+	    byte[] soundRecorded = data;         
+	    aMessage.setRecording(soundRecorded);
+	} 
+	System.out.println("End stream");
 
-        int bytesRead = 0;
-        DataLine.Info dataLineInfo = new DataLine.Info(SourceDataLine.class, format);
-        speakers = (SourceDataLine) AudioSystem.getLine(dataLineInfo);
-        speakers.open(format);
-        speakers.start();
-        
-        
-        
-        while (bytesRead < 100000) {
-            numBytesRead = microphone.read(data, 0, CHUNK_SIZE);
-            bytesRead += numBytesRead;
-            // write the mic data to a stream for use later
-            out.write(data, 0, numBytesRead); 
-            
-            //Send this in the AudioMessage
-            byte[] soundRecorded = data;
-            
-                      
-            aMessage.setRecording(soundRecorded);
-        }
-       
-        microphone.close();
-    } catch (LineUnavailableException e) {
-        e.printStackTrace();
-    } 
-	
-	
 	return aMessage;
 }
 		
@@ -172,7 +190,7 @@ public static Message stream()
 		System.out.println("Forming Volume message");
 		
 		ReadingMessage msg = new ReadingMessage("Volume above threshold", null);
-		msg.setFrom(this.getIP());
+		msg.setFrom(getIP());
 		msg.setCurrentThreshold(this.currentVolume);
 		return msg;
 		//return null;
@@ -183,7 +201,8 @@ public static Message stream()
 	public void sense() {
 		// TODO Auto-generated method stub
 		//do nothing
-		currentVolume = AudioSensor.checkVolume();
+		//System.out.println("Sensing audio stuff");
+		currentVolume = checkVolume();
 		
 		
 		
