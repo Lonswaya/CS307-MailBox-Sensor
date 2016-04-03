@@ -1,4 +1,5 @@
 
+import java.io.ByteArrayOutputStream;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
@@ -6,6 +7,9 @@ import java.util.Enumeration;
 
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.DataLine;
+import javax.sound.sampled.LineUnavailableException;
+import javax.sound.sampled.SourceDataLine;
 import javax.sound.sampled.TargetDataLine;
 
 public class AudioSensor extends BaseSensor
@@ -87,6 +91,65 @@ public static float checkVolume(){
 		return rms;
 		
 	}
+
+//Check the volume && send sound while streaming
+public static Message stream()
+{
+	AudioFormat format = new AudioFormat(44100.0f, 16, 2, true, false);
+	TargetDataLine line = null;	//Check Volume with this
+	TargetDataLine microphone;	//Read sound into this
+    SourceDataLine speakers;	//Play sound out of here
+    AudioMessage aMessage = new AudioMessage("Streaming audio Message", null);
+	try{
+		line = AudioSystem.getTargetDataLine(format);
+		line.open(format, 2048);
+	}catch(Exception e){
+		System.out.println("line error");
+		e.printStackTrace();
+	}
+	
+	try {
+        microphone = AudioSystem.getTargetDataLine(format);
+
+        DataLine.Info info = new DataLine.Info(TargetDataLine.class, format);
+        microphone = (TargetDataLine) AudioSystem.getLine(info);
+        microphone.open(format);
+
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        int numBytesRead = 0;
+        int CHUNK_SIZE = 1024;
+        byte[] data = new byte[microphone.getBufferSize() / 5];
+        microphone.start();
+
+        int bytesRead = 0;
+        DataLine.Info dataLineInfo = new DataLine.Info(SourceDataLine.class, format);
+        speakers = (SourceDataLine) AudioSystem.getLine(dataLineInfo);
+        speakers.open(format);
+        speakers.start();
+        
+        
+        
+        while (bytesRead < 100000) {
+            numBytesRead = microphone.read(data, 0, CHUNK_SIZE);
+            bytesRead += numBytesRead;
+            // write the mic data to a stream for use later
+            out.write(data, 0, numBytesRead); 
+            
+            //Send this in the AudioMessage
+            byte[] soundRecorded = data;
+            
+                      
+            aMessage.setRecording(soundRecorded);
+        }
+       
+        microphone.close();
+    } catch (LineUnavailableException e) {
+        e.printStackTrace();
+    } 
+	
+	
+	return aMessage;
+}
 		
 	
 	
@@ -109,7 +172,7 @@ public static float checkVolume(){
 		System.out.println("Forming Volume message");
 		
 		ReadingMessage msg = new ReadingMessage("Volume above threshold", null);
-		msg.setFrom(this.ip);
+		msg.setFrom(this.getIP());
 		msg.setCurrentThreshold(this.currentVolume);
 		return msg;
 		//return null;
