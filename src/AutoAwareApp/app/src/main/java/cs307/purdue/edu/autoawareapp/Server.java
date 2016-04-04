@@ -12,16 +12,22 @@ import javax.net.ssl.SSLSocketFactory;
 /**
  * Used to grab sensor infos from central server
  */
-public class Server implements Runnable {
+public class Server implements Runnable, MessageProcessor {
     public ArrayList<SensorInfo> sensorList;
     public String server_ip;
     public int server_port;
+    public CentralServer connector = new CentralServer(this);
+
     public Thread receiveMessages;
     private boolean newSensorListFlag = false;
 
     public Server() {
         System.setProperty("javax.net.ssl.trustStore", "mySrvKeystore");  //get ssl working
         System.setProperty("javax.net.ssl.trustStorePassword", "sensor"); //get ssl working
+    }
+
+    public void ProcessMessage(Message msg){
+
     }
 
     public void run() {
