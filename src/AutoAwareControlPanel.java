@@ -40,7 +40,7 @@ import javax.swing.Timer;
 
 
 
-public class AutoAwareControlPanel extends JFrame {//implements Observer {
+public class AutoAwareControlPanel extends JFrame implements MessageProcessor {//implements Observer {
 	private static final long serialVersionUID = 1L;
 	private JPanel panelHolder;
 	public ArrayList<ClientConfig> configs;

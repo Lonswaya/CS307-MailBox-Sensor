@@ -22,13 +22,13 @@ public class CentralServer extends Observable implements Runnable {
 	
 	protected boolean run = true;
 	
-	private AutoAwareControlPanel ref;
+	private MessageProcessor ref;
 	
 	private Observer obs = null;
 	
 	public String seperateIP = "localhost";
 	public int seperatePort = StaticPorts.serverPort;
-	public CentralServer(AutoAwareControlPanel obs) {
+	public CentralServer(MessageProcessor obs) {
 	    System.setProperty("javax.net.ssl.keyStore", "mySrvKeystore");
 	    System.setProperty("javax.net.ssl.keyStorePassword", "sensor");
 	
