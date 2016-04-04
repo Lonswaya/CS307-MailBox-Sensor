@@ -1,4 +1,5 @@
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -395,6 +396,7 @@ public class DBConnect {
 
 		try {
 			JdbcDataSource ds = new JdbcDataSource();
+			Class.forName("org.h2.Driver");
 			ds.setURL("jdbc:h2:~/AutoAware");
 			ds.setUser("CS307");
 			ds.setPassword("AutoAware");
@@ -404,6 +406,13 @@ public class DBConnect {
 			con = ds.getConnection();
 			
 			Statement stmt = con.createStatement();
+			
+			DatabaseMetaData dbm = con.getMetaData();
+			ResultSet res = dbm.getTables(null, null, "Table1", null);
+			
+			if(!res.next()){
+				stmt.executeUpdate("RUNSCRIPT FROM 'test.sql'");
+			}
 	
 			return stmt;
 			
