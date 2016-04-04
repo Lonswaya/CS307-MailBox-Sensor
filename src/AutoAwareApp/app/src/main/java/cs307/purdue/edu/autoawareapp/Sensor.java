@@ -16,6 +16,7 @@ public class Sensor extends AppCompatActivity {
     private String name;
     private String type;
     private int seekDefaultValue;
+    private String ip;
 
     private RelativeLayout sensorLayout;
     private TextView sensorName;
@@ -28,10 +29,20 @@ public class Sensor extends AppCompatActivity {
     public Sensor() {
     }
 
-    public Sensor(String name, int seekDefaultValue, String type) {
+    public String getIp() {
+        return ip;
+    }
+
+    public void setIp(String ip) {
+        this.ip = ip;
+    }
+
+    public Sensor(String name, int seekDefaultValue, String type, String ip) {
         this.name = name;
         this.seekDefaultValue = seekDefaultValue;
         this.type = type;
+        this.ip = ip;
+
     }
 
 

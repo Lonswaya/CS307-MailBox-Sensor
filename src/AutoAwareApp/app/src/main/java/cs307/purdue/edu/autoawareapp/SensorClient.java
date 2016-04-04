@@ -72,9 +72,14 @@ public class SensorClient extends AppCompatActivity {
             //TODO: Error handling
         }
 
-
-            updateSensors();
-
+        Server server = new Server();
+        while (true) {
+            int ret2 = updateSensors(server);
+            if (ret2 != 0) {
+                break;
+            }
+            updateView();
+        }
         Intent in = getIntent();
 
     }
@@ -99,7 +104,54 @@ public class SensorClient extends AppCompatActivity {
         return 0;
     }
 
-    public void updateSensors() {
+    public int updateSensors(Server server) {
+        sensorInfoList = server.getSensors();
+        setNumOfSensors(sensorInfoList.size());
+        if (numOfSensors == 0) {
+            return 0;
+        }
+        else {
+            try {
+                sensors.clear();
+                for (int i = 0; i < numOfSensors; i++) {
+                    Sensor sensor = convertSensorInfoToSensor(sensorInfoList.get(i));
+                    int check = checkSensorMatch(sensor.getIp());
+
+                    if (check == -1) {
+                        sensors.add(sensor);
+                        updateView();
+                    }
+                    else if (check != -1) {
+                        //TODO: Get value form the client
+                        float currentVal = sensorInfoList.get(i).sensing_threshold;
+                        int val = 0;
+                        if (currentVal % 1 < 0.5) {
+                            val = (int) currentVal;
+                        }
+                        else {
+                            val = (int) currentVal + 1;
+                        }
+                        sensors.get(check).getCurrentValBar().setProgress(val);
+                        updateView();
+                    }
+                }
+            } catch (Exception e) {
+                return -1;
+            }
+        }
+        return 0;
+    }
+
+    public int checkSensorMatch(String ip) {
+        for (int i = 0; i < sensors.size(); i++) {
+            if (sensors.get(i).getIp() == ip) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    public void updateView() {
 
     }
 
@@ -120,8 +172,10 @@ public class SensorClient extends AppCompatActivity {
             default: return null;
         }
 
+        newSensor.setIp(s.ip);
         newSensor.setSeekDefaultValue(0);
         newSensor.getPlayButton().setVisibility(View.INVISIBLE);
+
 
         return newSensor;
 
