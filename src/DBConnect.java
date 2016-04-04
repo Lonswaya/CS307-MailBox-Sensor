@@ -5,6 +5,11 @@ import java.sql.Statement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Calendar;
+import javax.naming.Context;
+import javax.naming.InitialContext;
+
+import org.h2.Driver;
+import org.h2.jdbcx.JdbcDataSource;
 
 public class DBConnect {
 	private static Connection con;
@@ -389,17 +394,20 @@ public class DBConnect {
 	public static Statement connect() {
 
 		try {
-			String host = "jdbc:oracle:thin:@localhost:1521:xe";
-			String uName = "CS307";
-			String pass = "AutoAware";
+			JdbcDataSource ds = new JdbcDataSource();
+			ds.setURL("jdbc:h2:~/AutoAware");
+			ds.setUser("CS307");
+			ds.setPassword("AutoAware");
+			Context ctx = new InitialContext();
+			ctx.bind("jdbc/AutoAware", ds);
 
-			con = DriverManager.getConnection(host, uName, pass);
+			con = ds.getConnection();
 			
 			Statement stmt = con.createStatement();
 	
 			return stmt;
 			
-		} catch (SQLException e) {
+		} catch (Exception e) {
 			System.out.println(e.getMessage());
 		}
 		return null;
