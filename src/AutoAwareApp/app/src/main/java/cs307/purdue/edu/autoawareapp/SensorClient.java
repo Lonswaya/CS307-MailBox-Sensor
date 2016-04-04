@@ -73,6 +73,8 @@ public class SensorClient extends AppCompatActivity {
         }
 
 
+            updateSensors();
+
         Intent in = getIntent();
 
     }
@@ -85,12 +87,44 @@ public class SensorClient extends AppCompatActivity {
             return 0;
         }
         else {
-            for (int i = 0; i < numOfSensors; i++) {
-
+            try {
+                for (int i = 0; i < numOfSensors; i++) {
+                    Sensor sensor = convertSensorInfoToSensor(sensorInfoList.get(i));
+                    sensors.add(sensor);
+                }
+            } catch (Exception e) {
+                return -1;
             }
         }
-
         return 0;
+    }
+
+    public void updateSensors() {
+
+    }
+
+    public Sensor convertSensorInfoToSensor(SensorInfo s) {
+        Sensor newSensor = new Sensor();
+        newSensor.setName(s.name);
+
+        switch (s.sensor_type) {
+            case VIDEO: newSensor.setType("VIDEO");
+                newSensor.setSensorTypeImage(R.mipmap.ic_video_icon);
+                break;
+            case AUDIO: newSensor.setType("AUDIO");
+                newSensor.setSensorTypeImage(R.mipmap.ic_sound_icon);
+                break;
+            case LIGHT: newSensor.setType("LIGHT");
+                newSensor.setSensorTypeImage(R.mipmap.ic_bulb);
+                break;
+            default: return null;
+        }
+
+        newSensor.setSeekDefaultValue(0);
+        newSensor.getPlayButton().setVisibility(View.INVISIBLE);
+
+        return newSensor;
+
     }
 
     @Override

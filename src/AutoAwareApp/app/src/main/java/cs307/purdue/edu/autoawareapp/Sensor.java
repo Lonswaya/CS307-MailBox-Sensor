@@ -136,32 +136,6 @@ public class Sensor extends AppCompatActivity {
         this.enableDisableButton = enableDisableButton;
     }
 
-    public Sensor convertSensorInfotoSensor(SensorInfo s) {
-        Sensor newSensor = new Sensor();
-        newSensor.setName(s.name);
-
-        switch (s.sensor_type) {
-            case VIDEO: newSensor.setType("VIDEO");
-                newSensor.setSensorTypeImage(R.mipmap.ic_video_icon);
-                break;
-            case AUDIO: newSensor.setType("AUDIO");
-                newSensor.setSensorTypeImage(R.mipmap.ic_sound_icon);
-                break;
-            case LIGHT: newSensor.setType("LIGHT");
-                        newSensor.setSensorTypeImage(R.mipmap.ic_bulb);
-                break;
-            default: return null;
-        }
-
-        newSensor.setSeekDefaultValue(0);
-        newSensor.playButton.setVisibility(View.INVISIBLE);
-
-        return newSensor;
-
-    }
-
-
-
     @Override
 
     public boolean onOptionsItemSelected(MenuItem item) {
