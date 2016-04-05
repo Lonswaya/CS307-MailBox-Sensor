@@ -29,7 +29,7 @@ public static void main(String[]args) throws TwilioRestException {
 	 params.add(new BasicNameValuePair("Body", textMessage));   
 
 	 MessageFactory messageFactory = client.getAccount().getMessageFactory(); 
-	 Message message = messageFactory.create(params); 
+	 com.twilio.sdk.resource.instance.Message message = messageFactory.create(params); 
 	 System.out.println(message.getSid()); 
 	 scanner.close();
 	} 

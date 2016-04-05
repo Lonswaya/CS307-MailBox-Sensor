@@ -8,6 +8,10 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import javax.naming.Context;
 import javax.naming.InitialContext;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 
 import org.h2.Driver;
 import org.h2.jdbcx.JdbcDataSource;
@@ -15,6 +19,7 @@ import org.h2.jdbcx.JdbcDataSource;
 public class DBConnect {
 	private static Connection con;
 	
+	/*
 	public static int getColumnNumber(String columnName) {
 		int columnNumber = 0;
 		if (columnName == "USERNAME") {
@@ -391,6 +396,19 @@ public class DBConnect {
 		}
 		return -1;
 	}
+	*/
+	
+	public static void saveConfig(ClientConfig cc, String ip) {
+		
+	}
+	
+	public static ClientConfig readConfig(String ip) {
+		return null;
+	}
+	
+	public static void removeConfig(String ip) {
+		
+	}
 	
 	public static Statement connect() {
 
@@ -408,10 +426,10 @@ public class DBConnect {
 			Statement stmt = con.createStatement();
 			
 			DatabaseMetaData dbm = con.getMetaData();
-			ResultSet res = dbm.getTables(null, null, "Table1", null);
+			ResultSet res = dbm.getTables(null, null, "Configs", null);
 			
 			if(!res.next()){
-				stmt.executeUpdate("RUNSCRIPT FROM 'test.sql'");
+				stmt.executeUpdate("CREATE TABLE Configs(IP_Addr varchar(15), ClientConfig blob(10000))");
 			}
 	
 			return stmt;
@@ -428,6 +446,6 @@ public class DBConnect {
 		//System.out.println(returnEntry("USERNAME"));
 		//removeAllSensorDetection("x", "127.000.000.3", "S2");
 		//returnLower();
-		System.out.println(getAllEntries());
+		//System.out.println(getAllEntries());
 	}
 }
