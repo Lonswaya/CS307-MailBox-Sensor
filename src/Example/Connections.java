@@ -26,7 +26,7 @@ public class Connections {
 	static ServerSocketFactory serverSockFact = ServerSocketFactory.getDefault();
 	
 	//returns a ServerSocket on that port. No need to check the return value.
-	static synchronized ServerSocket getServerSocket(final int port) {
+	public static synchronized ServerSocket getServerSocket(final int port) {
 		ServerSocket ss = null;
 		while (ss == null) {
 			try {	ss = Connections.serverSockFact.createServerSocket(port, 1000);	}
@@ -36,7 +36,7 @@ public class Connections {
 	}
 	
 	//returns a Socket connecting to a ServerSocket. No need to check the return value.
-	static synchronized Socket getSocket(final String ip, final int port) {		
+	public static synchronized Socket getSocket(final String ip, final int port) {		
 		Socket sock = null;
 		while (sock == null) {
 			try {	sock = Connections.socketFact.createSocket(ip, port);	}
@@ -47,7 +47,7 @@ public class Connections {
 	
 	//Reads an object of type T. No need to check return value.
 	//Usage: Message msg = Connections.<Message>readObject(in);
-	static <T> T readObject(ObjectInputStream in) {
+	public static <T> T readObject(ObjectInputStream in) {
 		T read = null;
 		while (read == null) {
 			try {	read = (T)in.readObject();	}
@@ -58,13 +58,13 @@ public class Connections {
 	
 	//same as before but only takes a Socket.
 	//no need to check return values
-	static <T> T readObject(Socket sock) {
+	public static <T> T readObject(Socket sock) {
 		ObjectInputStream in = Connections.getInputStream(sock);
 		return Connections.readObject(in);
 	}
 		
 	//ensures that the message is sent 
-	static void send(ObjectOutputStream out, Object toSend) {
+	public static void send(ObjectOutputStream out, Object toSend) {
 		boolean sent = false;
 		while (!sent) {
 			try {
@@ -75,7 +75,7 @@ public class Connections {
 	}
 	
 	//should be private but needs to be static. Try not to use
-	static ObjectOutputStream getOutputStream(Socket sock) {
+	public static ObjectOutputStream getOutputStream(Socket sock) {
 		ObjectOutputStream out = null;
 		while (out == null) {
 			try {	out = new ObjectOutputStream(sock.getOutputStream());	}
@@ -85,7 +85,7 @@ public class Connections {
 	}
 	
 	//should be private but needs to be static. Try not to use
-	static ObjectInputStream getInputStream(Socket sock) {
+	public static ObjectInputStream getInputStream(Socket sock) {
 		ObjectInputStream in = null;
 		while (in == null) {
 			try {	in = new ObjectInputStream(sock.getInputStream());	}
@@ -95,13 +95,13 @@ public class Connections {
 	}
 	
 	//ensures that a message is sent
-	static void send(Socket sock, Object toSend) {
+	public static void send(Socket sock, Object toSend) {
 		ObjectOutputStream out = Connections.getOutputStream(sock);
 		Connections.send(out, toSend);
 	}
 	
 	//closes a socket and catches exceptions for you so closing is only one line
-	static void closeSocket(Socket sock) {
+	public static void closeSocket(Socket sock) {
 		try {	sock.close();	} 
 		catch (Exception e) {    e.printStackTrace();    }
 	}
