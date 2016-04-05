@@ -6,9 +6,11 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageButton;
 
@@ -19,12 +21,14 @@ import java.util.Date;
  * Created by Dhairya M. Doshi on 4/1/2016.
  */
 public class SensorClient extends AppCompatActivity {
-    private RecyclerView sensorList;
+    private RecyclerView recyclerView;
     RecyclerView.Adapter mAdapter = null;
-    private ArrayList<Sensor> sensors = null;
+    RecyclerView.LayoutManager llm;
+    private ArrayList<Sensor> sensors = new ArrayList<Sensor>();;
     int in_index = 0;
     private int numOfSensors;
     private ArrayList<SensorInfo> sensorInfoList;
+    private int noSensorFlag = 0;
 
     public int getNumOfSensors() {
         return numOfSensors;
@@ -42,53 +46,61 @@ public class SensorClient extends AppCompatActivity {
         this.sensors = sensors;
     }
 
-    public RecyclerView getSensorList() {
-        return sensorList;
+    public RecyclerView getRecyclerView() {
+        return recyclerView;
     }
 
-    public void setSensorList(RecyclerView sensorList) {
-        this.sensorList = sensorList;
+    public void setRecyclerView(RecyclerView recyclerView) {
+        this.recyclerView = recyclerView;
     }
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // messages = new ArrayList<String>();
-        sensors = new ArrayList<Sensor>();
+        recyclerView = (RecyclerView) findViewById(R.id.sensorRCView);
+        recyclerView.setHasFixedSize(true);
 
-        // mAdapter = new ArrayAdapter<String>(this, R.layout.mymessage, R.id.mymessageTextView, messages);
+        llm = new LinearLayoutManager(this);
+        recyclerView.setLayoutManager(llm);
+
         mAdapter = new MyAdapter(this, sensors);
+        recyclerView.setAdapter(mAdapter);
+        //llm.setOrientation(LinearLayoutManager.VERTICAL);
 
-        sensorList = (RecyclerView) findViewById(R.id.messageList);
-        sensorList.setHasFixedSize(true);
-        LinearLayoutManager llm = new LinearLayoutManager(this);
-        llm.setOrientation(LinearLayoutManager.VERTICAL);
-        sensorList.setLayoutManager(llm);
-        sensorList.setAdapter(mAdapter);
-
-        int ret = createSensors();
-        if (ret != 0) {
-            //TODO: Error handling
-        }
-
-        Server server = new Server();
-        while (true) {
-            int ret2 = updateSensors(server);
-            if (ret2 != 0) {
-                break;
-            }
-            updateView();
-        }
-        Intent in = getIntent();
-
+        //int ret = createSensors();
+        sensors.add(new Sensor("Sensor 1", 0, "LIGHT", "100.0.0.1"));
+        recyclerView.scrollToPosition(sensors.size() - 1);
+        //mAdapter.notifyItemInserted(sensors.size() - 1);
+        mAdapter.notifyDataSetChanged();
     }
+
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+        return true;
+    }
+
+    //@Override
+    /*public View onCreateView (LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        View layout = inflater.inflate(R.layout.activity_main, container, false);
+        recyclerView = (RecyclerView) layout.findViewById(R.id.sensorRCView);
+        return layout;
+    }*/
 
     public int createSensors() {
         Server s = new Server();
         sensorInfoList = s.getSensors();
-        setNumOfSensors(sensorInfoList.size());
+        System.out.println(sensorInfoList);
+        if (sensorInfoList != null) {
+            setNumOfSensors(sensorInfoList.size());
+        }
+        else {
+            noSensorFlag = 1;
+            return 0;
+        }
         if (numOfSensors == 0) {
+            noSensorFlag = 1;
             return 0;
         }
         else {
@@ -106,11 +118,19 @@ public class SensorClient extends AppCompatActivity {
 
     public int updateSensors(Server server) {
         sensorInfoList = server.getSensors();
-        setNumOfSensors(sensorInfoList.size());
+        if (sensorInfoList != null) {
+            setNumOfSensors(sensorInfoList.size());
+        }
+        else {
+            noSensorFlag = 1;
+            return 0;
+        }
         if (numOfSensors == 0) {
+            noSensorFlag = 1;
             return 0;
         }
         else {
+            noSensorFlag = 0;
             try {
                 sensors.clear();
                 for (int i = 0; i < numOfSensors; i++) {
@@ -119,11 +139,13 @@ public class SensorClient extends AppCompatActivity {
 
                     if (check == -1) {
                         sensors.add(sensor);
-                        updateView();
+                        recyclerView.scrollToPosition(sensors.size() - 1);
+                        mAdapter.notifyDataSetChanged();
                     }
                     else if (check != -1) {
                         //TODO: Get value form the client
                         float currentVal = sensorInfoList.get(i).sensing_threshold;
+                        sensors.get(check).setSeekCurrentValue((int) currentVal);
                         int val = 0;
                         if (currentVal % 1 < 0.5) {
                             val = (int) currentVal;
@@ -132,7 +154,7 @@ public class SensorClient extends AppCompatActivity {
                             val = (int) currentVal + 1;
                         }
                         sensors.get(check).getCurrentValBar().setProgress(val);
-                        updateView();
+                        mAdapter.notifyDataSetChanged();
                     }
                 }
             } catch (Exception e) {
@@ -174,18 +196,11 @@ public class SensorClient extends AppCompatActivity {
 
         newSensor.setIp(s.ip);
         newSensor.setSeekDefaultValue(0);
+        newSensor.setSeekCurrentValue((int) s.sensing_threshold);
         newSensor.getPlayButton().setVisibility(View.INVISIBLE);
-
 
         return newSensor;
 
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
     }
 
     @Override

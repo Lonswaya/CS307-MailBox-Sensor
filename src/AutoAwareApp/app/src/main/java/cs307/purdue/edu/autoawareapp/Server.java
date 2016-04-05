@@ -67,7 +67,10 @@ public class Server implements Runnable, MessageProcessor {
     }
     public ArrayList<SensorInfo> getSensors() {
         //this.sensorList = connectorObject.GetSensors();
-        return connector.GetSensors();
+        if (connector == null) {
+            return connector.GetSensors();
+        }
+        return null;
     }
 
     class MessageHandler extends Thread{

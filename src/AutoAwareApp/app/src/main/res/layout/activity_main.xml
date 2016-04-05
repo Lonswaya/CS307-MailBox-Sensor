@@ -5,32 +5,27 @@
 
     <LinearLayout
         android:orientation="horizontal"
-        android:layout_width="fill_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
-        android:padding="5pt"
         android:id="@+id/linearLayout"
-        android:background="#ffffff"
+        android:background="#feffff"
         android:layout_alignParentLeft="true"
         android:layout_alignParentRight="true"
         android:elevation="5dp"
         android:layout_margin="0pt">
 
         <Button
-            android:layout_marginTop="100dp"
-            android:layout_marginBottom="5dp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/addButton"
-            android:layout_marginLeft="50dp"
+            android:layout_marginLeft="57dp"
             android:text="ADD SENSOR"
             android:textSize="18dp"
             />
 
         <Button
-            android:layout_marginTop="100dp"
-            android:layout_marginBottom="5dp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/exitButton"
@@ -47,17 +42,19 @@
         android:layout_alignParentEnd="true"
         android:padding="5pt"
         android:id="@+id/recycler_view"
-        android:background="@null">
+        android:background="@null"
+        android:weightSum="1">
 
         <android.support.v7.widget.RecyclerView
             android:scrollbars="vertical"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:id="@+id/messageList"
+            android:layout_height="433dp"
+            android:id="@+id/sensorRCView"
             android:transcriptMode="alwaysScroll"
             android:stackFromBottom="true"
             android:divider="@null"
-            android:background="@null" />
+            android:background="@null"
+            android:layout_weight="0.28" />
     </LinearLayout>
 
 </RelativeLayout>

@@ -16,6 +16,7 @@ public class Sensor extends AppCompatActivity {
     private String name;
     private String type;
     private int seekDefaultValue;
+    private int seekCurrentValue;
     private String ip;
 
     private RelativeLayout sensorLayout;
@@ -89,6 +90,14 @@ public class Sensor extends AppCompatActivity {
 
     public void setSeekDefaultValue(int seekDefaultValue) {
         this.seekDefaultValue = seekDefaultValue;
+    }
+
+    public int getSeekCurrentValue() {
+        return this.seekCurrentValue;
+    }
+
+    public void setSeekCurrentValue (int seekCurrentValue) {
+        this.seekCurrentValue = seekCurrentValue;
     }
 
     public RelativeLayout getSensorLayout() {
