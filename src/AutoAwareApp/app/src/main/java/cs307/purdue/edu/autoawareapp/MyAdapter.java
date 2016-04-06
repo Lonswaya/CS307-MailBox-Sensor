@@ -27,7 +27,7 @@ public class MyAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     // Complex data items may need more than one view per item, and
     // you provide access to all the views for a data item in a view holder
     public static class ViewHolder extends RecyclerView.ViewHolder {
-        public TextView sensorNameTextView;
+        public TextView sensorNameTextView, sensorIpTextView;
         public ImageView sensorTypeImage;
         public ImageButton streamButton;
         public SeekBar seekBar;
@@ -39,6 +39,7 @@ public class MyAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
             System.out.println("HI!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
             this.sensorNameTextView = (TextView) v.findViewById(R.id.sensor_name);
+            this.sensorIpTextView = (TextView) v.findViewById(R.id.sensor_ip);
             this.sensorTypeImage = (ImageView) v.findViewById(R.id.sensor_type_image);
             this.streamButton = (ImageButton) v.findViewById(R.id.rec_button);
             this.seekBar = (SeekBar) v.findViewById(R.id.current_val_bar);
@@ -78,6 +79,9 @@ public class MyAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         TextView sensorNameView = (TextView) viewholder.sensorNameTextView;
         sensorNameView.setText(sensors.get(position).getName());
 
+        TextView sensorIpView = (TextView) viewholder.sensorIpTextView;
+        sensorIpView.setText(sensors.get(position).getIp());
+
         ImageView sensorTypeImageView = (ImageView) viewholder.sensorTypeImage;
         switch (sensors.get(position).getType()) {
             case "VIDEO": sensorTypeImageView.setImageResource(R.mipmap.ic_video_icon);
@@ -96,11 +100,11 @@ public class MyAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
         Button configButtonView = (Button) viewholder.configButton;
         configButtonView.setText("Configure");
-        //TODO:configButtonView.setOnClickListener();
+        configButtonView.setOnClickListener(new myOnClickListener(viewholder, R.id.button1));
 
         Button enableDisableButtonView = (Button) viewholder.enableDisbaleButton;
         enableDisableButtonView.setText("Disable");
-        //TODO:enableDisableButtonView.setOnClickListener();
+        enableDisableButtonView.setOnClickListener(new myOnClickListener(viewholder, R.id.button2));
 
         SeekBar seekBarView = (SeekBar) viewholder.seekBar;
         seekBarView.setProgress(sensors.get(position).getSeekCurrentValue());

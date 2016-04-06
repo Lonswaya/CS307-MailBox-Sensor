@@ -26,6 +26,18 @@
             android:textColor="#000000"
             />
 
+        <TextView
+            android:id="@+id/sensor_ip"
+            android:textSize="20dp"
+            android:layout_below="@id/sensor_name"
+            android:layout_marginLeft="30dp"
+            android:text="IP address"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="#7d7d7d"
+            />
+
+
         <ImageView
             android:id="@+id/sensor_type_image"
             android:layout_marginTop="10dp"
@@ -57,7 +69,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_below="@id/sensor_name"
-            android:layout_marginTop="25dp"
+            android:layout_marginTop="30dp"
             style="@android:style/Widget.SeekBar"
             />
 

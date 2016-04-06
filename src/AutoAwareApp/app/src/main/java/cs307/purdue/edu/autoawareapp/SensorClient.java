@@ -13,6 +13,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -80,13 +81,6 @@ public class SensorClient extends AppCompatActivity {
         getMenuInflater().inflate(R.menu.menu_main, menu);
         return true;
     }
-
-    //@Override
-    /*public View onCreateView (LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View layout = inflater.inflate(R.layout.activity_main, container, false);
-        recyclerView = (RecyclerView) layout.findViewById(R.id.sensorRCView);
-        return layout;
-    }*/
 
     public int createSensors() {
         Server s = new Server();
