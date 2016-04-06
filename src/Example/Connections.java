@@ -32,7 +32,7 @@ public class Connections {
 		ServerSocket ss = null;
 		while (ss == null) {
 			try {	ss = Connections.serverSockFact.createServerSocket(port, 1000);	}
-			catch (Exception e) {	System.err.println("Issue getting server socket, retrying");    }
+			catch (Exception e) {	System.err.println("Issue getting server socket, " + e.toString());    }
 		}
 		return ss;
 	}
@@ -42,7 +42,7 @@ public class Connections {
 		Socket sock = null;
 		while (sock == null) {
 			try {	sock = Connections.socketFact.createSocket(ip, port);	}
-			catch (Exception e) {		System.err.println("Issue getting socket, retrying");   }
+			catch (Exception e) {		System.err.println("Issue getting socket, " + e.toString());   }
 		}
 		return sock;
 	}
@@ -60,7 +60,7 @@ public class Connections {
 				}
 				sock = Connections.socketFact.createSocket(ip, port);
 				return sock;
-			} catch (Exception e) {	System.err.println("Issue getting socket, retrying until timeout"); 	}
+			} catch (Exception e) {	System.err.println("Issue getting socket, retrying until timeout " + e.toString()); 	}
 		}
 		return null;
 	}
@@ -71,7 +71,7 @@ public class Connections {
 		T read = null;
 		while (read == null) {
 			try {	read = (T)in.readObject();	}
-			catch (Exception e) {	System.err.println("Issue reading object, retrying");     }
+			catch (Exception e) {	System.err.println("Issue reading object, retrying "  + e.toString());     }
 		}
 		return read;
 	}
@@ -82,7 +82,7 @@ public class Connections {
 		long time = new Date().getTime();
 		while (read == null && time - new Date().getTime() < timeout) {
 			try {	read = (T)in.readObject();	}
-			catch (Exception e) {	System.err.println("Issue reading object, retrying until timeout");     }
+			catch (Exception e) {	System.err.println("Issue reading object, retrying until timeout "  + e.toString());     }
 		}
 		return read;
 	}
@@ -103,8 +103,9 @@ public class Connections {
 		while (!sent) {
 			try {
 				out.writeObject(toSend);
+				out.flush();
 				sent = true;
-			} catch (Exception e) {	System.err.println("Issue sending object, retrying"); 	}
+			} catch (Exception e) {	System.err.println("Issue sending object, retrying " + e.toString()); 	}
 		}
 	}
 	
@@ -115,7 +116,7 @@ public class Connections {
 		ObjectOutputStream out = null;
 		while (out == null) {
 			try {	out = new ObjectOutputStream(sock.getOutputStream());	}
-			catch (Exception e) { System.err.println("Issue getting outputstream, retrying");     }
+			catch (Exception e) { System.err.println("Issue getting outputstream, retrying " + e.toString());     }
 		}
 		return out;
 	}
@@ -126,7 +127,7 @@ public class Connections {
 		long time = new Date().getTime();
 		while (out == null && new Date().getTime() - time < timeout) {
 			try {	out = new ObjectOutputStream(sock.getOutputStream());	}
-			catch (Exception e) { System.err.println("Issue getting outputstream, retrying until timeout");     }
+			catch (Exception e) { System.err.println("Issue getting outputstream, retrying until timeout " + e.toString());     }
 		}
 		return out;
 	}
@@ -137,7 +138,7 @@ public class Connections {
 		ObjectInputStream in = null;
 		while (in == null) {
 			try {	in = new ObjectInputStream(sock.getInputStream());	}
-			catch (Exception e) {	System.err.println("Issue getting inputstream, retrying");    }
+			catch (Exception e) {	System.err.println("Issue getting inputstream, retrying " + e.toString());    }
 		}
 		return in;
 	}
@@ -168,9 +169,10 @@ public class Connections {
 				}
 				ObjectOutputStream out = Connections.getOutputStream(sock, 1000);
 				out.writeObject(toSend);
+				out.flush();
 				return true;
 			} catch (Exception e) {
-				System.err.println("Issue sendinng from socket, retrying until timeout"); 
+				System.err.println("Issue sendinng from socket, retrying until timeout " + e.toString()); 
 				
 			}
 		}
@@ -187,9 +189,11 @@ public class Connections {
 			}
 			try {
 				Socket sock = Connections.getSocket(ip, port, 1000);
-				return sendAndCheck(sock, toSend, 1000); //1 second
+				boolean b = sendAndCheck(sock, toSend, 1000);
+				sock.close();
+				return b;
 			} catch (Exception e) {
-				System.err.println("Issue getting socket to send, retrying until timeout"); 
+				System.err.println("Issue getting socket to send, retrying until timeout " + e.toString()); 
 			}
 		}
 			
@@ -198,7 +202,7 @@ public class Connections {
 	//closes a socket and catches exceptions for you so closing is only one line
 	public static void closeSocket(Socket sock) {
 		try {	sock.close();	} 
-		catch (Exception e) { System.err.println("Issue closing socket, retrying");   }
+		catch (Exception e) { System.err.println("Issue closing socket, retrying " + e.toString());   }
 	}
 	
 }

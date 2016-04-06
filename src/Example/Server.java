@@ -36,6 +36,8 @@ public class Server {
 		m_inputStream = new ObjectInputStream(m_socket.getInputStream());
 	
 		m_message = (Message)m_inputStream.readObject();
+		
+		System.out.println(m_message.getMessage());
 	}
 	
 	public void sendMessage() throws IOException {
@@ -102,7 +104,7 @@ public class Server {
 				
 				server.close();
 				
-			} while (!server.getMessage().getString().equalsIgnoreCase("quit"));
+			} while (!server.getMessage().getMessage().equalsIgnoreCase("quit"));
 			
 		} catch (Exception e) {
 			e.printStackTrace();
