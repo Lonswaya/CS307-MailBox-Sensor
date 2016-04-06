@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Hashtable;
 import java.util.Random;
 import java.util.Stack;
@@ -36,6 +37,8 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.Timer;
 
+import Example.Connections;
+
 
 
 
@@ -52,6 +55,7 @@ public class AutoAwareControlPanel extends JFrame implements MessageProcessor {/
     private Stack<String> notificationStack;
     private boolean t1bool, lostServer, notificationDialog;
 	private static boolean t2bool;
+	private Date lastRefresh;
 	
 	//true: GUI test to build things 
 	//false: full on, real connection
@@ -77,7 +81,7 @@ public class AutoAwareControlPanel extends JFrame implements MessageProcessor {/
     	//GridLayout experimentLayout = new GridLayout(5,3);
     	Streamers = new Hashtable<String, StreamBox>();
     	this.setIconImage(Toolkit.getDefaultToolkit().getImage("resources/icon.png"));
-
+    	lastRefresh = new Date();
         Timer t = new Timer(10000, new Refresher());
         setTitle("AutoAware Control Panel");
         setSize(1000, 600);
@@ -135,7 +139,8 @@ public class AutoAwareControlPanel extends JFrame implements MessageProcessor {/
 		remove.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent event) {
-            	RemoveSensor(identifier, false);
+            	System.out.println(ConfigFind(identifier) + " " + identifier);
+            	RemoveSensor(ConfigFind(identifier), configs.indexOf(ConfigFind(identifier)), false, true);
                 //System.out.println("Remove sensor " + identifier);
             }
         });
@@ -304,6 +309,7 @@ public class AutoAwareControlPanel extends JFrame implements MessageProcessor {/
             public void actionPerformed(ActionEvent event) {
                 System.out.println("RefreshSensors");
                 configs = server.GetSensors();
+                lastRefresh = new Date();
                 refreshSensorList();
             }
         });
@@ -374,7 +380,32 @@ public class AutoAwareControlPanel extends JFrame implements MessageProcessor {/
     		JOptionPane.showMessageDialog(null,"Sensor already added, named \"" + finder.name + "\"", "error", JOptionPane.ERROR_MESSAGE, null);
 
     	} else if (address != null) {
-	    	ClientConfig newSensor = new ClientConfig();
+    		ClientConfig newSensor = new ClientConfig();
+    		
+    		String[] values = {"Audio", "Picture", "Light"};
+
+    		Object selected = JOptionPane.showInputDialog(null, "What type of sensor do you want?", "Selection", JOptionPane.DEFAULT_OPTION, null, values, "0");
+    		if ( selected != null ){//null if the user cancels. 
+    		    String selectedString = selected.toString();
+    		    switch (selectedString) {
+	    		    case "Audio":
+	    		    	newSensor.sensor_type = SensorType.AUDIO;
+	    		    	break;
+	    		    case "Picture": //i know its not video/picture blah blah blah
+	    		    	newSensor.sensor_type = SensorType.VIDEO;
+	    		    	break;
+	    		    case "Light":
+	    		    	newSensor.sensor_type = SensorType.LIGHT;
+	    		    	break;
+	    		    default:
+	    		    	break;
+    		    }
+    		}else{
+    		    System.out.println("User cancelled");
+    		    return;
+    		}
+    		
+	    	
 	    	newSensor.force_off = true;
 	    	newSensor.force_on = false;
 	    	newSensor.SetIP(address);
@@ -431,7 +462,12 @@ public class AutoAwareControlPanel extends JFrame implements MessageProcessor {/
     	
     
     }
-    public void RemoveSensor(String identifier, boolean force) {
+    //you probably shouldn't be calling this unless you are about to refresh them
+    private void RemoveSensorPanels() {
+    	panelHolder.removeAll();
+    	controlIndex = 0;
+    }
+    public void RemoveSensor(ClientConfig cfg, int index, boolean force, boolean removeFromList) {
     	int confirm;
     	if (!force) {
     		confirm = JOptionPane.showOptionDialog(
@@ -443,17 +479,17 @@ public class AutoAwareControlPanel extends JFrame implements MessageProcessor {/
     	}
     	if (confirm == 0) {
     		controlIndex--;
-    		ClientConfig cfg = ConfigFind(identifier);
-    		String name = cfg.name;
+    		String name = cfg.name; //TODO figure out why this is null
     		cfg.force_off = true;
     		cfg.force_on = false;
-    		int index = configs.indexOf(cfg);
     		panelHolder.remove(index);
-    		configs.remove(index);
+    		panelHolder.revalidate();
+    		if (removeFromList) configs.remove(index);
     		ConfigMessage cfgMessage = new ConfigMessage("Updating config, turning off",cfg);
     		cfgMessage.delete = true;
     		server.sendMessage(cfgMessage);
-    		JOptionPane.showMessageDialog(null, "Deleted sensor " + name, "Deleted sensor " + name, JOptionPane.INFORMATION_MESSAGE, null);
+    		System.out.println("Deleted sensor " + name);
+    		//JOptionPane.showMessageDialog(null, "Deleted sensor " + name, "Deleted sensor " + name, JOptionPane.INFORMATION_MESSAGE, null);
 	    	
     	}
     	refreshSensorList();
@@ -493,13 +529,16 @@ public class AutoAwareControlPanel extends JFrame implements MessageProcessor {/
     }
     class RefreshListener implements Runnable { 
     	public void run() {
-    		
+    		ArrayList<ClientConfig> tempConfigs = configs;
     		if (configs == null) {
+    			panelHolder.revalidate();
+        		panelHolder.repaint();
     			return;
     		}
-    		//if we have not yet 
     		
-    		if (!server.sendMessage(new Message("Are you still there?", null, null))) {
+    		//if we have not yet 
+    		System.out.println("refresh");
+    		if (!Connections.sendAndCheck(server.seperateIP, StaticPorts.serverPort, new Message("Are you still there?", null, null), 3000)) { //3 seconds to timeout
     			configs.removeAll(configs);
     			lostServer = true;
     			if (!notificationDialog) {
@@ -508,57 +547,71 @@ public class AutoAwareControlPanel extends JFrame implements MessageProcessor {/
 	        		notificationDialog = false;
     			}
     		} else {
-    			
+    			if (new Date().getTime() - lastRefresh.getTime() > 5000) {
+        			//if it has been more than 5 seconds since last refresh
+        			configs = server.GetSensors();
+        		}
     			if (lostServer) {
         			lostServer = false;
     				JOptionPane.showMessageDialog(null, "Connection restored");
     				configs = server.GetSensors();
     			}
     		}
-    		
-        	for (int i = 0; i < configs.size(); i++) {
-            	
-        		//System.out.println(i);
-        		//JPanel myPanel = controlPanels[i];
-        		try {
-        			JPanel myPanel = (JPanel) panelHolder.getComponent(i);
-            		//System.out.println(panelHolder.getComponent(i));
-            		//myPanel.setBackground(Color.red);
-            		myPanel.setBackground(configs.get(i).color);
-            		JButton icon = (JButton) ((Container) myPanel.getComponent(3)).getComponent(0);
-            		if (configs.get(i).sensor_type == SensorType.AUDIO) {
-            			icon.setIcon(new ImageIcon("resources/mic.png"));
-            		}
-                    if (configs.get(i).sensor_type == SensorType.VIDEO) {
-                    	icon.setIcon(new ImageIcon("resources/camera.png"));
-                    }
-                    if (configs.get(i).sensor_type == SensorType.LIGHT) {
-                    	icon.setIcon(new ImageIcon("resources/light.png"));
-                    }
-                    if (configs.get(i).isSensorActive()) {
-                    	if (icon.getBackground() == Color.gray) {
-        	            	icon.setBackground(Color.white);
-                    	}
-                    } else {
-                    	if (icon.getBackground() != Color.gray) {
-        	            	icon.setBackground(Color.gray);
-                    	}
-                    }
-                    JButton enabled = (JButton)((Container)myPanel.getComponent(2)).getComponent(1);
-                    enabled.setText(configs.get(i).isSensorActive()?"Disable":"Enable");
-                    //System.out.println("enabled : " + enabled.getText());
-                    //System.out.println(configs.get(i).sensor_type);
-                   // System.out.println("look here eugene you fucking prick " + configs.get(i).isSensorActive());
-            		JLabel title = (JLabel) myPanel.getComponent(0);
-            		title.setText("<html>" + configs.get(i).name + (configs.get(i).isSensorActive()?"":" <br />(Disabled)</html>"));
-        		} catch (ArrayIndexOutOfBoundsException e) {
-        			//Its okay, we just make a new sensor and add it in
-			    	createNew(controlIndex, configs.get(i));
-        		} catch (Exception e) {
-        			//Okay, now something bad is happening
-        		}
-        		
-        	}	
+    		/*for (ClientConfig cfg : tempConfigs) {
+    			if (ConfigFind(cfg.ip) == null) {
+    				RemoveSensor(cfg, tempConfigs.indexOf(cfg), true, false);
+    			}
+    		}
+    		if (configs.size() == 0) {
+    			RemoveSensorPanels();
+    		}*/
+    		RemoveSensorPanels();
+    		for (int i = 0; i < configs.size(); i++) {
+    			createNew(controlIndex, configs.get(i));
+    			
+    			
+	        		//System.out.println(i);
+	        		//JPanel myPanel = controlPanels[i];
+	        		/*try {
+	        			JPanel myPanel = (JPanel) panelHolder.getComponent(i);
+	            		//System.out.println(panelHolder.getComponent(i));
+	            		//myPanel.setBackground(Color.red);
+	            		myPanel.setBackground(configs.get(i).color);
+	            		JButton icon = (JButton) ((Container) myPanel.getComponent(3)).getComponent(0);
+	            		if (configs.get(i).sensor_type == SensorType.AUDIO) {
+	            			icon.setIcon(new ImageIcon("resources/mic.png"));
+	            		}
+	                    if (configs.get(i).sensor_type == SensorType.VIDEO) {
+	                    	icon.setIcon(new ImageIcon("resources/camera.png"));
+	                    }
+	                    if (configs.get(i).sensor_type == SensorType.LIGHT) {
+	                    	icon.setIcon(new ImageIcon("resources/light.png"));
+	                    }
+	                    if (configs.get(i).isSensorActive()) {
+	                    	if (icon.getBackground() == Color.gray) {
+	        	            	icon.setBackground(Color.white);
+	                    	}
+	                    } else {
+	                    	if (icon.getBackground() != Color.gray) {
+	        	            	icon.setBackground(Color.gray);
+	                    	}
+	                    }
+	                    JButton enabled = (JButton)((Container)myPanel.getComponent(2)).getComponent(1);
+	                    enabled.setText(configs.get(i).isSensorActive()?"Disable":"Enable");
+	                    //System.out.println("enabled : " + enabled.getText());
+	                    //System.out.println(configs.get(i).sensor_type);
+	                   // System.out.println("look here eugene you fucking prick " + configs.get(i).isSensorActive());
+	            		JLabel title = (JLabel) myPanel.getComponent(0);
+	            		title.setText("<html>" + configs.get(i).name + (configs.get(i).isSensorActive()?"":" <br />(Disabled)</html>"));
+	        		} catch (ArrayIndexOutOfBoundsException e) {
+	        			//Its okay, we just make a new sensor and add it in
+				    	createNew(controlIndex, configs.get(i));
+	        		} catch (Exception e) {
+	        			//Okay, now something bad is happening
+	        		}*/
+	        		
+	        	
+    		}
     		panelHolder.revalidate();
     		panelHolder.repaint();
 
@@ -596,8 +649,14 @@ public class AutoAwareControlPanel extends JFrame implements MessageProcessor {/
     		StreamBox stream = new StreamBox(Streamers, address, this);
 	    	if (s == SensorType.VIDEO) {
 	    		ClientConfig c = ConfigFind(address);
-	    		boolean connection = server.sendMessage(new StreamingMessage("Setting image/video streaming to true",c,true));
-	    		if (connection) {
+	    		
+	    		server.sendMessage(new StreamingMessage("Setting image/video streaming to true",c,true));
+	    		stream.setTitle("Video stream on sensor " + address);
+	    		VideoStreamBox newVid = new VideoStreamBox(address, server);
+	    		stream.myPanel = newVid;
+		    	stream.add(newVid);
+		    	Streamers.put(address, stream);
+	    		/*if (connection) {
 		    		stream.setTitle("Video stream on sensor " + address);
 		    		VideoStreamBox newVid = new VideoStreamBox(address, server);
 		    		stream.myPanel = newVid;
@@ -607,13 +666,13 @@ public class AutoAwareControlPanel extends JFrame implements MessageProcessor {/
 	    		} else {
 	    			JOptionPane.showMessageDialog(null, "Conneciton refused");
 	    			System.out.println("Connection refused");
-	    		}
+	    		}*/
 		    	
 
 	    	} else {
 	    		ClientConfig c = ConfigFind(address);
-	    		boolean connection = server.sendMessage(new StreamingMessage("Setting streaming to true",c,true));
-	    		if (connection) {
+	    		server.sendMessage(new StreamingMessage("Setting streaming to true",c,true));
+	    		
 		    		stream.setTitle(c.sensor_type + " stream on sensor " + address);
 		    		ValueStreamBox newVal = new ValueStreamBox(c.sensor_type, c.sensing_threshold, address, server);
 			    	stream.add(newVal);
@@ -621,10 +680,10 @@ public class AutoAwareControlPanel extends JFrame implements MessageProcessor {/
 			    	Streamers.put(address, stream);
 			    	
 			    	System.out.println("setting to stream now");
-	    		} else {
-	    			JOptionPane.showMessageDialog(null, "Conneciton refused");
+	    		/*} else {
+	    			JOptionPane.showMessageDialog(null, "Connection refused");
 	    			System.out.println("Connection refused");
-	    		}
+	    		}*/
 	    	}
     	}
     }
@@ -755,7 +814,7 @@ public class AutoAwareControlPanel extends JFrame implements MessageProcessor {/
 	    });
         t3.start();
     	final boolean t4bool = true;
-    	*/Thread t4 = new Thread(new Runnable(){
+    	Thread t4 = new Thread(new Runnable(){
     		public void run(){
     			while(true) {
     				Random r = new Random();
@@ -778,7 +837,7 @@ public class AutoAwareControlPanel extends JFrame implements MessageProcessor {/
 	    	}
 	    });
     	//t1.start();
-    	t4.start();
+    	t4.start();*/
     }
     public void Notify() {
     	String names = "";
@@ -913,7 +972,7 @@ public class AutoAwareControlPanel extends JFrame implements MessageProcessor {/
 				//can't use gotMessage.from because it may be from another client interface
 				if (((ConfigMessage)gotMessage).delete) {
 					//remove sensor
-					RemoveSensor(gotMessage.config.ip, true);
+					RemoveSensor(gotMessage.config, configs.indexOf(gotMessage.config), true, true);
 				} else if (ConfigFind(gotMessage.config.ip) == null) {
 					//add new sensor
 					configs.add(gotMessage.config);

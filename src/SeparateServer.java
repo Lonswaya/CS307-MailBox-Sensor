@@ -12,12 +12,14 @@ import javax.net.ssl.SSLServerSocketFactory;
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
 
+import Example.Connections;
+
 public class SeparateServer {
 			
 	protected ServerSocket ss = null; 			     //SSL Server socket for accepting connections
 	
 	
-	static SSLSocketFactory socketFactory = null; //factory for creating new SSL conections to other ServerSockets
+	//static SSLSocketFactory socketFactory = null; //factory for creating new SSL conections to other ServerSockets
 	
 	static boolean run = true; 					 	 //used to allow the ServerListener thread end the main server's execution by setting this to false
 	
@@ -37,7 +39,7 @@ public class SeparateServer {
 	
 	public SeparateServer() {
 		
-	    System.setProperty("javax.net.ssl.keyStore", "mySrvKeystore");    //get ssl working
+	    /*System.setProperty("javax.net.ssl.keyStore", "mySrvKeystore");    //get ssl working
 	    System.setProperty("javax.net.ssl.keyStorePassword", "sensor");   //get ssl working
 	
 	    System.setProperty("javax.net.ssl.trustStore", "mySrvKeystore");  //get ssl working
@@ -45,14 +47,14 @@ public class SeparateServer {
 	    
 		SSLServerSocketFactory f = (SSLServerSocketFactory)SSLServerSocketFactory.getDefault(); //initialize the factory for creating our server socket
 	
-		socketFactory = (SSLSocketFactory)SSLSocketFactory.getDefault();
-		try {
-			ss = f.createServerSocket(StaticPorts.serverPort, 6969); //create our server socket
-		} catch (IOException e) {
+		socketFactory = (SSLSocketFactory)SSLSocketFactory.getDefault();*/
+		//try {
+		ss = Connections.getServerSocket(StaticPorts.serverPort);//f.createServerSocket(StaticPorts.serverPort, 6969); //create our server socket
+		/*} catch (IOException e) {
 			e.printStackTrace();
 			System.out.println("Yeah something's gone super wrong");
 			System.exit(1); //if we can't accept requests the server is useless so we should exit
-		}
+		}*/
 	}
 	
 	
@@ -103,26 +105,41 @@ public class SeparateServer {
 	*/
 	
 	//receives message without closing socket
-	static synchronized Message receiveMessage(ObjectInputStream in) {
+	/*static synchronized Message receiveMessage(ObjectInputStream in) {
 		try {
 			return (Message)in.readObject();
 		} catch (Exception e) {
 			e.printStackTrace();
 			return null;
 		}
-	}
+	}*/
 	
-	static synchronized Socket getSocket(String host, int port) {
+	/*static synchronized Socket getSocket(String host, int port) {
 		try {
 			return SeparateServer.socketFactory.createSocket(host, port);
 		} catch (Exception e) {
 			e.printStackTrace();
 			return null;
 		}
-	}
+	}*/
 	
-	static synchronized boolean sendMessage(Message msg, String address, int port, boolean setFrom) {
-		try {
+	static synchronized void sendMessage(Message msg, String address, int port, boolean setFrom) {
+		if (setFrom) {
+			String myAddress = null;
+			try {
+				myAddress = InetAddress.getLocalHost().toString();
+			} catch (UnknownHostException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} //get the local ip address
+			myAddress = myAddress.substring(myAddress.indexOf('/') + 1);  //strip off the unnecessary bits
+			msg.setFrom(myAddress);	
+		}
+		Socket sock = Connections.getSocket(address, port);
+		Connections.send(sock, msg);
+		//Connections.closeSocket(sock);
+		//Connections.send(Connections.getsoc, toSend);
+		/*try {
 			Socket ss = SeparateServer.getSocket(address, port);
 			ObjectOutputStream out = new ObjectOutputStream(ss.getOutputStream());
 			ObjectInputStream in = new ObjectInputStream(ss.getInputStream());
@@ -132,15 +149,26 @@ public class SeparateServer {
 		} catch (Exception e) {
 			e.printStackTrace();
 			return false;
-		}
+		}*/
 		
 	}
 	
 	
 	//sends message without closing socket
-	static synchronized boolean sendMessage(ObjectOutputStream out, ObjectInputStream in, Message msg, boolean setFrom) {
-	
-		try {
+	static synchronized void sendMessage(ObjectOutputStream out, Message msg, boolean setFrom) {
+		if (setFrom) {
+			String myAddress = null;
+			try {
+				myAddress = InetAddress.getLocalHost().toString();
+			} catch (UnknownHostException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} //get the local ip address
+			myAddress = myAddress.substring(myAddress.indexOf('/') + 1);  //strip off the unnecessary bits
+			msg.setFrom(myAddress);	
+		}
+		Connections.send(out, msg);
+		/*try {
 			String address = InetAddress.getLocalHost().toString(); //get the local ip address
 			address = address.substring(address.indexOf('/') + 1);  //strip off the unnecessary bits
 			if (setFrom)
@@ -156,7 +184,7 @@ public class SeparateServer {
 			e.printStackTrace();
 			System.err.println("Message not correctly sent");
 			return false;
-		}
+		}*/
 	}
 	
 	/*

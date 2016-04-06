@@ -8,6 +8,8 @@ import javax.net.ssl.SSLServerSocketFactory;
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
 
+import Example.Connections;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Observable;
@@ -18,35 +20,36 @@ public class CentralServer extends Observable implements Runnable {
 
 	protected ServerSocket ss = null;
 	
-	protected SSLSocketFactory socketFactory = null;
+	//protected SSLSocketFactory socketFactory = null;
 	
 	protected boolean run = true;
 	
 	private MessageProcessor ref;
 	
-	private Observer obs = null;
+	//private Observer obs = null;
 	
 	public String seperateIP = "localhost";
 	public int seperatePort = StaticPorts.serverPort;
 	public CentralServer(MessageProcessor obs) {
-	    System.setProperty("javax.net.ssl.keyStore", "mySrvKeystore");
+	    /*System.setProperty("javax.net.ssl.keyStore", "mySrvKeystore");
 	    System.setProperty("javax.net.ssl.keyStorePassword", "sensor");
 	
 	    System.setProperty("javax.net.ssl.trustStore", "mySrvKeystore");
 	    System.setProperty("javax.net.ssl.trustStorePassword", "sensor");
-
+*/
 	    ref = obs;
 	    //addObserver(obs);
 	    
-	    socketFactory = (SSLSocketFactory)SSLSocketFactory.getDefault();
+	    //socketFactory = (SSLSocketFactory)SSLSocketFactory.getDefault();
 	    
-		SSLServerSocketFactory f = (SSLServerSocketFactory)SSLServerSocketFactory.getDefault();
+		/*SSLServerSocketFactory f = (SSLServerSocketFactory)SSLServerSocketFactory.getDefault();
 		try {
 			ss = f.createServerSocket(StaticPorts.clientPort);
 		} catch (IOException e) {
 			
 			e.printStackTrace();
-		}
+		}*/
+	    ss = Connections.getServerSocket(StaticPorts.clientPort);
 	}
 	
 	public void notifyUsers(Notification notification) {
@@ -59,7 +62,7 @@ public class CentralServer extends Observable implements Runnable {
 		
 	}
 	
-	public boolean sendMessage(Message msg) {
+	public void sendMessage(Message msg) {
 		
 		try {
 			String address = InetAddress.getLocalHost().toString();
@@ -68,7 +71,7 @@ public class CentralServer extends Observable implements Runnable {
 			
 			if (msg.type != null) System.out.println("Sending message: " + msg);
 
-			Socket sock = socketFactory.createSocket(this.seperateIP, this.seperatePort);
+			/*Socket sock = socketFactory.createSocket(this.seperateIP, this.seperatePort);
 			ObjectOutputStream out = new ObjectOutputStream(sock.getOutputStream());
 			out.writeObject(msg);
 			out.flush();
@@ -78,13 +81,14 @@ public class CentralServer extends Observable implements Runnable {
 			System.out.println(((Message)in.readObject()).message);
 			
 			
-			out.close();
+			out.close();*/
+			Socket sock = Connections.getSocket(this.seperateIP, this.seperatePort);
+			Connections.send(sock,msg);
+			//Connections.closeSocket(sock);
 		} catch (Exception e) {
 			e.printStackTrace();
-			return false;
 		}
 		
-		return true;	
 	}
 	
 	
@@ -121,8 +125,6 @@ public class CentralServer extends Observable implements Runnable {
 	class ServerListener implements Runnable {
 
 		protected Socket sock;
-		protected ObjectOutputStream out;
-		protected ObjectInputStream in;
 		protected CentralServer cs;
 		
 		public ServerListener(Socket sock, CentralServer cs) {
@@ -132,42 +134,19 @@ public class CentralServer extends Observable implements Runnable {
 		@Override
 		public void run() {
 			try {
-				in = new ObjectInputStream(sock.getInputStream());
-				out = new ObjectOutputStream(sock.getOutputStream());
-				Message msg = (Message)in.readObject();
+				//in = new ObjectInputStream(sock.getInputStream());
+				//out = new ObjectOutputStream(sock.getOutputStream());
+				//Message msg = (Message)in.readObject();
 				//System.out.println("MESSAGE RECIEVED, type " + msg.type);
 				//if(msg.getString().equalsIgnoreCase("quit"))
 				//	cs.set_run(false);
 				
 				//this.cs.notifyObservers(msg);
+				Message msg = Connections.readObject(sock);
 				ref.ProcessMessage(msg);
 				
-				switch(msg.type) {
 				
-				case VIDEO:
-					break;
-				case AUDIO:
-					break;
-				case LIGHT:
-					break;
-				case CONFIG:
-					break;
-				default:
-					break;
-					
-				}
-				try {
-					//Send confirmation that we are done
-					out.writeObject(new Message("Confirmed connection",null,null));
-
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-				
-				in.close();
-				sock.close();
-				
-			} catch (ClassNotFoundException | IOException e) {
+			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}	
@@ -176,10 +155,7 @@ public class CentralServer extends Observable implements Runnable {
 	}
 	
 	public static void main(String[] args) {
-		//CentralServer c = new CentralServer();
 		
-		//Scanner s = new Scanner(System.in);
-		//String string = s.nextLine();
 	}
 	
 	
@@ -204,7 +180,10 @@ public class CentralServer extends Observable implements Runnable {
 			address = address.substring(address.indexOf('/') + 1);
 			cfg.setFrom(address);
 			cfg.type = MessageType.ADD_SENSOR;
-			Socket sock = socketFactory.createSocket(seperateIP, seperatePort);
+			
+			//NICK I can't use your stuff here
+			
+			Socket sock = Connections.getSocket(seperateIP, seperatePort);
 			ObjectOutputStream out = new ObjectOutputStream(sock.getOutputStream());
 			out.writeObject(cfg);
 			out.flush();
@@ -213,12 +192,9 @@ public class CentralServer extends Observable implements Runnable {
 
 			m = (Message)in.readObject();
 			
-			out.writeObject(new Message("Confirmed connection",null,null));
-			
-			System.out.println(((Message)in.readObject()).message);
-			
 			in.close();
 			out.close();
+			sock.close();
 		} catch (Exception e) {
 			//e.printStackTrace();
 		}
@@ -236,25 +212,23 @@ public class CentralServer extends Observable implements Runnable {
 			String address = InetAddress.getLocalHost().toString();
 			address = address.substring(address.indexOf('/') + 1);
 			msg.setFrom(address);
+			//NICK I can't use your stuff here, but it don't matter cause this doesn't happen often
 			
-			Socket sock = socketFactory.createSocket(seperateIP, seperatePort);
+			Socket sock = Connections.getSocket(seperateIP, seperatePort, 3000); //if nothing, socket returns null and we just catch 
 			ObjectOutputStream out = new ObjectOutputStream(sock.getOutputStream());
 			out.writeObject(msg);
 			out.flush();
 			
-			
 			ObjectInputStream in = new ObjectInputStream(sock.getInputStream());
-			
+
 			ar = ((SensorsMessage)in.readObject()).ar;
 			
-			out.writeObject(new Message("Confirmed connection",null,null));
-			
-			System.out.println(((Message)in.readObject()).message);
-
 			in.close();
 			out.close();
+			sock.close();
+			
 		} catch (Exception e) {
-			//e.printStackTrace();
+			e.printStackTrace();
 			System.out.println("Server not found");
 			return null;
 		}
@@ -269,120 +243,7 @@ public class CentralServer extends Observable implements Runnable {
 		}
 		
     	public void run() {
-    		
-    		try {
-    			String address = InetAddress.getLocalHost().toString();
-    			address = address.substring(address.indexOf('/') + 1);
-    			msg.setFrom(address);
-    			
-    			if (msg.type != null) System.out.println("Sending message: " + msg);
-
-    			Socket sock = socketFactory.createSocket(seperateIP, seperatePort);
-    			ObjectOutputStream out = new ObjectOutputStream(sock.getOutputStream());
-    			out.writeObject(msg);
-    			out.flush();
-    			
-    			ObjectInputStream in = new ObjectInputStream(sock.getInputStream());
-    			//Wait for the connection to respond
-    			System.out.println(((Message)in.readObject()).message);
-    			
-    			
-    			out.close();
-    		} catch (Exception e) {
-    			e.printStackTrace();
-    		}
-    		
+    		sendMessage(msg);
     	}
 	}
-	/*public BufferedImage getImage(String ip) {
-		BufferedImage img = null;
-		try {
-			GetReadingMessage msg = new GetReadingMessage("Hey give it to me", MessageType.PICTURE, ip);
-			
-			
-			String address = InetAddress.getLocalHost().toString();
-			address = address.substring(address.indexOf('/') + 1);
-			msg.setFrom(address);
-			
-			Socket sock = socketFactory.createSocket(seperateIP, seperatePort);
-			ObjectOutputStream out = new ObjectOutputStream(sock.getOutputStream());
-			out.writeObject(msg);
-			out.flush();
-			
-			
-			ObjectInputStream os = new ObjectInputStream(sock.getInputStream());
-			
-			img = ((PictureMessage)os.readObject()).getImage();			
-			
-			os.close();
-			out.close();
-		} catch (Exception e) {
-			//e.printStackTrace();
-			System.err.println("Could not get streaming message");
-			return null;
-		}
-		return img;
-	}
-	public AudioClip getClip(String ip) {
-
-		AudioClip clip = null;
-		try {
-			GetReadingMessage msg = new GetReadingMessage("Hey give it to me", MessageType.AUDIO, ip);
-			
-			
-			String address = InetAddress.getLocalHost().toString();
-			address = address.substring(address.indexOf('/') + 1);
-			msg.setFrom(address);
-			
-			Socket sock = socketFactory.createSocket(seperateIP, seperatePort);
-			ObjectOutputStream out = new ObjectOutputStream(sock.getOutputStream());
-			out.writeObject(msg);
-			out.flush();
-			
-			
-			ObjectInputStream os = new ObjectInputStream(sock.getInputStream());
-			
-			clip = ((AudioMessage)os.readObject()).clip;			
-			
-			os.close();
-			out.close();
-		} catch (Exception e) {
-			//e.printStackTrace();
-			System.err.println("Could not get streaming message");
-			return null;
-		}
-		return clip;
-	}
-	public float getValue(String ip) {
-		float value = 0;
-		try {
-			GetReadingMessage msg = new GetReadingMessage("Hey give it to me", MessageType.READING, ip);
-			
-			
-			String address = InetAddress.getLocalHost().toString();
-			address = address.substring(address.indexOf('/') + 1);
-			msg.setFrom(address);
-			
-			Socket sock = socketFactory.createSocket(seperateIP, seperatePort);
-			ObjectOutputStream out = new ObjectOutputStream(sock.getOutputStream());
-			out.writeObject(msg);
-			out.flush();
-			
-			
-			ObjectInputStream os = new ObjectInputStream(sock.getInputStream());
-			
-			value = ((ReadingMessage)os.readObject()).getCurrentThreshold();			
-			
-			os.close();
-			out.close();
-		} catch (Exception e) {
-			//e.printStackTrace();
-			System.err.println("Could not get streaming message");
-			return 0;
-		}
-		return value;
-		
-	}*/
-	
-	
 }

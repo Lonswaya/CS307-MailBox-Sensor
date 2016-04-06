@@ -6,13 +6,14 @@ public class dicks {
 		
 		RaspberryPi pi = new RaspberryPi();
 		
+		
 		// main loop
 		while (true) {
 			//System.out.println("from sense thread");
-			int sleepAmt = 3000;
+			pi.sleepAmt = 3000;
 			if (pi.sensor == null) { // if pi doesnt have a sensor
 				System.out.println("no sensor found");
-				sleepAmt = 10000;
+				pi.sleepAmt = 10000;
 			} else {
 				
 				if (pi.sensor.isSensorActive()) {
@@ -26,7 +27,7 @@ public class dicks {
 							//pi.send_message(((AudioSensor)pi.sensor).stream());
 						}
 						pi.send_message(pi.sensor.form_message());
-						/*if (pi.sensor.sType == SensorType.PICTURE || pi.sensor.sType == SensorType.LIGHT)*/ sleepAmt = 0; //for lower latency
+						/*if (pi.sensor.sType == SensorType.PICTURE || pi.sensor.sType == SensorType.LIGHT)*/ pi.sleepAmt = 0; //for lower latency
 					} else {
 						pi.sensor.close();
 					}
@@ -34,8 +35,8 @@ public class dicks {
 					System.out.println("sensor is not active");
 				}
 			}
-			System.out.println("sleeping for " + sleepAmt);
-			if (sleepAmt > 0) Thread.sleep(sleepAmt);
+			System.out.println("sleeping for " + pi.sleepAmt);
+			if (pi.sleepAmt > 0) Thread.sleep(pi.sleepAmt);
 
 		}
 		

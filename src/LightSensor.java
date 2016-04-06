@@ -23,6 +23,7 @@ public class LightSensor extends BaseSensor {
 	private BufferedImage image;
 	private Webcam webcam = null;
 	
+	
 	public LightSensor(BaseConfig config){
 		super(config);
 		System.out.println("light camrea created");
@@ -33,7 +34,8 @@ public class LightSensor extends BaseSensor {
 				webcam.open();
 		} else {
 			System.out.println("Errors opening da camera");
-			System.exit(1);
+			
+			ready = false;
 		}
 	}
 	

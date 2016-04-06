@@ -23,7 +23,7 @@ public class PictureSensor extends BaseSensor{
 				webcam.open();
 		} else {
 			System.out.println("Errors opening da camera");
-			System.exit(1);
+			ready = false;
 		}
 	}
 

@@ -16,6 +16,8 @@ import java.util.HashMap;
 
 import com.twilio.sdk.TwilioRestException;
 
+import Example.Connections;
+
 /*
  * Handles individual requests from clients
  */
@@ -52,7 +54,7 @@ public class ServerListener implements Runnable {
 	 * 			Message if successful
 	 * 			Null if unsuccessful
 	 */
-	public synchronized Message receiveMessage() {
+	/*public synchronized Message receiveMessage() {
 		try {
 			return (Message)in.readObject();				//try to read the message
 		} catch (ClassNotFoundException e) {				//if the class wasn't found something is seriously wrong
@@ -127,7 +129,7 @@ public class ServerListener implements Runnable {
 		HashMap<String, Timer> timers = new HashMap<String, Timer>();
 	
 		
-		Message msg = receiveMessage();											//receive message from socket
+		Message msg = Connections.readObject(in, 5000);									//receive message from socket
 		if (msg == null) {														//if there was an error receiving the message
 			System.err.println("Error, failed receiving message");
 			return;
@@ -145,7 +147,7 @@ public class ServerListener implements Runnable {
 			SeparateServer.run = false;											//make the server quit running
 			return;
 		}
-		
+		boolean closing = true;
 		
 		if(msg.type == null) {
 			//System.out.println(msg);
@@ -237,25 +239,22 @@ public class ServerListener implements Runnable {
 					// TODO: update database?
 					ConfigMessage cm3 = (ConfigMessage)msg;
 					//System.out.println(cm3);
-					notify_uis(cm3.config);
+					//notify_uis(cm3.config);
 					if (cm3.delete) {
+						if (SeparateServer.sendingList.get(msg.from) != null) {
+							//this is from a sensor, we sure done fucked something up
+							//TODO send error message to clients
+						}
+						
 						//remove sensor
 						System.out.println("removing sensor from sendinglist");
 						SeparateServer.sendingList.remove(cm3.config.ip); //TODO remove once database established
 						
+						
+						
+					} else {
+						SeparateServer.sendMessage(msg, msg.config.ip, StaticPorts.piPort, true);
 					}
-					//send to sensor
-					String address = "";
-					try {
-						address = InetAddress.getLocalHost().toString();
-					} catch (UnknownHostException e) {
-						e.printStackTrace();
-						return;
-					}
-					address = address.substring(address.indexOf('/') + 1);
-					msg.setFrom(address);
-					//set the from to this address, so the sensor knows to reply to the server
-					SeparateServer.sendMessage(msg, msg.config.ip, StaticPorts.piPort, false);
 					
 					break;
 					
@@ -323,7 +322,7 @@ public class ServerListener implements Runnable {
 					
 					if (SeparateServer.sendingList.get(msg.config.ip) != null) {// TODO: Add database support
 						
-						SeparateServer.sendMessage(out, in, new Message("Adding sensor already in db",  null, null), true);
+						SeparateServer.sendMessage(out, new Message("Adding sensor already in db",  null, null), true);
 						return;			
 					} 
 					
@@ -337,38 +336,49 @@ public class ServerListener implements Runnable {
 					ConfigMessage cm = (ConfigMessage)msg;
 					
 					//if proper connection, use the outputstream and send back a new successful message
-					if(cm.config.ip.equals("1234")/*TODO remove debug*/ || SeparateServer.sendMessage(msg, cm.config.ip, StaticPorts.piPort, true)) {
+					boolean success = false;
+					if (cm.config.ip.equals("1234")) success = true; //TODO remove debug
+					else {
+						if (Connections.sendAndCheck(cm.config.ip, StaticPorts.piPort, cm, 1000)) {
+							
+							success = true;
+						}
+					}
+					if(success) {
 						System.out.println("adding new sensor");
-						SeparateServer.sendMessage(out, in,new Message("Connection succeeded", null, null), true); // msg type can be null, no biggie
+						SeparateServer.sendMessage(out,new Message("Connection succeeded", null, null), true); // msg type can be null, no biggie
 						SeparateServer.sendingList.put(msg.config.ip, new SensorSendingList(cm.config));
 						notify_uis(cm.config); 
 					} else {
-						SeparateServer.sendMessage(out, in, new Message("Sensor connection failed", null, null), true);    //
+						SeparateServer.sendMessage(out, new Message("Sensor connection failed", null, null), true);    //
 					}
+					closing=false;
 					break;
 				case GET_SENSORS:
 					//get all configs from database, store in a regular array for maximum compression at the moment
 					ArrayList<ClientConfig> cf = new ArrayList<ClientConfig>();
 					//SeparateServer.sendingList.forEach(action);
 					for (String s : SeparateServer.sendingList.keySet()) {
+						System.out.println("Included in your package is sensor " + s);
 						cf.add(SeparateServer.sendingList.get(s).sensorInfo);
 					}
 					ArrayList<ClientConfig> ar = cf; //TODO remove once database established
-					SeparateServer.sendMessage(out, in, new SensorsMessage("Here's your sensors, yo", ar), true); 
+					SeparateServer.sendMessage(out, new SensorsMessage("Here's your sensors, yo", ar), true); 
+					closing = false;
 					break;
 				default:
 					break;
 			}
 		
 		}
-		try {
+		/*try {
 			//Send confirmation that we are done
 		//System.out.println("Confirm connection");
 			out.writeObject(new Message("Confirmed connection",null,null));
 		} catch (IOException e) {
 			e.printStackTrace();
-		}
-		close();		
+		}*/
+		if (closing) close();		
 		 
 	}
 	class ClientNotifier implements Runnable { 
@@ -383,7 +393,15 @@ public class ServerListener implements Runnable {
 		
     	public void run() {
     		//System.out.println("sending message " + msg.message + " to client " + client);
-    		if (!SeparateServer.sendMessage(msg, client, StaticPorts.clientPort, false)) {
+    		Socket sock = null;
+    		if ((sock = Connections.getSocket(client, StaticPorts.clientPort, 1000)) != null) {
+    			if (!Connections.sendAndCheck(sock, msg, 1000)) {
+    				
+    			} else {
+    				System.out.println("Message sent successfully to " + client);
+    			}
+    		} else {
+    		
     			System.err.printf("User %s not found, removing from list\n", client);
 				//remove
 				switch(type) {
@@ -404,9 +422,7 @@ public class ServerListener implements Runnable {
 				
 				}
 				SeparateServer.ui_ips.remove(client);
-			} else {
-				System.out.println("Message sent successfully to " + client);
-			}
+			} 
     		
     	
 

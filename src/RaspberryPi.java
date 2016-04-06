@@ -12,17 +12,21 @@ import javax.net.ssl.SSLServerSocketFactory;
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
 
+import Example.Connections;
+
 public class RaspberryPi {
 	public BaseSensor sensor;
 	private ServerSocket receiveServer;
 
 	private String ip;
+	public int sleepAmt;
 	//this is the port and IP for the separate server 
 	private int port = StaticPorts.serverPort;
 
 	boolean streaming = false;
 	
 	public RaspberryPi() throws IOException {
+			
 
 		/*Scanner in = new Scanner(System.in);
 		System.out.println("Enter the server's ip");
@@ -30,10 +34,10 @@ public class RaspberryPi {
 		System.out.println("Enter server's port");
 		port = Integer.parseInt(in.nextLine());*/
 		
-		System.setProperty("javax.net.ssl.keyStore", "mySrvKeystore");
-		System.setProperty("javax.net.ssl.keyStorePassword", "sensor");
-		System.setProperty("javax.net.ssl.trustStore", "mySrvKeystore");
-		System.setProperty("javax.net.ssl.trustStorePassword", "sensor");
+		//System.setProperty("javax.net.ssl.keyStore", "mySrvKeystore");
+		//System.setProperty("javax.net.ssl.keyStorePassword", "sensor");
+		//System.setProperty("javax.net.ssl.trustStore", "mySrvKeystore");
+		//System.setProperty("javax.net.ssl.trustStorePassword", "sensor");
 		
 		streaming = false;
 		
@@ -49,26 +53,29 @@ public class RaspberryPi {
 		new Thread(new Runnable() {
 
 			private ServerSocket receiveServer;
-			private ObjectInputStream in;
-			private ObjectOutputStream out;
-			private Socket sock;
+			//private ObjectInputStream in;
+			//private ObjectOutputStream out;
+			//private Socket sock;
 			private RaspberryPi ref;
 			
 			@Override
 			public void run() {
 
-				SSLServerSocketFactory factory = (SSLServerSocketFactory) SSLServerSocketFactory.getDefault();
+				//SSLServerSocketFactory factory = (SSLServerSocketFactory) SSLServerSocketFactory.getDefault();
 
 				try {
-					receiveServer = factory.createServerSocket(StaticPorts.piPort);
-
+					//receiveServer = factory.createServerSocket(StaticPorts.piPort);
+					receiveServer = Connections.getServerSocket(StaticPorts.piPort);
 					
 					while (true) {
 						//System.out.println("from receive thread");
-						sock = receiveServer.accept();
+						/*sock = receiveServer.accept();
 						in = new ObjectInputStream(sock.getInputStream());
 						out = new ObjectOutputStream(sock.getOutputStream());
 						Message msg = (Message) in.readObject();
+						*/
+						Socket sock = receiveServer.accept();
+						Message msg = Connections.readObject(sock);
 						if (msg.getFrom() != null) ip = msg.getFrom();
 						//System.out.println(msg.config.toString() + " " +  msg);
 						
@@ -80,12 +87,24 @@ public class RaspberryPi {
 									System.out.println("sensor created");
 									if (ref.sensor != null)ref.sensor.close();
 									ref.sensor = new WebcamSensorFactory().get_sensor(conf.getConfig());
+									if (!ref.sensor.ready) {
+										System.out.println("Oh, we couldn't make that sensor work right. \nSorry.\nSend a better config next time");
+										ref.sensor = null;
+										conf.delete = true;
+										send_message(conf); //send it back, delete us
+									}
 									System.out.println("new sensor: " + ref.sensor);
-								}
-								ref.sensor.setConfig(conf.getConfig());
+								} 
+								if (ref.sensor != null) ref.sensor.setConfig(conf.getConfig());
 								break;
 							case STREAMING:
+								
 								streaming = ((StreamingMessage)msg).streaming;
+								if (streaming) {
+									//refresh the thread, so we aren't sleeping as soon as we get a streaming message
+									//the delay really builds up
+									sleepAmt = 0;
+								}
 								//System.out.println("Pi streaming set to " + streaming);
 								//set Pi to constantly send values back to the server, send a new ReadingMessage
 								//note: it will still send ReadingMessage if the threshold is greater than normal.
@@ -93,14 +112,9 @@ public class RaspberryPi {
 								break;
 								
 						}
-						try {
-							//Send confirmation that we are done
-							out.writeObject(new Message("Confirmed connection",null,null));
-						} catch (IOException e) {
-							e.printStackTrace();
-						}
-						in.close();
-						out.close();
+						
+						//in.close();
+						//out.close();
 						sock.close();
 					}
 
@@ -117,7 +131,7 @@ public class RaspberryPi {
 		}.init(this.receiveServer, this)).start();
 	}
 
-	// get the sensor specicically to this pi
+	// get the sensor specifically to this pi
 	public BaseSensor getSensor() {
 		return this.sensor;
 	}
@@ -128,13 +142,15 @@ public class RaspberryPi {
     		public void run(){
 				long tempTime = System.currentTimeMillis();
 				System.out.println("start sending msg");
-				Socket sendSocket = null;
+				//Socket sendSocket = null;
 				//System.out.println("sending message " + msg.toString() + " with config " + msg.config);
-				final SSLSocketFactory factory = (SSLSocketFactory) SSLSocketFactory.getDefault();
+				//final SSLSocketFactory factory = (SSLSocketFactory) SSLSocketFactory.getDefault();
 				try {
 					msg.setFrom(BaseSensor.getIP());
+					Socket sendSocket = Connections.getSocket(ip, port);
+					Connections.send(sendSocket, msg);
 					//System.out.println("ip: " + this.ip + " port: " + this.port);
-					sendSocket = factory.createSocket(ip, port);
+					/*sendSocket = factory.createSocket(ip, port);
 					//System.out.println("1");
 					ObjectOutputStream outputStream = new ObjectOutputStream(sendSocket.getOutputStream());
 					//System.out.println("2");
@@ -145,9 +161,9 @@ public class RaspberryPi {
 					//Thread.sleep(50); //pause to let the central server get info
 					ObjectInputStream in = new ObjectInputStream(sendSocket.getInputStream());
 					//Wait for the connection to respond
-					System.out.println(((Message)in.readObject()).message);
+					System.out.println(((Message)in.readObject()).message);*/
 					//outputStream.close();
-					sendSocket.close();
+					//sendSocket.close();
 				} catch (Exception e) {
 					e.printStackTrace();
 				}

@@ -16,6 +16,7 @@ import javax.imageio.ImageIO;
 
 public abstract class BaseSensor{
 	
+	protected boolean ready;
 	protected BaseConfig config;
 	protected SensorType sType;
 	protected float upperBound; //some meaningful boundary values used to calculate percentage
@@ -25,6 +26,7 @@ public abstract class BaseSensor{
 	protected String ip;
 	
 	public BaseSensor(BaseConfig config){
+		ready = true;
 		this.config = config;
 		this.sType = config.sensor_type;
 		
