@@ -53,6 +53,15 @@ public class Server implements Runnable, MessageProcessor {
         }
     }
 
+    public void updateSensorInfoList(SensorInfo sensorInfo) {
+        for (int i = 0; i < sensorList.size(); i++) {
+            if (sensorInfo.ip == sensorList.get(i).ip) {
+                sensorList.set(i, sensorInfo);
+                break;
+            }
+        }
+    }
+
     public void run() {
 
         if(connector == null || connectorThread == null){ setUpConnector();}

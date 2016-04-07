@@ -17,7 +17,7 @@ public class SensorInfo extends BaseConfig implements Serializable {
 
 
     public SensorInfo(String ip, String start, String stop, boolean force_on, boolean force_off, SensorType type, float threshold, String name, /*Color color,*/ boolean desktopNotification, boolean magicMirrorNotification, boolean textNotification, boolean emailNotification, String phoneNumber, String emailAddress, int interval) {
-        super(start, stop, force_on, force_off , type, threshold);
+        //super(start, stop, force_on, force_off , type, threshold);
         this.ip = ip;
         //this.color = color;
         this.name = name;
