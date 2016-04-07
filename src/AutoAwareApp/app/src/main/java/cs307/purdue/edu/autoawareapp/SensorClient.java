@@ -26,10 +26,10 @@ public class SensorClient extends AppCompatActivity {
     private RecyclerView recyclerView;
     RecyclerView.Adapter mAdapter = null;
     RecyclerView.LayoutManager llm;
-    private ArrayList<Sensor> sensors = new ArrayList<Sensor>();;
+    private ArrayList<Sensor> sensors = new ArrayList<Sensor>();
     int in_index = 0;
     private int numOfSensors;
-    private ArrayList<SensorInfo> sensorInfoList;
+    private ArrayList<SensorInfo> sensorInfoList = new ArrayList<SensorInfo>();
     private int noSensorFlag = 0;
 
     public SensorClient() {
@@ -69,12 +69,13 @@ public class SensorClient extends AppCompatActivity {
         llm = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(llm);
 
-        mAdapter = new MyAdapter(this, sensors);
+        mAdapter = new MyAdapter(this, sensors, sensorInfoList);
         recyclerView.setAdapter(mAdapter);
         //llm.setOrientation(LinearLayoutManager.VERTICAL);
 
         //int ret = createSensors();
         sensors.add(new Sensor("Sensor 1", 0, "LIGHT", "100.0.0.1"));
+        sensorInfoList.add(new SensorInfo("100.0.0.1", "0", "0", false, false, SensorType.LIGHT, 0, "Sensor 1", false, false, false, false, "123456789", "abcd@email.com", 10));
         recyclerView.scrollToPosition(sensors.size() - 1);
         //mAdapter.notifyItemInserted(sensors.size() - 1);
         mAdapter.notifyDataSetChanged();

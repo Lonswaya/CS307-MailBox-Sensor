@@ -18,8 +18,9 @@ import java.util.ArrayList;
  * Created by Dhairya on 4/2/2016.
  */
 public class MyAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
-    private final Context context;
-    private final ArrayList<Sensor> sensors;
+    private Context context;
+    private ArrayList<Sensor> sensors;
+    private ArrayList<SensorInfo> sensorInfo;
 
     private static final int VIEW_HOLDER=1;
 
@@ -49,10 +50,11 @@ public class MyAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     }
 
     // Provide a suitable constructor (depends on the kind of dataset)
-    public MyAdapter(Context context, ArrayList<Sensor> sensors) {
+    public MyAdapter(Context context, ArrayList<Sensor> sensors, ArrayList<SensorInfo> sensorInfo) {
         System.out.println("Constructor!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
         this.context = context;
         this.sensors = sensors;
+        this.sensorInfo = sensorInfo;
     }
 
     // Create new views (invoked by the layout manager)
@@ -100,14 +102,25 @@ public class MyAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
         Button configButtonView = (Button) viewholder.configButton;
         configButtonView.setText("Configure");
-        configButtonView.setOnClickListener(new myOnClickListener(viewholder, context, R.id.button1));
+        configButtonView.setOnClickListener(new myOnClickListener(viewholder, context, R.id.button1, getClickedSensor(sensorIpView)));
 
         Button enableDisableButtonView = (Button) viewholder.enableDisbaleButton;
         enableDisableButtonView.setText("Disable");
-        enableDisableButtonView.setOnClickListener(new myOnClickListener(viewholder,context, R.id.button2));
+        enableDisableButtonView.setOnClickListener(new myOnClickListener(viewholder,context, R.id.button2, getClickedSensor(sensorIpView)));
 
         SeekBar seekBarView = (SeekBar) viewholder.seekBar;
         seekBarView.setProgress(sensors.get(position).getSeekCurrentValue());
+    }
+
+    public SensorInfo getClickedSensor(TextView sensorIpView) {
+        String ip = (String) sensorIpView.getText();
+        for (int i = 0; i < sensors.size(); i++) {
+            if (sensors.get(i).getIp() == ip) {
+                if (sensorInfo.get(i) != null)
+                    return sensorInfo.get(i);
+            }
+        }
+        return null;
     }
 
     @Override

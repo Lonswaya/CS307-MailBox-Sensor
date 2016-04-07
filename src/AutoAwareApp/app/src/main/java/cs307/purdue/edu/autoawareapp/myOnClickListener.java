@@ -11,16 +11,13 @@ public class myOnClickListener implements View.OnClickListener {
     MyAdapter.ViewHolder viewHolder;
     Context context;
     int id;
-    int retValue = -1;
+    SensorInfo sensorInfo;
 
-    public myOnClickListener(MyAdapter.ViewHolder viewHolder, Context context, int id) {
+    public myOnClickListener(MyAdapter.ViewHolder viewHolder, Context context, int id, SensorInfo sensorInfo) {
         this.viewHolder = viewHolder;
         this.context = context;
         this.id = id;
-    }
-
-    public int getRetValue() {
-        return retValue;
+        this.sensorInfo = sensorInfo;
     }
 
     /**
@@ -35,11 +32,13 @@ public class myOnClickListener implements View.OnClickListener {
             case R.id.button1:
                 System.out.println("*****************************BUTTON 1");
                 Intent mIntent = new Intent(context, SettingsActivity.class);
+                mIntent.putExtra("SensorInfo", sensorInfo);
                 context.startActivity(mIntent);
                 break;
             case R.id.button2:
                 System.out.println("*****************************BUTTON 2");
-                retValue = 2;
+                //Intent mIntent2 = new Intent(context, SettingsActivity.class);
+                //context.startActivity(mIntent2);
                 break;
             default:
                 return;
