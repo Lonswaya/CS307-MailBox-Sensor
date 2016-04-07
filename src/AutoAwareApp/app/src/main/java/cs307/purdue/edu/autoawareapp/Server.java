@@ -33,7 +33,24 @@ public class Server implements Runnable, MessageProcessor {
         connectorThread = new Thread(connector);
     }
     public void ProcessMessage(Message msg){
-        new MessageHandler(msg, this).start();
+        try{
+            switch(msg.type){
+                case READING:
+                    ReadingMessage rMsg = (ReadingMessage) msg;
+                    float reading = rMsg.getCurrentThreshold();
+
+                    //update the reading. I don't know how do you want readings strutured ? in SensorInfo?
+
+                case GET_SENSORS:
+                    SensorsMessage sMsg = (SensorsMessage) msg;
+                    sensorList = sMsg.ar;
+                    break;
+                default:
+                    System.out.println("Message type: " + msg.type + " not supported");
+            }
+        }catch(Exception e){
+            e.printStackTrace();
+        }
     }
 
     public void run() {
@@ -67,13 +84,10 @@ public class Server implements Runnable, MessageProcessor {
     }
     public ArrayList<SensorInfo> getSensors() {
         //this.sensorList = connectorObject.GetSensors();
-        if (connector == null) {
-            return connector.GetSensors();
-        }
-        return null;
+        return connector.GetSensors();
     }
 
-    class MessageHandler extends Thread{
+    /*class MessageHandler extends Thread{
         Message msg;
         Server ref;
         public MessageHandler(Message msg, Server ref){
@@ -83,26 +97,13 @@ public class Server implements Runnable, MessageProcessor {
 
         public void run(){
             try{
-                switch(msg.type){
-                    case READING:
-                        ReadingMessage rMsg = (ReadingMessage) msg;
-                        float reading = rMsg.getCurrentThreshold();
 
-                        //update the reading. I don't know how do you want readings strutured ? in SensorInfo?
-
-                    case GET_SENSORS:
-                        SensorsMessage sMsg = (SensorsMessage) msg;
-                        ref.sensorList = sMsg.ar;
-                        break;
-                    default:
-                        System.out.println("Message type: " + msg.type + " not supported");
-                }
             }catch(Exception e){
                 e.printStackTrace();
             }
         }
     }
-    /*class SendMessage extends Thread {
+    class SendMessage extends Thread {
         public Message msg;
         public String ip;
         public int port;
