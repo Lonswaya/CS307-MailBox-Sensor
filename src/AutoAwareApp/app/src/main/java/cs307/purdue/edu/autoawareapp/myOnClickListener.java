@@ -1,6 +1,7 @@
 package cs307.purdue.edu.autoawareapp;
 
 import android.content.Context;
+import android.content.Intent;
 import android.view.View;
 
 /**
@@ -8,13 +9,19 @@ import android.view.View;
  */
 public class myOnClickListener implements View.OnClickListener {
     MyAdapter.ViewHolder viewHolder;
+    Context context;
     int id;
+    int retValue = -1;
 
-    public myOnClickListener(MyAdapter.ViewHolder viewHolder, int id) {
+    public myOnClickListener(MyAdapter.ViewHolder viewHolder, Context context, int id) {
         this.viewHolder = viewHolder;
+        this.context = context;
         this.id = id;
     }
 
+    public int getRetValue() {
+        return retValue;
+    }
 
     /**
      * Called when a view has been clicked.
@@ -27,14 +34,16 @@ public class myOnClickListener implements View.OnClickListener {
         switch(view.getId()) {
             case R.id.button1:
                 System.out.println("*****************************BUTTON 1");
-                //openConfigActivity();
+                Intent mIntent = new Intent(context, SettingsActivity.class);
+                context.startActivity(mIntent);
                 break;
             case R.id.button2:
                 System.out.println("*****************************BUTTON 2");
-                //enableDisableCall();
+                retValue = 2;
                 break;
             default:
                 return;
         }
     }
+
 }

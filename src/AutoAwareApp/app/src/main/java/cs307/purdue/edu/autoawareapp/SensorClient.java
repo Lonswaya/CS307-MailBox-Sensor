@@ -1,5 +1,6 @@
 package cs307.purdue.edu.autoawareapp;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -30,6 +31,9 @@ public class SensorClient extends AppCompatActivity {
     private int numOfSensors;
     private ArrayList<SensorInfo> sensorInfoList;
     private int noSensorFlag = 0;
+
+    public SensorClient() {
+    }
 
     public int getNumOfSensors() {
         return numOfSensors;
@@ -80,6 +84,10 @@ public class SensorClient extends AppCompatActivity {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
         return true;
+    }
+
+    public Context getContext() {
+        return this;
     }
 
     public int createSensors() {
@@ -165,10 +173,6 @@ public class SensorClient extends AppCompatActivity {
             }
         }
         return -1;
-    }
-
-    public void updateView() {
-
     }
 
     public Sensor convertSensorInfoToSensor(SensorInfo s) {

@@ -100,11 +100,11 @@ public class MyAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
         Button configButtonView = (Button) viewholder.configButton;
         configButtonView.setText("Configure");
-        configButtonView.setOnClickListener(new myOnClickListener(viewholder, R.id.button1));
+        configButtonView.setOnClickListener(new myOnClickListener(viewholder, context, R.id.button1));
 
         Button enableDisableButtonView = (Button) viewholder.enableDisbaleButton;
         enableDisableButtonView.setText("Disable");
-        enableDisableButtonView.setOnClickListener(new myOnClickListener(viewholder, R.id.button2));
+        enableDisableButtonView.setOnClickListener(new myOnClickListener(viewholder,context, R.id.button2));
 
         SeekBar seekBarView = (SeekBar) viewholder.seekBar;
         seekBarView.setProgress(sensors.get(position).getSeekCurrentValue());
