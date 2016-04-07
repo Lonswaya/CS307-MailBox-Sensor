@@ -25,27 +25,12 @@ public class CentralServer extends Observable implements Runnable {
 
     //private Observer obs = null;
 
-    public String seperateIP = "localhost";
+    public String seperateIP = "10.186.91.136";
     public int seperatePort = StaticPorts.serverPort;
     public CentralServer(MessageProcessor obs) {
-	    /*System.setProperty("javax.net.ssl.keyStore", "mySrvKeystore");
-	    System.setProperty("javax.net.ssl.keyStorePassword", "sensor");
-
-	    System.setProperty("javax.net.ssl.trustStore", "mySrvKeystore");
-	    System.setProperty("javax.net.ssl.trustStorePassword", "sensor");
-*/
         ref = obs;
         //addObserver(obs);
 
-        //socketFactory = (SSLSocketFactory)SSLSocketFactory.getDefault();
-
-		/*SSLServerSocketFactory f = (SSLServerSocketFactory)SSLServerSocketFactory.getDefault();
-		try {
-			ss = f.createServerSocket(StaticPorts.clientPort);
-		} catch (IOException e) {
-
-			e.printStackTrace();
-		}*/
         ss = Connections.getServerSocket(StaticPorts.clientPort);
     }
 

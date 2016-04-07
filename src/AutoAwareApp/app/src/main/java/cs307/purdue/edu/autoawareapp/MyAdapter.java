@@ -21,6 +21,7 @@ public class MyAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private Context context;
     private ArrayList<Sensor> sensors;
     private ArrayList<SensorInfo> sensorInfo;
+    private Server server;
 
     private static final int VIEW_HOLDER=1;
 
@@ -50,11 +51,12 @@ public class MyAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     }
 
     // Provide a suitable constructor (depends on the kind of dataset)
-    public MyAdapter(Context context, ArrayList<Sensor> sensors, ArrayList<SensorInfo> sensorInfo) {
+    public MyAdapter(Context context, ArrayList<Sensor> sensors, ArrayList<SensorInfo> sensorInfo, Server server) {
         System.out.println("Constructor!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
         this.context = context;
         this.sensors = sensors;
         this.sensorInfo = sensorInfo;
+        this.server = server;
     }
 
     // Create new views (invoked by the layout manager)
@@ -102,11 +104,11 @@ public class MyAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
         Button configButtonView = (Button) viewholder.configButton;
         configButtonView.setText("Configure");
-        configButtonView.setOnClickListener(new myOnClickListener(viewholder, context, R.id.button1, getClickedSensor(sensorIpView)));
+        configButtonView.setOnClickListener(new myOnClickListener(viewholder, context, R.id.button1, getClickedSensor(sensorIpView), server));
 
         Button enableDisableButtonView = (Button) viewholder.enableDisbaleButton;
         enableDisableButtonView.setText("Disable");
-        enableDisableButtonView.setOnClickListener(new myOnClickListener(viewholder,context, R.id.button2, getClickedSensor(sensorIpView)));
+        enableDisableButtonView.setOnClickListener(new myOnClickListener(viewholder,context, R.id.button2, getClickedSensor(sensorIpView), server));
 
         SeekBar seekBarView = (SeekBar) viewholder.seekBar;
         seekBarView.setProgress(sensors.get(position).getSeekCurrentValue());

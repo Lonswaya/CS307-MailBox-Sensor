@@ -2,7 +2,10 @@ package cs307.purdue.edu.autoawareapp;
 
 import android.content.Context;
 import android.content.Intent;
+import android.os.Parcelable;
 import android.view.View;
+
+import java.io.Serializable;
 
 /**
  * Created by Dhairya on 4/6/2016.
@@ -12,12 +15,14 @@ public class myOnClickListener implements View.OnClickListener {
     Context context;
     int id;
     SensorInfo sensorInfo;
+    Server server;
 
-    public myOnClickListener(MyAdapter.ViewHolder viewHolder, Context context, int id, SensorInfo sensorInfo) {
+    public myOnClickListener(MyAdapter.ViewHolder viewHolder, Context context, int id, SensorInfo sensorInfo, Server server) {
         this.viewHolder = viewHolder;
         this.context = context;
         this.id = id;
         this.sensorInfo = sensorInfo;
+        this.server = server;
     }
 
     /**
@@ -33,6 +38,7 @@ public class myOnClickListener implements View.OnClickListener {
                 System.out.println("*****************************BUTTON 1");
                 Intent mIntent = new Intent(context, SettingsActivity.class);
                 mIntent.putExtra("SensorInfo", sensorInfo);
+                mIntent.putExtra("Server", server);
                 context.startActivity(mIntent);
                 break;
             case R.id.button2:

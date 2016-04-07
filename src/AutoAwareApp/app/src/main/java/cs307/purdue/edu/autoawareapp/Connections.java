@@ -16,8 +16,6 @@ import java.util.Date;
 
 import javax.net.ServerSocketFactory;
 import javax.net.SocketFactory;
-import javax.net.ssl.SSLServerSocketFactory;
-import javax.net.ssl.SSLSocketFactory;
 
 public class Connections {
 
@@ -25,8 +23,6 @@ public class Connections {
 
     //TODO: Use ssl eventually
 
-    //static SSLSocketFactory socketFact = (SSLSocketFactory)SocketFactory.getDefault();
-    //static SSLServerSocketFactory serverSockFact = (SSLServerSocketFactory)ServerSocketFactory.getDefault();
 
     static SocketFactory socketFact 		  = SocketFactory.getDefault();
     static ServerSocketFactory serverSockFact = ServerSocketFactory.getDefault();
