@@ -1,17 +1,20 @@
 package cs307.purdue.edu.autoawareapp;
-
 import java.io.*;
 import java.util.Calendar;
 
 public class Message implements Serializable {
 
+    /**
+     *
+     */
+    private static final long serialVersionUID = 1L;
     protected String message;
-    protected SensorInfo config;
+    protected ClientConfig config;
     protected MessageType type;
     protected String from;
     protected String creationTime;
 
-    public Message(String message, SensorInfo config, MessageType type) {
+    public Message(String message, ClientConfig config, MessageType type) {
         setString(message);
         setConfig(config);
         generateCreateTime();
@@ -22,7 +25,7 @@ public class Message implements Serializable {
         return this.message;
     }
 
-    public void setConfig(SensorInfo config) {
+    public void setConfig(ClientConfig config) {
         this.config = config;
     }
 
@@ -30,7 +33,7 @@ public class Message implements Serializable {
         this.message = message;
     }
 
-    public SensorInfo getConfig() {
+    public ClientConfig getConfig() {
         return this.config;
     }
 
@@ -62,8 +65,4 @@ public class Message implements Serializable {
                 "\nType: " + this.type;
         return s;
     }
-
-
-
-
 }

@@ -5,16 +5,19 @@ import android.util.Log;
 
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.OutputStream;
 import java.io.Serializable;
 import java.net.*;
 import java.util.ArrayList;
+import java.util.Enumeration;
+
 import javax.net.ssl.SSLServerSocketFactory;
 import javax.net.ssl.SSLSocketFactory;
 /**
  * Used to grab sensor infos from central server
  */
 public class Server implements Runnable, MessageProcessor, Serializable {
-    public ArrayList<SensorInfo> sensorList;
+    public ArrayList<ClientConfig> sensorList;
 
     public String server_ip;
     public int server_port;
@@ -34,7 +37,7 @@ public class Server implements Runnable, MessageProcessor, Serializable {
         connectorThread = new Thread(connector);
     }
 
-    public void addSensorInfoObject(SensorInfo sensorInfo) {
+    public void addClientConfigObject(ClientConfig sensorInfo) {
         if (sensorInfo != null) {
             sensorList.add(sensorInfo);
         }
@@ -47,7 +50,7 @@ public class Server implements Runnable, MessageProcessor, Serializable {
                     ReadingMessage rMsg = (ReadingMessage) msg;
                     float reading = rMsg.getCurrentThreshold();
 
-                    //update the reading. I don't know how do you want readings strutured ? in SensorInfo?
+                    //update the reading. I don't know how do you want readings strutured ? in ClientConfig?
 
                 case GET_SENSORS:
                     SensorsMessage sMsg = (SensorsMessage) msg;
@@ -61,7 +64,7 @@ public class Server implements Runnable, MessageProcessor, Serializable {
         }
     }
 
-    public void updateSensorInfoList(SensorInfo sensorInfo) {
+    public void updateClientConfigList(ClientConfig sensorInfo) {
         for (int i = 0; i < sensorList.size(); i++) {
             if (sensorInfo.ip == sensorList.get(i).ip) {
                 sensorList.set(i, sensorInfo);
@@ -72,10 +75,47 @@ public class Server implements Runnable, MessageProcessor, Serializable {
 
     public void run() {
 
-        if(connector == null || connectorThread == null){ setUpConnector();}
-        connectorThread.start();
+        //if(connector == null || connectorThread == null){ setUpConnector();}
+        //connectorThread.start();
+        SensorsMessage msg = new SensorsMessage("asdasdasd", null);
+
+        String ip = "";
+        try {
+            for (Enumeration<NetworkInterface> en = NetworkInterface.getNetworkInterfaces(); en.hasMoreElements();) {
+                NetworkInterface intf = en.nextElement();
+                for (Enumeration<InetAddress> enumIpAddr = intf.getInetAddresses(); enumIpAddr.hasMoreElements();) {
+                    InetAddress inetAddress = enumIpAddr.nextElement();
+                    if (!inetAddress.isLoopbackAddress()) {
+                        ip = inetAddress.getHostAddress().toString();
+                    }
+                }
+            }
+        } catch (SocketException ex) {
+            System.out.println("Something wrong getting ip");
+        }
+
+        System.out.println("IP: " + ip);
 
         try {
+            System.out.println("open sock");
+            Socket sock = new Socket("10.186.95.215", 8888);
+            System.out.println("get output stream");
+            ObjectOutputStream out = new ObjectOutputStream(sock.getOutputStream());
+            System.out.println("write shit");
+            msg.setFrom(ip);
+            out.writeObject(msg);
+            System.out.println("All is good familia");
+
+            sock.close();
+
+            ServerSocket sSocket = new ServerSocket(9999);
+            Socket bullshit = sSocket.accept();
+            System.out.print("got message");
+            ObjectInputStream in = new ObjectInputStream(bullshit.getInputStream());
+            System.out.print("stream good");
+            Message msg2 = (Message) in.readObject();
+            System.out.println(msg2.toString());
+
         }catch(Exception e){
             e.printStackTrace();
         }
@@ -89,17 +129,17 @@ public class Server implements Runnable, MessageProcessor, Serializable {
                 if ((int) (System.currentTimeMillis() - lastMilli) >= interval) break;
             }
 
-            this.sensorList = getSensors();
+            //this.sensorList = getSensors();
         }
     }
 
     public void sendMessage(Message msg){
         this.connector.sendMessageThreaded(msg);
     }
-    public void addSensor(SensorInfo info){
+    public void addSensor(ClientConfig info){
         connector.AddSensor(new ConfigMessage("Adding a new sensor", info));
     }
-    public ArrayList<SensorInfo> getSensors() {
+    public ArrayList<ClientConfig> getSensors() {
         //this.sensorList = connectorObject.GetSensors();
         return connector.GetSensors();
     }
