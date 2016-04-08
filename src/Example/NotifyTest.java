@@ -14,7 +14,7 @@ public class NotifyTest {
 	public static void testSend() {
 		for (int i = 0; i < 5; i++) {
 			Timer t = new Timer(Integer.toString(i));
-			TimerTask tt = new TimerTask() {
+			TimerTask tt = new TimerTask() { 
 				@Override
 				public void run() {
 //this will only run on a system that has bash
