@@ -14,10 +14,10 @@ public class myOnClickListener implements View.OnClickListener {
     MyAdapter.ViewHolder viewHolder;
     Context context;
     int id;
-    SensorInfo sensorInfo;
+    ClientConfig sensorInfo;
     Server server;
 
-    public myOnClickListener(MyAdapter.ViewHolder viewHolder, Context context, int id, SensorInfo sensorInfo, Server server) {
+    public myOnClickListener(MyAdapter.ViewHolder viewHolder, Context context, int id, ClientConfig sensorInfo, Server server) {
         this.viewHolder = viewHolder;
         this.context = context;
         this.id = id;
@@ -37,7 +37,7 @@ public class myOnClickListener implements View.OnClickListener {
             case R.id.button1:
                 System.out.println("*****************************BUTTON 1");
                 Intent mIntent = new Intent(context, SettingsActivity.class);
-                mIntent.putExtra("SensorInfo", sensorInfo);
+                mIntent.putExtra("ClientConfig", sensorInfo);
                 mIntent.putExtra("Server", server);
                 context.startActivity(mIntent);
                 break;

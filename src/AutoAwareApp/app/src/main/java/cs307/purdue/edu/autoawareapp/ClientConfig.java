@@ -8,7 +8,7 @@ import java.io.Serializable;
 import java.util.Calendar;
 
 
-public class SensorInfo extends BaseConfig implements Serializable {
+public class ClientConfig extends BaseConfig implements Serializable {
     protected String name;
     //protected Color color;
     protected boolean desktopNotification, magicMirrorNotification, textNotification, emailNotification;
@@ -16,7 +16,7 @@ public class SensorInfo extends BaseConfig implements Serializable {
     protected int interval;
 
 
-    public SensorInfo(String ip, String start, String stop, boolean force_on, boolean force_off, SensorType type, float threshold, String name, /*Color color,*/ boolean desktopNotification, boolean magicMirrorNotification, boolean textNotification, boolean emailNotification, String phoneNumber, String emailAddress, int interval) {
+    public ClientConfig (String ip, String start, String stop, boolean force_on, boolean force_off, SensorType type, float threshold, String name, /*Color color,*/ boolean desktopNotification, boolean magicMirrorNotification, boolean textNotification, boolean emailNotification, String phoneNumber, String emailAddress, int interval) {
         //super(start, stop, force_on, force_off , type, threshold);
         super.sensing_threshold = threshold;
         super.start_hours = 8;
@@ -34,7 +34,7 @@ public class SensorInfo extends BaseConfig implements Serializable {
         this.emailAddress = emailAddress;
         this.interval = interval;
     }
-    public SensorInfo() {
+    public ClientConfig() {
         super();
         //this.color = Color.white;
         this.name = "";

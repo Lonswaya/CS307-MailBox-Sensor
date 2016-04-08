@@ -29,7 +29,7 @@ public class SensorClient extends AppCompatActivity {
     private ArrayList<Sensor> sensors = new ArrayList<Sensor>();
     int in_index = 0;
     private int numOfSensors;
-    private ArrayList<SensorInfo> sensorInfoList = new ArrayList<SensorInfo>();
+    private ArrayList<ClientConfig> sensorInfoList = new ArrayList<ClientConfig>();
     private int noSensorFlag = 0;
     Server server;
 
@@ -64,8 +64,8 @@ public class SensorClient extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        Intent mIntent = new Intent(this, SetServerIP.class);
-        startActivity(mIntent);
+        //Intent mIntent = new Intent(this, SetServerIP.class);
+        //startActivity(mIntent);
 
 
         recyclerView = (RecyclerView) findViewById(R.id.sensorRCView);
@@ -81,8 +81,8 @@ public class SensorClient extends AppCompatActivity {
 
         //int ret = createSensors();
         sensors.add(new Sensor("Sensor 1", 0, "LIGHT", "100.0.0.1"));
-        sensorInfoList.add(new SensorInfo("100.0.0.1", "0", "0", false, false, SensorType.LIGHT, 50, "Sensor 1", false, false, false, false, "123456789", "abcd@email.com", 10));
-        //server.addSensorInfoObject(sensorInfoList.get(0));
+        sensorInfoList.add(new ClientConfig("100.0.0.1", "0", "0", false, false, SensorType.LIGHT, 50, "Sensor 1", false, false, false, false, "123456789", "abcd@email.com", 10));
+        //server.addClientConfigObject(sensorInfoList.get(0));
         recyclerView.scrollToPosition(sensors.size() - 1);
         //mAdapter.notifyItemInserted(sensors.size() - 1);
         mAdapter.notifyDataSetChanged();
@@ -93,10 +93,10 @@ public class SensorClient extends AppCompatActivity {
 
             Thread mainServer = new Thread(server);
             mainServer.start();
-            sensorInfoList = server.getSensors();
+            /*sensorInfoList = server.getSensors();
             System.out.println("*****************************" + sensorInfoList + "***************************");
             for (int i = 0; i < sensorInfoList.size(); i++) {
-                Sensor sensor = convertSensorInfoToSensor(sensorInfoList.get(i));
+                Sensor sensor = convertClientConfigToSensor(sensorInfoList.get(i));
                 sensors.add(sensor);
                 recyclerView.scrollToPosition(sensors.size() - 1);
                 mAdapter.notifyDataSetChanged();
@@ -135,7 +135,7 @@ public class SensorClient extends AppCompatActivity {
         else {
             try {
                 for (int i = 0; i < numOfSensors; i++) {
-                    Sensor sensor = convertSensorInfoToSensor(sensorInfoList.get(i));
+                    Sensor sensor = convertClientConfigToSensor(sensorInfoList.get(i));
                     sensors.add(sensor);
                 }
             } catch (Exception e) {
@@ -163,7 +163,7 @@ public class SensorClient extends AppCompatActivity {
             try {
                 sensors.clear();
                 for (int i = 0; i < numOfSensors; i++) {
-                    Sensor sensor = convertSensorInfoToSensor(sensorInfoList.get(i));
+                    Sensor sensor = convertClientConfigToSensor(sensorInfoList.get(i));
                     int check = checkSensorMatch(sensor.getIp());
 
                     if (check == -1) {
@@ -202,7 +202,7 @@ public class SensorClient extends AppCompatActivity {
         return -1;
     }
 
-    public Sensor convertSensorInfoToSensor(SensorInfo s) {
+    public Sensor convertClientConfigToSensor(ClientConfig s) {
         Sensor newSensor = new Sensor();
         newSensor.setName(s.name);
 

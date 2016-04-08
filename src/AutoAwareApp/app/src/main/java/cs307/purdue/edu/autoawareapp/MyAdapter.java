@@ -20,7 +20,7 @@ import java.util.ArrayList;
 public class MyAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private Context context;
     private ArrayList<Sensor> sensors;
-    private ArrayList<SensorInfo> sensorInfo;
+    private ArrayList<ClientConfig> clientConfig;
     private Server server;
 
     private static final int VIEW_HOLDER=1;
@@ -51,11 +51,11 @@ public class MyAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     }
 
     // Provide a suitable constructor (depends on the kind of dataset)
-    public MyAdapter(Context context, ArrayList<Sensor> sensors, ArrayList<SensorInfo> sensorInfo, Server server) {
+    public MyAdapter(Context context, ArrayList<Sensor> sensors, ArrayList<ClientConfig> ClientConfig, Server server) {
         System.out.println("Constructor!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
         this.context = context;
         this.sensors = sensors;
-        this.sensorInfo = sensorInfo;
+        this.clientConfig = ClientConfig;
         this.server = server;
     }
 
@@ -114,12 +114,12 @@ public class MyAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         seekBarView.setProgress(sensors.get(position).getSeekCurrentValue());
     }
 
-    public SensorInfo getClickedSensor(TextView sensorIpView) {
+    public ClientConfig getClickedSensor(TextView sensorIpView) {
         String ip = (String) sensorIpView.getText();
         for (int i = 0; i < sensors.size(); i++) {
             if (sensors.get(i).getIp() == ip) {
-                if (sensorInfo.get(i) != null)
-                    return sensorInfo.get(i);
+                if (clientConfig.get(i) != null)
+                    return clientConfig.get(i);
             }
         }
         return null;

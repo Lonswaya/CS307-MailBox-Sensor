@@ -28,7 +28,7 @@ public class SettingsActivity extends AppCompatActivity implements View.OnClickL
     EditText emailId, phoneNumber;
     Button applyButton, defaultButton;
 
-    SensorInfo sensorInfo;
+    ClientConfig sensorInfo;
     Server server;
 
 
@@ -37,7 +37,7 @@ public class SettingsActivity extends AppCompatActivity implements View.OnClickL
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_settings);
 
-        sensorInfo = (SensorInfo) getIntent().getSerializableExtra("SensorInfo");
+        sensorInfo = (ClientConfig) getIntent().getSerializableExtra("ClientConfig");
         System.out.println("*********************" + sensorInfo);
 
         server = (Server) getIntent().getSerializableExtra("Server");

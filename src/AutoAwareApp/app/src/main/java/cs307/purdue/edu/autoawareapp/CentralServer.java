@@ -185,8 +185,8 @@ public class CentralServer extends Observable implements Runnable {
     }
 
     @SuppressWarnings("unchecked")
-    public ArrayList<SensorInfo> GetSensors() {
-        ArrayList<SensorInfo> ar;
+    public ArrayList<ClientConfig> GetSensors() {
+        ArrayList<ClientConfig> ar;
         try {
             Message msg = new Message("Getting sensors", null, MessageType.GET_SENSORS);
 
