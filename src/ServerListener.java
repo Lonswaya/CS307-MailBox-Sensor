@@ -114,12 +114,20 @@ public class ServerListener implements Runnable {
 	// TODO: documentation
 	
 	private void notify_uis(ClientConfig config) {
-		/*
+		
 		for (String ip : SeparateServer.ui_ips) {
 			System.out.println("sending config to user " + ip);
-			ConfigMessage msg = new ConfigMessage(ip, config);
-			new Thread(new ClientNotifier(msg, ip, MessageType.READING)).start();
-		} we are just going to have the users individually request for the sensors, manually*/
+			ArrayList<ClientConfig> cf = new ArrayList<ClientConfig>();
+			//SeparateServer.sendingList.forEach(action);
+			for (String s : SeparateServer.sendingList.keySet()) {
+				System.out.println("Included in your package is sensor " + s);
+				cf.add(SeparateServer.sendingList.get(s).sensorInfo);
+			}
+			ArrayList<ClientConfig> ar = cf; //TODO remove once database established
+			new Thread(new ClientNotifier(new SensorsMessage("Here's your sensors, yo", ar), ip, MessageType.GET_SENSORS)); 
+			//ConfigMessage msg = new SensorsMessage("", );
+			//new Thread(new ClientNotifier(msg, ip, MessageType.READING)).start();
+		}
 	}
 	
 	
@@ -129,7 +137,7 @@ public class ServerListener implements Runnable {
 		HashMap<String, Timer> timers = new HashMap<String, Timer>();
 	
 		
-		Message msg = Connections.readObject(in, 5000);									//receive message from socket
+		Message msg = Connections.<Message>readObject(in);									//receive message from socket
 		if (msg == null) {														//if there was an error receiving the message
 			System.err.println("Error, failed receiving message");
 			return;
@@ -244,6 +252,7 @@ public class ServerListener implements Runnable {
 						if (SeparateServer.sendingList.get(msg.from) != null) {
 							//this is from a sensor, we sure done fucked something up
 							//TODO send error message to clients
+							
 						}
 						
 						//remove sensor
@@ -363,7 +372,7 @@ public class ServerListener implements Runnable {
 						cf.add(SeparateServer.sendingList.get(s).sensorInfo);
 					}
 					ArrayList<ClientConfig> ar = cf; //TODO remove once database established
-					SeparateServer.sendMessage(out, new SensorsMessage("Here's your sensors, yo", ar), true); 
+					SeparateServer.sendMessage(new SensorsMessage("Here's your sensors, yo", ar), msg.from, StaticPorts.clientPort, true); 
 					closing = false;
 					break;
 				default:
@@ -406,6 +415,7 @@ public class ServerListener implements Runnable {
 				//remove
 				switch(type) {
 				case READING:
+				case GET_SENSORS:
 					SeparateServer.ui_ips.remove(client);
 					break;
 				case STREAMING:

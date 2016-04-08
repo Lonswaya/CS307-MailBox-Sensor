@@ -103,7 +103,7 @@ public class CentralServer extends Observable implements Runnable {
 				
 				if (!ss.isClosed()) {
 					Socket sock = ss.accept();
-					new Thread(new ServerListener(sock, this)).start();
+					new Thread(new SensorListener(sock, this)).start();
 
 				}
 				
@@ -122,12 +122,12 @@ public class CentralServer extends Observable implements Runnable {
 		this.run = b;
 	}
 
-	class ServerListener implements Runnable {
+	class SensorListener implements Runnable {
 
 		protected Socket sock;
 		protected CentralServer cs;
 		
-		public ServerListener(Socket sock, CentralServer cs) {
+		public SensorListener(Socket sock, CentralServer cs) {
 			this.sock = sock;
 			this.cs = cs;
 		}
@@ -215,16 +215,21 @@ public class CentralServer extends Observable implements Runnable {
 			//NICK I can't use your stuff here, but it don't matter cause this doesn't happen often
 			
 			Socket sock = Connections.getSocket(seperateIP, seperatePort, 3000); //if nothing, socket returns null and we just catch 
-			ObjectOutputStream out = new ObjectOutputStream(sock.getOutputStream());
+			/*ObjectOutputStream out = new ObjectOutputStream(sock.getOutputStream());
 			out.writeObject(msg);
-			out.flush();
+			out.flush();*/
+			Connections.send(sock, msg);
 			
-			ObjectInputStream in = new ObjectInputStream(sock.getInputStream());
+			//ObjectInputStream in = new ObjectInputStream(sock.getInputStream());
 
-			ar = ((SensorsMessage)in.readObject()).ar;
+			System.out.println("What the fuck");
 			
-			in.close();
-			out.close();
+			ar = (Connections.<SensorsMessage>readObject(sock)).ar;//((SensorsMessage)in.readObject()).ar;
+			
+			System.out.println("Got the fuck");
+			
+			//in.close();
+			//out.close();
 			sock.close();
 			
 		} catch (Exception e) {

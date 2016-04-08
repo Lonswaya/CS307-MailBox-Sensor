@@ -15,6 +15,7 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.io.File;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -308,7 +309,7 @@ public class AutoAwareControlPanel extends JFrame implements MessageProcessor {/
             @Override
             public void actionPerformed(ActionEvent event) {
                 System.out.println("RefreshSensors");
-                configs = server.GetSensors();
+                //configs = server.GetSensors();
                 lastRefresh = new Date();
                 refreshSensorList();
             }
@@ -549,12 +550,13 @@ public class AutoAwareControlPanel extends JFrame implements MessageProcessor {/
     		} else {
     			if (new Date().getTime() - lastRefresh.getTime() > 5000) {
         			//if it has been more than 5 seconds since last refresh
-        			configs = server.GetSensors();
+        			//configs = server.GetSensors();
         		}
     			if (lostServer) {
         			lostServer = false;
     				JOptionPane.showMessageDialog(null, "Connection restored");
-    				configs = server.GetSensors();
+    				server.sendMessage(new Message("", null, MessageType.GET_SENSORS));
+    				//configs = server.GetSensors();
     			}
     		}
     		/*for (ClientConfig cfg : tempConfigs) {
@@ -878,8 +880,17 @@ public class AutoAwareControlPanel extends JFrame implements MessageProcessor {/
     	{
     		String lastIP = server.seperateIP;
     		server.seperateIP = address;
-    		configs = server.GetSensors();
-    		if (configs == null) {
+    		String myAddr = "";
+    		try {
+    			myAddr = InetAddress.getLocalHost().toString();
+    		} catch (Exception e) {
+    			
+    		}
+    		myAddr = myAddr.substring(myAddr.indexOf('/') + 1);
+			Message m = new Message("", null, MessageType.GET_SENSORS);
+			m.setFrom(myAddr);
+    		boolean success = Connections.sendAndCheck(server.seperateIP, StaticPorts.serverPort, m, 5000);
+    		if (!success) {
     			//System.out.println("server not found");
     			server.seperateIP = lastIP;
         		JOptionPane.showMessageDialog(null,"Server not found", "error", JOptionPane.ERROR_MESSAGE, null);
@@ -901,11 +912,14 @@ public class AutoAwareControlPanel extends JFrame implements MessageProcessor {/
   
 	public void ProcessMessage(Message arg1) {
 		Message gotMessage = arg1;
-		ClientConfig myClient = ConfigFind(gotMessage.from);
-		if (myClient == null && gotMessage.type != MessageType.CONFIG) {
-			System.out.printf("Message recieved for incorrect sensor, please try again.\n %s",gotMessage);
-			return;
-		} //if its a new sensor, we dont want this
+		ClientConfig myClient = new ClientConfig();
+		if (gotMessage.type != MessageType.GET_SENSORS) {
+			myClient = ConfigFind(gotMessage.from);
+			if (myClient == null && gotMessage.type != MessageType.CONFIG) {
+				System.out.printf("Message recieved for incorrect sensor, please try again.\n %s",gotMessage);
+				return;
+			} //if its a new sensor, we dont want this
+		}
 		System.out.println(gotMessage);
 		//System.out.println("Message recieved, says to: " + gotMessage.message + " with the type of" + gotMessage.type);
 		
@@ -988,8 +1002,13 @@ public class AutoAwareControlPanel extends JFrame implements MessageProcessor {/
 				
 				
 				break;
-			default:
+			case GET_SENSORS:
 				
+				configs = ((SensorsMessage)gotMessage).ar;
+				refreshSensorList();
+				break;
+			default:
+			
 				//null, error message
 				System.out.println(gotMessage.message);
 				break;
