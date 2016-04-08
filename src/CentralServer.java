@@ -19,11 +19,13 @@ import java.util.Observer;
 
 public class CentralServer extends Observable implements Runnable {
 
+	protected ServerSocket ss = null;
 	
 	protected Socket serverConnection;
 	
 	protected Hashtable<String, BooleanHolder> ThreadsToStop;
 	
+	//protected SSLSocketFactory socketFactory = null;
 	
 	protected boolean run = true;
 	
@@ -38,7 +40,7 @@ public class CentralServer extends Observable implements Runnable {
 	   
 	    ref = obs;
 	   
-	    //ss = Connections.getServerSocket(StaticPorts.clientPort);
+	    ss = Connections.getServerSocket(StaticPorts.clientPort);
 	}
 	class BooleanHolder {
 		public boolean value;
@@ -106,20 +108,33 @@ public class CentralServer extends Observable implements Runnable {
 			new Thread(new SocketListener(serverConnection, true, null, ip)).start();
 		}
 	}
-
 	
-	public void SetStreaming(boolean startOrStopStreaming, ClientConfig cfg, StreamBox sref) {
+	
+	public void Kill() {
+		//Kills current server socket
+		try {
+			ss.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	/* Purpose: To tell a sensor to start streaming directly to you
+	 * startOrStopStreaming: true to start streaming, false to stop streaming
+	 * ip: ip of the sensor you want to connect to
+	 * ref: (can be null) if you are creating a streambox, it will call the Close() function to stop the box
+	 */
+	
+	public void SetStreaming(boolean startOrStopStreaming, String ip, StreamBox ref) {
 		if (startOrStopStreaming) {
 			BooleanHolder b = new BooleanHolder();
 			b.value = true;
-			ThreadsToStop.put(cfg.ip, b);
-			//sendMessage(new StreamingMessage("Telling to start streaming", cfg, true));
-			Socket sensorStreaming = Connections.getSocket(cfg.ip, StaticPorts.piPort, 5000);
-			new Thread(new SocketListener(sensorStreaming, false, sref, cfg.ip)).start();
+			ThreadsToStop.put(ip, b);
+			Socket sensorStreaming = Connections.getSocket(ip, StaticPorts.piPort);
+			new Thread(new SocketListener(sensorStreaming, false, ref, ip)).start();
 		} else {
 			BooleanHolder b = new BooleanHolder();
 			b.value = false;
-			ThreadsToStop.put(cfg.ip, b);
+			ThreadsToStop.put(ip, b);
 		}
 	}
 	
@@ -135,14 +150,14 @@ public class CentralServer extends Observable implements Runnable {
 	}
 	class SocketListener implements Runnable {
 		protected Socket sock;
-		protected StreamBox rref;
+		protected StreamBox ref;
 		protected boolean serverConnected; //if this is connected to a server (true) or to a sensor (false)
 		protected String ip;
 		
 		
-		public SocketListener(Socket ss, boolean serverConnected, StreamBox rref, String ip) {
+		public SocketListener(Socket ss, boolean serverConnected, StreamBox ref, String ip) {
 			sock = ss;
-			this.rref = rref;
+			this.ref = ref;
 			this.serverConnected = serverConnected;
 			this.ip = ip;
 		}
@@ -153,23 +168,17 @@ public class CentralServer extends Observable implements Runnable {
 				Message m = null;
 				try {
 					m = Connections.readObject(sock);
-					ref.ProcessMessage(m);
 				} catch (Exception e) {}
 				
 				if (m == null || ThreadsToStop.get(ip).value) { //if the message is still null, if there is an exception, or if we force stop
 					run = false;
-					if (rref != null) { //close any streamboxes
-						rref.Close();
+					if (ref != null) { //close any streamboxes
+						ref.Close();
+						
 					} 
 					if (serverConnected) {
 						// it has to be a server connection
 						serverConnection = null;
-					}
-					try {
-						sock.close();
-					} catch (IOException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
 					}
 				}
 			}	

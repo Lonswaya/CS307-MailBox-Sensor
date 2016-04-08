@@ -4,7 +4,6 @@ import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Scanner;
 
@@ -18,18 +17,31 @@ import Example.Connections;
 public class RaspberryPi {
 	public BaseSensor sensor;
 	private ServerSocket receiveServer;
+
+	private String ip;
 	public int sleepAmt;
 	//this is the port and IP for the separate server 
+	private int port = StaticPorts.serverPort;
 
 	boolean streaming = false;
 	
-	private Socket serverConnection;
-	
 	public RaspberryPi() throws IOException {
+			
+
+		/*Scanner in = new Scanner(System.in);
+		System.out.println("Enter the server's ip");
+		ip = in.nextLine();
+		System.out.println("Enter server's port");
+		port = Integer.parseInt(in.nextLine());*/
+		
+		//System.setProperty("javax.net.ssl.keyStore", "mySrvKeystore");
+		//System.setProperty("javax.net.ssl.keyStorePassword", "sensor");
+		//System.setProperty("javax.net.ssl.trustStore", "mySrvKeystore");
+		//System.setProperty("javax.net.ssl.trustStorePassword", "sensor");
 		
 		streaming = false;
-
-		serverConnection = null;
+		
+		
 		
 		//TODO: pull config from text file and create sensor or if no config, leave sensor null
 		BaseConfig config = new BaseConfig();
@@ -41,18 +53,31 @@ public class RaspberryPi {
 		new Thread(new Runnable() {
 
 			private ServerSocket receiveServer;
+			//private ObjectInputStream in;
+			//private ObjectOutputStream out;
+			//private Socket sock;
 			private RaspberryPi ref;
 			
 			@Override
 			public void run() {
 
+				//SSLServerSocketFactory factory = (SSLServerSocketFactory) SSLServerSocketFactory.getDefault();
+
 				try {
+					//receiveServer = factory.createServerSocket(StaticPorts.piPort);
 					receiveServer = Connections.getServerSocket(StaticPorts.piPort);
 					
 					while (true) {
-						
+						//System.out.println("from receive thread");
+						/*sock = receiveServer.accept();
+						in = new ObjectInputStream(sock.getInputStream());
+						out = new ObjectOutputStream(sock.getOutputStream());
+						Message msg = (Message) in.readObject();
+						*/
 						Socket sock = receiveServer.accept();
 						Message msg = Connections.readObject(sock);
+						if (msg.getFrom() != null) ip = msg.getFrom();
+						//System.out.println(msg.config.toString() + " " +  msg);
 						
 						switch(msg.type) {
 							case CONFIG:
@@ -69,7 +94,6 @@ public class RaspberryPi {
 										send_message(conf); //send it back, delete us
 									}
 									System.out.println("new sensor: " + ref.sensor);
-									serverConnection = sock;
 								} 
 								if (ref.sensor != null) ref.sensor.setConfig(conf.getConfig());
 								break;
@@ -80,27 +104,6 @@ public class RaspberryPi {
 									//refresh the thread, so we aren't sleeping as soon as we get a streaming message
 									//the delay really builds up
 									sleepAmt = 0;
-									
-									//start new thread to socket
-									new Thread(new Runnable() {
-										final private Socket socket = sock;
-										final ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
-										public void run() {
-											
-											while(true) {
-												try {
-													out.writeObject(sensor.form_message());																										
-												} catch (Exception e) {
-													break;
-												}
-											}
-											
-											try {
-												socket.close();
-											} catch (Exception e) { }
-											
-										}
-									}).start();
 								}
 								//System.out.println("Pi streaming set to " + streaming);
 								//set Pi to constantly send values back to the server, send a new ReadingMessage
@@ -110,6 +113,8 @@ public class RaspberryPi {
 								
 						}
 						
+						//in.close();
+						//out.close();
 						sock.close();
 					}
 
@@ -132,20 +137,35 @@ public class RaspberryPi {
 	}
 
 	public void send_message(Message msg) {
+		
 		new Thread(new Runnable(){
     		public void run(){
 				long tempTime = System.currentTimeMillis();
 				System.out.println("start sending msg");
-				
+				//Socket sendSocket = null;
+				//System.out.println("sending message " + msg.toString() + " with config " + msg.config);
+				//final SSLSocketFactory factory = (SSLSocketFactory) SSLSocketFactory.getDefault();
 				try {
-					Connections.send(serverConnection, msg);
-					
+					msg.setFrom(BaseSensor.getIP());
+					Socket sendSocket = Connections.getSocket(ip, port);
+					Connections.send(sendSocket, msg);
+					//System.out.println("ip: " + this.ip + " port: " + this.port);
+					/*sendSocket = factory.createSocket(ip, port);
+					//System.out.println("1");
+					ObjectOutputStream outputStream = new ObjectOutputStream(sendSocket.getOutputStream());
+					//System.out.println("2");
+					outputStream.writeObject(msg);
+					//System.out.println("3");
+					outputStream.flush();
+					//System.out.println("4");
+					//Thread.sleep(50); //pause to let the central server get info
+					ObjectInputStream in = new ObjectInputStream(sendSocket.getInputStream());
+					//Wait for the connection to respond
+					System.out.println(((Message)in.readObject()).message);*/
+					//outputStream.close();
+					//sendSocket.close();
 				} catch (Exception e) {
 					e.printStackTrace();
-					serverConnection = null;
-					streaming = false;
-					
-					
 				}
 				System.out.println("Debug: End compression, Time:" + (int) (System.currentTimeMillis() - tempTime) + "\n");
 				System.out.println("msg sent");

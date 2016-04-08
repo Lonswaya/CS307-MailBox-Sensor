@@ -357,7 +357,7 @@ public class AutoAwareControlPanel extends JFrame implements MessageProcessor {/
     		if (cfg.isSensorActive())  {
     			t2bool = true;
     			//server.sendMessage(new StreamingMessage("Telling to start streaming",cfg, true));
-    			server.SetStreaming(true, cfg, null);
+    			server.SetStreaming(true, identifier, null);
     		} else {
     			t2bool = false;
     		}
@@ -510,7 +510,7 @@ public class AutoAwareControlPanel extends JFrame implements MessageProcessor {/
     public void StopStream(ClientConfig cfg) {
     	System.out.println("Stopping stream now");
 		//server.sendMessage(new StreamingMessage("Telling to stop streaming",cfg, false));
-		server.SetStreaming(false, cfg, null); //setting streaming to be true (receiving thread)
+		server.SetStreaming(false, cfg.ip, null); //setting streaming to be true (receiving thread)
 
     	t2bool = false;
 		
@@ -635,7 +635,7 @@ public class AutoAwareControlPanel extends JFrame implements MessageProcessor {/
             @Override
             public void windowClosing(WindowEvent e) {
             	//setAlwaysOnTop(false);
-            	//server.Kill(); 
+            	server.Kill(); 
                 CloseOperation();
             }
         };
@@ -670,7 +670,7 @@ public class AutoAwareControlPanel extends JFrame implements MessageProcessor {/
 		    	
 		    	//server.sendMessage(new StreamingMessage("Setting image/video streaming to true",c,true));
 		    	
-    			server.SetStreaming(true, c, stream); //setting streaming to be true (receiving thread)
+    			server.SetStreaming(true, address, stream); //setting streaming to be true (receiving thread)
 
 		    	
 
@@ -687,7 +687,7 @@ public class AutoAwareControlPanel extends JFrame implements MessageProcessor {/
 			    	Streamers.put(address, stream);
 			    	
 			    	System.out.println("setting to stream now");
-	    			server.SetStreaming(true, c, stream); //setting streaming to be true (receiving thread)
+	    			server.SetStreaming(true, address, stream); //setting streaming to be true (receiving thread)
 
 	    		/*} else {
 	    			JOptionPane.showMessageDialog(null, "Connection refused");
