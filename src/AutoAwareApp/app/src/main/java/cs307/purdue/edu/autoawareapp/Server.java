@@ -5,6 +5,7 @@ import android.util.Log;
 
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.net.*;
 import java.util.ArrayList;
 import javax.net.ssl.SSLServerSocketFactory;
@@ -12,7 +13,7 @@ import javax.net.ssl.SSLSocketFactory;
 /**
  * Used to grab sensor infos from central server
  */
-public class Server implements Runnable, MessageProcessor {
+public class Server implements Runnable, MessageProcessor, Serializable {
     public ArrayList<SensorInfo> sensorList;
 
     public String server_ip;
@@ -23,8 +24,8 @@ public class Server implements Runnable, MessageProcessor {
 
 
     public Server() {
-        System.setProperty("javax.net.ssl.trustStore", "mySrvKeystore");  //get ssl working
-        System.setProperty("javax.net.ssl.trustStorePassword", "sensor"); //get ssl working
+        //System.setProperty("javax.net.ssl.trustStore", "mySrvKeystore");  //get ssl working
+        //System.setProperty("javax.net.ssl.trustStorePassword", "sensor"); //get ssl working
         //connectorThread.start();
     }
     //use this after constructor to be safe
@@ -32,8 +33,41 @@ public class Server implements Runnable, MessageProcessor {
         connector = new CentralServer(this);
         connectorThread = new Thread(connector);
     }
+
+    public void addSensorInfoObject(SensorInfo sensorInfo) {
+        if (sensorInfo != null) {
+            sensorList.add(sensorInfo);
+        }
+    }
+
     public void ProcessMessage(Message msg){
-        new MessageHandler(msg, this).start();
+        try{
+            switch(msg.type){
+                case READING:
+                    ReadingMessage rMsg = (ReadingMessage) msg;
+                    float reading = rMsg.getCurrentThreshold();
+
+                    //update the reading. I don't know how do you want readings strutured ? in SensorInfo?
+
+                case GET_SENSORS:
+                    SensorsMessage sMsg = (SensorsMessage) msg;
+                    sensorList = sMsg.ar;
+                    break;
+                default:
+                    System.out.println("Message type: " + msg.type + " not supported");
+            }
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    public void updateSensorInfoList(SensorInfo sensorInfo) {
+        for (int i = 0; i < sensorList.size(); i++) {
+            if (sensorInfo.ip == sensorList.get(i).ip) {
+                sensorList.set(i, sensorInfo);
+                break;
+            }
+        }
     }
 
     public void run() {
@@ -67,13 +101,10 @@ public class Server implements Runnable, MessageProcessor {
     }
     public ArrayList<SensorInfo> getSensors() {
         //this.sensorList = connectorObject.GetSensors();
-        if (connector == null) {
-            return connector.GetSensors();
-        }
-        return null;
+        return connector.GetSensors();
     }
 
-    class MessageHandler extends Thread{
+    /*class MessageHandler extends Thread{
         Message msg;
         Server ref;
         public MessageHandler(Message msg, Server ref){
@@ -83,26 +114,13 @@ public class Server implements Runnable, MessageProcessor {
 
         public void run(){
             try{
-                switch(msg.type){
-                    case READING:
-                        ReadingMessage rMsg = (ReadingMessage) msg;
-                        float reading = rMsg.getCurrentThreshold();
 
-                        //update the reading. I don't know how do you want readings strutured ? in SensorInfo?
-
-                    case GET_SENSORS:
-                        SensorsMessage sMsg = (SensorsMessage) msg;
-                        ref.sensorList = sMsg.ar;
-                        break;
-                    default:
-                        System.out.println("Message type: " + msg.type + " not supported");
-                }
             }catch(Exception e){
                 e.printStackTrace();
             }
         }
     }
-    /*class SendMessage extends Thread {
+    class SendMessage extends Thread {
         public Message msg;
         public String ip;
         public int port;
@@ -114,7 +132,6 @@ public class Server implements Runnable, MessageProcessor {
         }
 
         public void run() {
-            SSLSocketFactory factory = (SSLSocketFactory) SSLSocketFactory.getDefault();
             try {
                 Socket socket = factory.createSocket(ip, port);
                 ObjectOutputStream out;

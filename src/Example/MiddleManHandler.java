@@ -1,4 +1,4 @@
-package test;
+package Example;
 
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -27,7 +27,9 @@ public class MiddleManHandler implements Runnable {
 		
 		if (fromIn == null || fromOut == null || toIn == null || toOut == null) return;
 		
-		Message message = Connections.<Message>readObjectWithAck(fromIn, fromOut, new Acknowledge());
+//		Message message = Connections.<Message>readObjectWithAck(fromIn, fromOut, new Acknowledge());
+		Message message = Connections.<Message>readObject(fromIn);
+
 		if (message == null) return;
 		
 		

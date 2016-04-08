@@ -1,5 +1,6 @@
 package cs307.purdue.edu.autoawareapp;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -13,6 +14,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -24,11 +26,15 @@ public class SensorClient extends AppCompatActivity {
     private RecyclerView recyclerView;
     RecyclerView.Adapter mAdapter = null;
     RecyclerView.LayoutManager llm;
-    private ArrayList<Sensor> sensors = new ArrayList<Sensor>();;
+    private ArrayList<Sensor> sensors = new ArrayList<Sensor>();
     int in_index = 0;
     private int numOfSensors;
-    private ArrayList<SensorInfo> sensorInfoList;
+    private ArrayList<SensorInfo> sensorInfoList = new ArrayList<SensorInfo>();
     private int noSensorFlag = 0;
+    Server server;
+
+    public SensorClient() {
+    }
 
     public int getNumOfSensors() {
         return numOfSensors;
@@ -64,15 +70,37 @@ public class SensorClient extends AppCompatActivity {
         llm = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(llm);
 
-        mAdapter = new MyAdapter(this, sensors);
+        server = new Server();
+        mAdapter = new MyAdapter(this, sensors, sensorInfoList, server);
         recyclerView.setAdapter(mAdapter);
         //llm.setOrientation(LinearLayoutManager.VERTICAL);
 
         //int ret = createSensors();
         sensors.add(new Sensor("Sensor 1", 0, "LIGHT", "100.0.0.1"));
+        sensorInfoList.add(new SensorInfo("100.0.0.1", "0", "0", false, false, SensorType.LIGHT, 50, "Sensor 1", false, false, false, false, "123456789", "abcd@email.com", 10));
+        //server.addSensorInfoObject(sensorInfoList.get(0));
         recyclerView.scrollToPosition(sensors.size() - 1);
         //mAdapter.notifyItemInserted(sensors.size() - 1);
         mAdapter.notifyDataSetChanged();
+
+        /*try {
+            server = new Server();
+            server.setUpConnector();
+
+            Thread mainServer = new Thread(server);
+            mainServer.start();
+            sensorInfoList = server.getSensors();
+            System.out.println("*****************************" + sensorInfoList + "***************************");
+            for (int i = 0; i < sensorInfoList.size(); i++) {
+                Sensor sensor = convertSensorInfoToSensor(sensorInfoList.get(i));
+                sensors.add(sensor);
+                recyclerView.scrollToPosition(sensors.size() - 1);
+                mAdapter.notifyDataSetChanged();
+            }
+        } catch(NullPointerException e) {
+            //TODO: Display a waiting screen
+            System.out.println("NULL POINTER EXCEPTION");
+        }*/
     }
 
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -81,16 +109,13 @@ public class SensorClient extends AppCompatActivity {
         return true;
     }
 
-    //@Override
-    /*public View onCreateView (LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View layout = inflater.inflate(R.layout.activity_main, container, false);
-        recyclerView = (RecyclerView) layout.findViewById(R.id.sensorRCView);
-        return layout;
-    }*/
+    public Context getContext() {
+        return this;
+    }
 
     public int createSensors() {
-        Server s = new Server();
-        sensorInfoList = s.getSensors();
+        Server server = new Server();
+        sensorInfoList = server.getSensors();
         System.out.println(sensorInfoList);
         if (sensorInfoList != null) {
             setNumOfSensors(sensorInfoList.size());
@@ -171,10 +196,6 @@ public class SensorClient extends AppCompatActivity {
             }
         }
         return -1;
-    }
-
-    public void updateView() {
-
     }
 
     public Sensor convertSensorInfoToSensor(SensorInfo s) {

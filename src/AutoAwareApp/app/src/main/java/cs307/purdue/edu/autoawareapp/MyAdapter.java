@@ -18,8 +18,10 @@ import java.util.ArrayList;
  * Created by Dhairya on 4/2/2016.
  */
 public class MyAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
-    private final Context context;
-    private final ArrayList<Sensor> sensors;
+    private Context context;
+    private ArrayList<Sensor> sensors;
+    private ArrayList<SensorInfo> sensorInfo;
+    private Server server;
 
     private static final int VIEW_HOLDER=1;
 
@@ -27,7 +29,7 @@ public class MyAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     // Complex data items may need more than one view per item, and
     // you provide access to all the views for a data item in a view holder
     public static class ViewHolder extends RecyclerView.ViewHolder {
-        public TextView sensorNameTextView;
+        public TextView sensorNameTextView, sensorIpTextView;
         public ImageView sensorTypeImage;
         public ImageButton streamButton;
         public SeekBar seekBar;
@@ -39,6 +41,7 @@ public class MyAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
             System.out.println("HI!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
             this.sensorNameTextView = (TextView) v.findViewById(R.id.sensor_name);
+            this.sensorIpTextView = (TextView) v.findViewById(R.id.sensor_ip);
             this.sensorTypeImage = (ImageView) v.findViewById(R.id.sensor_type_image);
             this.streamButton = (ImageButton) v.findViewById(R.id.rec_button);
             this.seekBar = (SeekBar) v.findViewById(R.id.current_val_bar);
@@ -48,10 +51,12 @@ public class MyAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     }
 
     // Provide a suitable constructor (depends on the kind of dataset)
-    public MyAdapter(Context context, ArrayList<Sensor> sensors) {
+    public MyAdapter(Context context, ArrayList<Sensor> sensors, ArrayList<SensorInfo> sensorInfo, Server server) {
         System.out.println("Constructor!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
         this.context = context;
         this.sensors = sensors;
+        this.sensorInfo = sensorInfo;
+        this.server = server;
     }
 
     // Create new views (invoked by the layout manager)
@@ -78,6 +83,9 @@ public class MyAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         TextView sensorNameView = (TextView) viewholder.sensorNameTextView;
         sensorNameView.setText(sensors.get(position).getName());
 
+        TextView sensorIpView = (TextView) viewholder.sensorIpTextView;
+        sensorIpView.setText(sensors.get(position).getIp());
+
         ImageView sensorTypeImageView = (ImageView) viewholder.sensorTypeImage;
         switch (sensors.get(position).getType()) {
             case "VIDEO": sensorTypeImageView.setImageResource(R.mipmap.ic_video_icon);
@@ -96,14 +104,25 @@ public class MyAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
         Button configButtonView = (Button) viewholder.configButton;
         configButtonView.setText("Configure");
-        //TODO:configButtonView.setOnClickListener();
+        configButtonView.setOnClickListener(new myOnClickListener(viewholder, context, R.id.button1, getClickedSensor(sensorIpView), server));
 
         Button enableDisableButtonView = (Button) viewholder.enableDisbaleButton;
         enableDisableButtonView.setText("Disable");
-        //TODO:enableDisableButtonView.setOnClickListener();
+        enableDisableButtonView.setOnClickListener(new myOnClickListener(viewholder,context, R.id.button2, getClickedSensor(sensorIpView), server));
 
         SeekBar seekBarView = (SeekBar) viewholder.seekBar;
         seekBarView.setProgress(sensors.get(position).getSeekCurrentValue());
+    }
+
+    public SensorInfo getClickedSensor(TextView sensorIpView) {
+        String ip = (String) sensorIpView.getText();
+        for (int i = 0; i < sensors.size(); i++) {
+            if (sensors.get(i).getIp() == ip) {
+                if (sensorInfo.get(i) != null)
+                    return sensorInfo.get(i);
+            }
+        }
+        return null;
     }
 
     @Override

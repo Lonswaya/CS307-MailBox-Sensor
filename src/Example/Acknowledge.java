@@ -1,4 +1,4 @@
-package test;
+package Example;
 
 import java.io.Serializable;
 

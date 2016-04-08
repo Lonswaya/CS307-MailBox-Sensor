@@ -37,6 +37,8 @@ public class Client {
 		m_inputStream = new ObjectInputStream(m_socket.getInputStream());
 		
 		m_message = (Message)m_inputStream.readObject();
+		
+		System.out.println(m_message.getMessage());
 	}
 	
 	public Message getMessage() {
@@ -73,7 +75,7 @@ public class Client {
 			
 			Message recieved = client.getMessage();
 			
-			System.out.println("Recieved: " + recieved.getString() + " from server");			
+			System.out.println("Recieved: " + recieved.getMessage() + " from server");			
 			
 			client.close();
 		} catch (Exception e) {
