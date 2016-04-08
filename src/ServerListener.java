@@ -11,6 +11,7 @@ import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.TimeUnit;
 import java.util.Date;
 import java.util.HashMap;
 
@@ -114,8 +115,8 @@ public class ServerListener implements Runnable {
 		close();
 		 
 	}
-	boolean processMessage() { //this is what processes things
-		HashMap<String, Timer> timers = new HashMap<String, Timer>();
+	boolean processMessage() throws InterruptedException { //this is what processes things
+		HashMap<String, Boolean> tasks = new HashMap<String, Boolean>();
 
 		
 		Message msg = Connections.<Message>readObject(in);									//receive message from socket
@@ -158,41 +159,27 @@ public class ServerListener implements Runnable {
 					ReadingMessage rmsg = (ReadingMessage) msg;
 					float threshold = rmsg.getCurrentThreshold()/100;
 					ClientConfig cc = SeparateServer.sendingList.get(msg.from).sensorInfo;
-					//if threshold is exceeded and there is no timertask yet, start one
-					if (cc.sensing_threshold >= threshold && timers.get(cc.ip) == null) {
-						Timer t = new Timer(cc.ip);
-							TimerTask tt = new TimerTask() {
-								@Override
-								public void run() {
-									if (cc.emailNotification == true) {
-										try {
-											Sender.send(cc.emailAddress, rmsg.getString());
-										} catch (IOException e){
-										//handle the exception
-										}
-									}
-									if (cc.textNotification == true) {
-										try {
-											TwilioSender.send(cc.phoneNumber, rmsg.getString());
-										} catch (TwilioRestException tre) {
-										//handle it
-										}
-									}
-								}
-							};
+					//if threshold is exceeded and there is no notification yet, start one, else do nothing
+					if (cc.sensing_threshold >= threshold && tasks.get(cc.ip) == null) {
+						tasks.put(cc.ip, true);
+						if (cc.emailNotification == true) {
+							try {
+								Sender.send(cc.emailAddress, rmsg.getString());
+							} catch (IOException e){
+							//handle the exception
+							}
+						}
+						if (cc.textNotification == true) {
+							try {
+								TwilioSender.send(cc.phoneNumber, rmsg.getString());
+							} catch (TwilioRestException tre) {
+							//handle it
+							}
+						}
+						TimeUnit.MILLISECONDS.sleep(cc.interval);
+						tasks.remove(cc.ip);
+					}
 					
-						t.scheduleAtFixedRate(tt, new Date(System.currentTimeMillis() + 1000), cc.interval); //wait an extra second so the first one happens
-						timers.put(cc.ip, t);
-					}
-					//else if threshold is not exceeded but a timertask is running, stop it and remove it
-					else if (cc.sensing_threshold < threshold && timers.get(cc.ip) != null) {
-						Timer t = timers.get(cc.ip);
-						t.cancel();
-						timers.remove(cc.ip);
-						
-						
-						
-					}
 					for (String ip : SeparateServer.uiSockets.keySet()) {
 						//notify all clients that the threshold was reached
 						new Thread(new ClientNotifier(rmsg, SeparateServer.uiSockets.get(ip), ip)).start();;
