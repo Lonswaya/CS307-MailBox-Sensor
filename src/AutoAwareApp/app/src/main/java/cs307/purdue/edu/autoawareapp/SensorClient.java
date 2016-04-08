@@ -64,6 +64,10 @@ public class SensorClient extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        Intent mIntent = new Intent(this, SetServerIP.class);
+        startActivity(mIntent);
+
+
         recyclerView = (RecyclerView) findViewById(R.id.sensorRCView);
         recyclerView.setHasFixedSize(true);
 
