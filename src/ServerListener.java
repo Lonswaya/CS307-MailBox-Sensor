@@ -131,9 +131,8 @@ public class ServerListener implements Runnable {
 		close();
 		  
 	}
-<<<<<<< HEAD
 	boolean processMessage() { //this is what processes things
-		HashMap<String, Timer> timers = new HashMap<String, Timer>();
+		HashMap<String, Boolean> tasks = new HashMap<String, Boolean>();
 		boolean avaliable = false;
 		try {
 			avaliable = in.available() > 0; //if we are able to read 
@@ -145,14 +144,7 @@ public class ServerListener implements Runnable {
 		}
 		Message msg = Connections.readObject(in);									//receive message from socket
 		System.out.println("Got read object of something");
-=======
-	boolean processMessage() throws InterruptedException { //this is what processes things
-		HashMap<String, Boolean> tasks = new HashMap<String, Boolean>();
 
-		
-		Message msg = Connections.<Message>readObject(in);									//receive message from socket
-		
->>>>>>> 8b0fa7141c6619fb52939b553320d7ab04459a9b
 		if (msg == null) {														//if there was an error receiving the message
 			System.err.println("Error, failed receiving message");
 			return false;
@@ -198,25 +190,29 @@ public class ServerListener implements Runnable {
 
 					}
 					ClientConfig cc = SeparateServer.sendingList.get(msg.from).sensorInfo;
-<<<<<<< HEAD
 					//if threshold is exceeded and there is no notification yet, start one, else do nothing
-					if (cc.sensing_threshold >= threshold && tasks.get(cc.ip) == null) {
+					if (cc.sensing_threshold >= reading && tasks.get(cc.ip) == null) {
 						tasks.put(cc.ip, true);
 						if (cc.emailNotification == true) {
 							try {
-								Sender.send(cc.emailAddress, rmsg.getString());
+								Sender.send(cc.emailAddress, msg.getString());
 							} catch (IOException e){
 							//handle the exception
 							}
 						}
 						if (cc.textNotification == true) {
 							try {
-								TwilioSender.send(cc.phoneNumber, rmsg.getString());
+								TwilioSender.send(cc.phoneNumber, msg.getString());
 							} catch (TwilioRestException tre) {
 							//handle it
 							}
 						}
-						TimeUnit.MILLISECONDS.sleep(cc.interval);
+						try {
+							TimeUnit.MILLISECONDS.sleep(cc.interval);
+						} catch (InterruptedException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
 						tasks.remove(cc.ip);
 					}
 					
