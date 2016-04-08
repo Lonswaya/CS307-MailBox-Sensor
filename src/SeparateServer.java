@@ -25,7 +25,7 @@ public class SeparateServer {
 	
 	static Hashtable<String, Socket> uiSockets = new Hashtable<String, Socket>();
 	
-	static Hashtable<String, SensorSendingList> sendingList = new Hashtable<String, SensorSendingList>();
+	static Hashtable<String, SensorInfo> sendingList = new Hashtable<String, SensorInfo>();
 	
 	public SeparateServer() {
 		ss = Connections.getServerSocket(StaticPorts.serverPort);//f.createServerSocket(StaticPorts.serverPort, 6969); //create our server socket

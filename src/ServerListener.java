@@ -49,7 +49,7 @@ public class ServerListener implements Runnable {
 		try {
 			in.close();
 			out.close();
-			//sock.close();
+			sock.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -60,16 +60,23 @@ public class ServerListener implements Runnable {
 	 */
 	private void addUI(String from, Socket sock) {
 		
-		if(from == null || from.equals("") || SeparateServer.uiSockets.containsKey(from)) {
+		if(from == null || from.equals("")) {
 			return;
 		} else {
+			if (SeparateServer.uiSockets.containsKey(from)) {
+				try {
+					SeparateServer.uiSockets.get(from).close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
 			System.out.println("Added user " + from + " to list");
 			SeparateServer.uiSockets.put(from, sock);
 		}
 	}
 	
 	
-	private void notify_uis(ClientConfig config) {
+	private void notify_uis() {
 		
 		for (String ip : SeparateServer.uiSockets.keySet()) {
 			System.out.println("sending config to user " + ip);
@@ -80,7 +87,7 @@ public class ServerListener implements Runnable {
 				cf.add(SeparateServer.sendingList.get(s).sensorInfo);
 			}
 			ArrayList<ClientConfig> ar = cf; 
-			new Thread(new ClientNotifier(new SensorsMessage("here's your sensors, yo", ar), SeparateServer.uiSockets.get(ip), ip, MessageType.GET_SENSORS)).start();;
+			new Thread(new ClientNotifier(new SensorsMessage("here's your sensors, yo", ar), SeparateServer.uiSockets.get(ip), ip)).start();;
 			//new Thread(new ClientNotifier(new SensorsMessage("Here's your sensors, yo", ar), ip, MessageType.GET_SENSORS)); 
 			
 		}
@@ -96,15 +103,18 @@ public class ServerListener implements Runnable {
 		while (run) {
 		
 			try {
-				processMessage();
+				
+				boolean canContinue = processMessage();
+				if (!canContinue) break;
 			} catch (Exception e) {
 				e.printStackTrace();
 				run = false;
 			}
 		}
+		close();
 		 
 	}
-	void processMessage() { //this is what processes things
+	boolean processMessage() { //this is what processes things
 		HashMap<String, Timer> timers = new HashMap<String, Timer>();
 
 		
@@ -112,7 +122,7 @@ public class ServerListener implements Runnable {
 		
 		if (msg == null) {														//if there was an error receiving the message
 			System.err.println("Error, failed receiving message");
-			return;
+			return false;
 		}
 		
 		if(msg.type == MessageType.CONFIG || 
@@ -126,8 +136,7 @@ public class ServerListener implements Runnable {
 															//add ip to list of gui ips
 		
 		if (msg.getString().equalsIgnoreCase("quit")) {							//if the message told the server to quit
-			SeparateServer.run = false;											//make the server quit running
-			return;
+			return false;
 		}
 		//boolean closing = true;
 		
@@ -180,13 +189,25 @@ public class ServerListener implements Runnable {
 						Timer t = timers.get(cc.ip);
 						t.cancel();
 						timers.remove(cc.ip);
+						
+						
+						
 					}
+					for (String ip : SeparateServer.uiSockets.keySet()) {
+						//notify all clients that the threshold was reached
+						new Thread(new ClientNotifier(rmsg, SeparateServer.uiSockets.get(ip), ip)).start();;
+						
+						
+						
+					}
+					
 					
 					break;
 				case CONFIG:
 					ConfigMessage cm3 = (ConfigMessage)msg;
 					//System.out.println(cm3);
 					//notify_uis(cm3.config);
+				
 					if (cm3.delete) {
 						if (SeparateServer.sendingList.get(msg.from) != null) {
 							//this is from a sensor, we sure done fucked something up
@@ -202,7 +223,7 @@ public class ServerListener implements Runnable {
 					} else {
 						SeparateServer.sendMessage(SeparateServer.sendingList.get(cm3.config.ip).socket, msg, true);
 					}
-					
+					notify_uis();
 					break;
 					
 					//send to sensor
@@ -213,10 +234,10 @@ public class ServerListener implements Runnable {
 				case ADD_SENSOR:
 					
 					
-					if (SeparateServer.sendingList.get(msg.config.ip) != null) {// 
+					if (SeparateServer.sendingList.get(msg.config.ip) != null) {
 						
-						SeparateServer.sendMessage(out, new Message("Adding sensor already in db",  null, null), true);
-						return;			
+						//SeparateServer.sendMessage(out, new Message("Adding sensor already in db",  null, null), true);
+						break;			
 					} 
 					
 					
@@ -237,8 +258,8 @@ public class ServerListener implements Runnable {
 						SeparateServer.sendMessage(newSocket, cm, true);
 						//Create a new thread that will be able to process a request from a sensor
 						new Thread(new ServerListener(newSocket)).start(); 
-						SeparateServer.sendingList.put(msg.config.ip, new SensorSendingList(cm.config, newSocket));
-						notify_uis(cm.config); 
+						SeparateServer.sendingList.put(msg.config.ip, new SensorInfo(cm.config, newSocket));
+						notify_uis(); 
 					} else {
 						//sensor connection failed
 						//SeparateServer.sendMessage(out, new Message("Sensor connection failed", null, null), true);    //
@@ -262,28 +283,28 @@ public class ServerListener implements Runnable {
 			}
 		
 		}
+		return true;
+		
 	}
 	class ClientNotifier implements Runnable { 
 		Message msg;
 		Socket client;
-		MessageType type;
 		String ip;
-		public ClientNotifier(Message msg, Socket client, String ip, MessageType type) {
+		public ClientNotifier(Message msg, Socket client, String ip) {
 			this.msg = msg;
 			this.client = client;
-			this.type = type;
 			this.ip = ip;
 		}
 		
     	public void run() {
     		
     			if (!Connections.sendAndCheck(sock, msg, 1000)) {
-    				switch(type) {
+    				switch(msg.type) {
     				case READING:
     				case GET_SENSORS:
     					SeparateServer.uiSockets.remove(ip);
     					break;
-    				case STREAMING:
+    				/*case STREAMING:
     					SeparateServer.sendingList.get(msg.from).readingList.remove(client);
     					break;
     				case PICTURE:
@@ -291,7 +312,7 @@ public class ServerListener implements Runnable {
     					break;
     				case AUDIO:
     					SeparateServer.sendingList.get(msg.from).audioList.remove(client);
-    					break;
+    					break;*/
     				default:
     					break;
     				
@@ -299,33 +320,6 @@ public class ServerListener implements Runnable {
     			} else {
     				System.out.println("Message sent successfully to " + client);
     			}
-    		/*} else {
-    		
-    			System.err.printf("User %s not found, removing from list\n", client);
-				//remove
-				switch(type) {
-				case READING:
-				case GET_SENSORS:
-					SeparateServer.ui_ips.remove(client);
-					break;
-				case STREAMING:
-					SeparateServer.sendingList.get(msg.from).readingList.remove(client);
-					break;
-				case PICTURE:
-					SeparateServer.sendingList.get(msg.from).pictureList.remove(client);
-					break;
-				case AUDIO:
-					SeparateServer.sendingList.get(msg.from).audioList.remove(client);
-					break;
-				default:
-					break;
-				
-				}
-				SeparateServer.ui_ips.remove(client);
-			} */
-    		
-    	
-
 		}
     	
 	}
