@@ -21,10 +21,12 @@ public class AudioSensor extends BaseSensor
 	private  float currentVolume;
 	private float threshold;
 	private boolean overThreshold = false;
+	private byte[] audioBytes = null;
 	//private Capture listen = new Capture();
 	
 	String path = System.getProperty("user.home");
 	static AudioFormat format;
+	static TargetDataLine line = null;
 	
 	//constructor: takes the config as parameter and sets the threshold
 	public AudioSensor(BaseConfig config)
@@ -44,7 +46,7 @@ public class AudioSensor extends BaseSensor
 	}
 	*/
 
-	static TargetDataLine line = null;
+	
 		
 		//THIS FUNCTION CHECKS THE VOLUME AT THE CURRENT MOMENT
 	public static float checkVolume(){
@@ -108,14 +110,15 @@ public class AudioSensor extends BaseSensor
 				
 		
 	}
-	//Check the volume && send sound while streaming
-	public Message stream()
+	//Reads in audio through the Target Dataline, then converts it to a byte[]
+	public void stream()
 	{
 		System.out.println("Start stream");
 		//AudioFormat format = new AudioFormat(AudioFormat.Encoding.PCM_SIGNED, 44100.0f, 16, 2, 4, 44100.0f,true);
 		//TargetDataLine microphone;	//Read sound into this
 	    //SourceDataLine speakers;	//Play sound out of here
-	    AudioMessage aMessage = new AudioMessage("Streaming audio Message", null);
+		
+	    
 		
 	    try{
 			if (line == null) {
@@ -131,7 +134,7 @@ public class AudioSensor extends BaseSensor
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		int numBytesRead = 0;
 		int CHUNK_SIZE = 1024;
-		byte[] data = new byte[line.getBufferSize() / 5];
+		//byte[] data = new byte[line.getBufferSize() / 5];
 		line.start();
 	
 		int bytesRead = 0;
@@ -143,33 +146,28 @@ public class AudioSensor extends BaseSensor
 		 int bufferLengthInFrames = line.getBufferSize() / 8;
 		 int bufferLengthInBytes = bufferLengthInFrames * frameSizeInBytes;
 		
-		long begin = System.currentTimeMillis();
-		double duration = 3.0f;
+		//long begin = System.currentTimeMillis();
+		//double duration = 3.0f;
 		
-		while (true) {
-		    //numBytesRead = line.read(data, 0, CHUNK_SIZE);
-		    //bytesRead += numBytesRead;
+		while (bytesRead < 100000) {
+		    numBytesRead = line.read(audioBytes, 0, CHUNK_SIZE);
+		    bytesRead += numBytesRead;
 		    // write the mic data to a stream for use later
-		    //out.write(data, 0, numBytesRead); 
+		    //out.write(audioBytes, 0, numBytesRead); 
 			
-			long current = System.currentTimeMillis();
+			//long current = System.currentTimeMillis();
 		        
-		    long difference = (current - begin) / 1000;
-		    try {
-		    	numBytesRead = line.read(data, 0, bufferLengthInBytes);
-		    	if (difference > duration) throw new Exception();
-		    } catch (Exception e) {
-		    	break;
-		    }
+		    //long difference = (current - begin) / 1000;
+		    
 				
-		    out.write(data, 0, numBytesRead);
-		    //Send this in the AudioMessage
-		    byte[] soundRecorded = data;         
-		    aMessage.setRecording(soundRecorded);
+		    //out.write(data, 0, numBytesRead);
+		    //Send this in the AudioMessage         
 		} 
+		//Close the line or nah?
+		line.close();
 		System.out.println("End stream");
 	
-		return aMessage;
+		
 	}
 		
 	
@@ -190,11 +188,16 @@ public class AudioSensor extends BaseSensor
 	
 	public Message form_message()
 	{
-		System.out.println("Forming Volume message");
+		System.out.println("Forming Audio message");
 		
-		ReadingMessage msg = new ReadingMessage("Volume above threshold", null);
+		AudioMessage msg = new AudioMessage("Volume above threshold", null);
 		msg.setFrom(getIP());
 		msg.setCurrentThreshold(this.currentVolume);
+		msg.setRecording(audioBytes);
+		
+		//Probably have to empty audioBytes so it can be used again
+		audioBytes = null;
+		
 		return msg;
 		//return null;
 	} 
