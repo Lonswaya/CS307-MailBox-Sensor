@@ -121,17 +121,16 @@ public class CentralServer extends Observable implements Runnable {
 	/* Purpose: To tell a sensor to start streaming directly to you
 	 * startOrStopStreaming: true to start streaming, false to stop streaming
 	 * ip: ip of the sensor you want to connect to
-	 * serverConnection: if it is a server you are connecting to or not
 	 * ref: (can be null) if you are creating a streambox, it will call the Close() function to stop the box
 	 */
 	
-	public void SetStreaming(boolean startOrStopStreaming, String ip, boolean serverConnection, StreamBox ref) {
+	public void SetStreaming(boolean startOrStopStreaming, String ip, StreamBox ref) {
 		if (startOrStopStreaming) {
 			BooleanHolder b = new BooleanHolder();
 			b.value = true;
 			ThreadsToStop.put(ip, b);
 			Socket sensorStreaming = Connections.getSocket(ip, StaticPorts.piPort);
-			new Thread(new SocketListener(sensorStreaming, serverConnection, ref, ip)).start();
+			new Thread(new SocketListener(sensorStreaming, false, ref, ip)).start();
 		} else {
 			BooleanHolder b = new BooleanHolder();
 			b.value = false;

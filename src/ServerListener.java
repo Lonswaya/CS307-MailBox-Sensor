@@ -80,7 +80,7 @@ public class ServerListener implements Runnable {
 				cf.add(SeparateServer.sendingList.get(s).sensorInfo);
 			}
 			ArrayList<ClientConfig> ar = cf; 
-			new Thread(new ClientNotifier(new SensorsMessage("here's your sensors, yo", ar), SeparateServer.uiSockets.get(ip),MessageType.GET_SENSORS)).start();;
+			new Thread(new ClientNotifier(new SensorsMessage("here's your sensors, yo", ar), SeparateServer.uiSockets.get(ip), ip, MessageType.GET_SENSORS)).start();;
 			//new Thread(new ClientNotifier(new SensorsMessage("Here's your sensors, yo", ar), ip, MessageType.GET_SENSORS)); 
 			
 		}
@@ -219,44 +219,42 @@ public class ServerListener implements Runnable {
 						return;			
 					} 
 					
-					//add to the streaming list
-					
-					
-					
-					//System.out.println(msg);
 					
 					msg.type = MessageType.CONFIG;
 					ConfigMessage cm = (ConfigMessage)msg;
 					
 					//if proper connection, use the outputstream and send back a new successful message
 					boolean success = false;
+					Socket newSocket = null;
 					if (cm.config.ip.equals("1234")) success = true; 
 					else {
-						if (Connections.sendAndCheck(cm.config.ip, StaticPorts.piPort, cm, 1000)) {
-							
-							success = true;
-						}
+						
+						newSocket = Connections.getSocket(cm.config.ip, StaticPorts.piPort, 1000);
+						success = (newSocket != null);
 					}
-					if(success) {
+					if(success) { //I create success to allow a fake config 1234 in  
 						System.out.println("adding new sensor");
-						SeparateServer.sendMessage(out,new Message("Connection succeeded", null, null), true); // msg type can be null, no biggie
-						SeparateServer.sendingList.put(msg.config.ip, new SensorSendingList(cm.config));
+						SeparateServer.sendMessage(newSocket, cm, true);
+						//Create a new thread that will be able to process a request from a sensor
+						new Thread(new ServerListener(newSocket)).start(); 
+						SeparateServer.sendingList.put(msg.config.ip, new SensorSendingList(cm.config, newSocket));
 						notify_uis(cm.config); 
 					} else {
-						SeparateServer.sendMessage(out, new Message("Sensor connection failed", null, null), true);    //
+						//sensor connection failed
+						//SeparateServer.sendMessage(out, new Message("Sensor connection failed", null, null), true);    //
 					}
 					//closing=false;
 					break;
 				case GET_SENSORS:
 					//get all configs from database, store in a regular array for maximum compression at the moment
 					ArrayList<ClientConfig> cf = new ArrayList<ClientConfig>();
-					//SeparateServer.sendingList.forEach(action);
+
 					for (String s : SeparateServer.sendingList.keySet()) {
 						System.out.println("Included in your package is sensor " + s);
 						cf.add(SeparateServer.sendingList.get(s).sensorInfo);
 					}
 					ArrayList<ClientConfig> ar = cf;
-					SeparateServer.sendMessage(new SensorsMessage("Here's your sensors, yo", ar), msg.from, StaticPorts.clientPort, true); 
+					SeparateServer.sendMessage(sock, new SensorsMessage("Here's your sensors, yo", ar), true); 
 					//closing = false;
 					break;
 				default:
@@ -269,21 +267,21 @@ public class ServerListener implements Runnable {
 		Message msg;
 		Socket client;
 		MessageType type;
-		public ClientNotifier(Message msg, Socket client, MessageType type) {
+		String ip;
+		public ClientNotifier(Message msg, Socket client, String ip, MessageType type) {
 			this.msg = msg;
 			this.client = client;
 			this.type = type;
+			this.ip = ip;
 		}
 		
     	public void run() {
-    		//System.out.println("sending message " + msg.message + " to client " + client);
-    		//Socket sock = null;
-    		//if ((sock = Connections.getSocket(, 1000) != null) {
+    		
     			if (!Connections.sendAndCheck(sock, msg, 1000)) {
     				switch(type) {
     				case READING:
     				case GET_SENSORS:
-    					SeparateServer.uiSockets.remove(client);
+    					SeparateServer.uiSockets.remove(ip);
     					break;
     				case STREAMING:
     					SeparateServer.sendingList.get(msg.from).readingList.remove(client);
