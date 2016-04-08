@@ -144,7 +144,7 @@ public class ServerListener implements Runnable {
 				case LIGHT:
 					//unused
 					break;
-				
+				 
 				case READING:
 					
 					ReadingMessage rmsg = (ReadingMessage) msg;
