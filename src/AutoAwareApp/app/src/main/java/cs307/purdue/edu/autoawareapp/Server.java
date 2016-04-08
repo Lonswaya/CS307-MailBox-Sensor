@@ -20,21 +20,26 @@ public class Server implements Runnable, MessageProcessor, Serializable {
     public ArrayList<ClientConfig> sensorList;
 
     public String server_ip;
-    public int server_port;
+    public String my_ip;
+    public int server_port = StaticPorts.serverPort;
 
-    public CentralServer connector = null;
-    public Thread connectorThread = null;
+    //public CentralServer connector = null;
+    //public Thread connectorThread = null;
+    public Socket godSocket;
+    public ObjectOutputStream godOut;
+    public ObjectInputStream godIn;
 
-
-    public Server() {
+    public Server(String ip) {
+        this.server_ip = ip;
         //System.setProperty("javax.net.ssl.trustStore", "mySrvKeystore");  //get ssl working
         //System.setProperty("javax.net.ssl.trustStorePassword", "sensor"); //get ssl working
-        //connectorThread.start();
+        my_ip = getMyIP();
+        setupSocketAndThings();
     }
     //use this after constructor to be safe
     public void setUpConnector(){
-        connector = new CentralServer(this);
-        connectorThread = new Thread(connector);
+        //connector = new CentralServer(this);
+        //connectorThread = new Thread(connector);
     }
 
     public void addClientConfigObject(ClientConfig sensorInfo) {
@@ -64,6 +69,18 @@ public class Server implements Runnable, MessageProcessor, Serializable {
         }
     }
 
+    public void setupSocketAndThings(){
+        try {
+            godSocket = new Socket(server_ip, server_port);
+            godOut = new ObjectOutputStream(godSocket.getOutputStream());
+            godIn = new ObjectInputStream(godSocket.getInputStream());
+        }catch(Exception e){
+            System.out.println("Can't fucking connect to server and streams and shits dumbshit");
+            e.printStackTrace();
+            System.exit(0);
+        }
+    }
+
     public void updateClientConfigList(ClientConfig sensorInfo) {
         for (int i = 0; i < sensorList.size(); i++) {
             if (sensorInfo.ip == sensorList.get(i).ip) {
@@ -74,29 +91,11 @@ public class Server implements Runnable, MessageProcessor, Serializable {
     }
 
     public void run() {
-
-        //if(connector == null || connectorThread == null){ setUpConnector();}
-        //connectorThread.start();
-        SensorsMessage msg = new SensorsMessage("asdasdasd", null);
-
-        String ip = "";
         try {
-            for (Enumeration<NetworkInterface> en = NetworkInterface.getNetworkInterfaces(); en.hasMoreElements();) {
-                NetworkInterface intf = en.nextElement();
-                for (Enumeration<InetAddress> enumIpAddr = intf.getInetAddresses(); enumIpAddr.hasMoreElements();) {
-                    InetAddress inetAddress = enumIpAddr.nextElement();
-                    if (!inetAddress.isLoopbackAddress()) {
-                        ip = inetAddress.getHostAddress().toString();
-                    }
-                }
-            }
-        } catch (SocketException ex) {
-            System.out.println("Something wrong getting ip");
-        }
-
-        System.out.println("IP: " + ip);
-
-        try {
+            /*
+                TESTING SHIT IF THIS BREAKS NOTHIGN WORKS
+            SensorsMessage msg = new SensorsMessage("asdasdasd", null);
+            System.out.println("IP: " + my_ip);
             System.out.println("open sock");
             Socket sock = new Socket("10.186.95.215", 8888);
             System.out.println("get output stream");
@@ -105,35 +104,80 @@ public class Server implements Runnable, MessageProcessor, Serializable {
             msg.setFrom(ip);
             out.writeObject(msg);
             System.out.println("All is good familia");
-
-            sock.close();
-
-            ServerSocket sSocket = new ServerSocket(9999);
-            Socket bullshit = sSocket.accept();
             System.out.print("got message");
-            ObjectInputStream in = new ObjectInputStream(bullshit.getInputStream());
+            ObjectInputStream in = new ObjectInputStream(sock.getInputStream());
             System.out.print("stream good");
             Message msg2 = (Message) in.readObject();
             System.out.println(msg2.toString());
-
+            */
         }catch(Exception e){
             e.printStackTrace();
         }
 
         while(true) {
+
+            if(godOut == null || godIn == null || godSocket == null){
+                setupSocketAndThings();
+            }
+
             //shitty timer
             int interval = 5000;
-
             long lastMilli = System.currentTimeMillis();
             while (true) {
                 if ((int) (System.currentTimeMillis() - lastMilli) >= interval) break;
             }
 
-            //this.sensorList = getSensors();
+            this.sensorList = getSensors();
         }
     }
+    public void addSensor(ClientConfig config) {
+        if (godOut == null) return;
+        ConfigMessage msg = new ConfigMessage("Add Sensor", config);
+        msg.setFrom(my_ip);
+        msg.type = MessageType.ADD_SENSOR;
+        try{
+            godOut.writeObject(msg);
 
-    public void sendMessage(Message msg){
+        }catch(Exception e){
+
+        }
+    }
+    public ArrayList<ClientConfig> getSensors(){
+        SensorsMessage msg = new SensorsMessage("Get list of sensors", null);
+        msg.setFrom(my_ip);
+
+        if(godOut == null) return null;
+        try {
+            godOut.writeObject(msg);
+            msg = null;
+            while(msg == null){
+                msg = (SensorsMessage) godIn.readObject();
+                return msg.ar;
+            }
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public String getMyIP(){
+        try {
+            for (Enumeration<NetworkInterface> en = NetworkInterface.getNetworkInterfaces(); en.hasMoreElements();) {
+                NetworkInterface intf = en.nextElement();
+                for (Enumeration<InetAddress> enumIpAddr = intf.getInetAddresses(); enumIpAddr.hasMoreElements();) {
+                    InetAddress inetAddress = enumIpAddr.nextElement();
+                    if (!inetAddress.isLoopbackAddress()) {
+                        return inetAddress.getHostAddress().toString();
+                    }
+                }
+            }
+        } catch (SocketException ex) {
+            System.out.println("Something wrong getting ip, shit doesnt work if you get this ");
+            System.exit(0);
+        }
+        return null;
+    }
+    /*public void sendMessage(Message msg){
         this.connector.sendMessageThreaded(msg);
     }
     public void addSensor(ClientConfig info){
@@ -144,7 +188,7 @@ public class Server implements Runnable, MessageProcessor, Serializable {
         return connector.GetSensors();
     }
 
-    /*class MessageHandler extends Thread{
+    class MessageHandler extends Thread{
         Message msg;
         Server ref;
         public MessageHandler(Message msg, Server ref){
