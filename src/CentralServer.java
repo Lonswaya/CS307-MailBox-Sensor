@@ -21,6 +21,7 @@ public class CentralServer extends Observable implements Runnable {
 
 	
 	protected Socket serverConnection;
+	protected ObjectOutputStream objConnection;
 	
 	protected Hashtable<String, BooleanHolder> ThreadsToStop;
 	
@@ -65,7 +66,7 @@ public class CentralServer extends Observable implements Runnable {
 			
 			if (msg.type != null) System.out.println("Sending message: " + msg);
 			
-			Connections.send(serverConnection,msg);
+			Connections.send(objConnection,msg);
 			return true;
 			//Connections.closeSocket(sock);
 		} catch (Exception e) {
@@ -103,6 +104,11 @@ public class CentralServer extends Observable implements Runnable {
 	public void setServerConnection(Socket sock, String ip) {
 		if (sock != null) {
 			serverConnection = sock;
+			try {
+				objConnection = new ObjectOutputStream(sock.getOutputStream());
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 			BooleanHolder b = new BooleanHolder();
 			b.value = false;
 			ThreadsToStop.put(ip, b);

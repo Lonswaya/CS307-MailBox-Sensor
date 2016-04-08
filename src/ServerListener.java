@@ -3,6 +3,7 @@ import java.applet.AudioClip;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.StreamCorruptedException;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
@@ -88,7 +89,7 @@ public class ServerListener implements Runnable {
 				}
 			}
 			System.out.println("Added user " + from + " to list with socket " + socker);
-			SeparateServer.uiSockets.put(from, new SocketInfo(socker, null, null));
+			SeparateServer.uiSockets.put(from, new SocketInfo(socker, in, out));
 		}
 	}
 	
@@ -116,7 +117,6 @@ public class ServerListener implements Runnable {
 
 		
 		boolean run = true;
-		System.out.println(sock);
 		while (run) {
 		
 			try {
@@ -133,16 +133,30 @@ public class ServerListener implements Runnable {
 	}
 	boolean processMessage() { //this is what processes things
 		HashMap<String, Boolean> tasks = new HashMap<String, Boolean>();
-		boolean avaliable = false;
+		/*boolean avaliable = false;
 		try {
 			avaliable = in.available() > 0; //if we are able to read 
+			if (in.available() != 0) System.out.println(in.available());
 		} catch (IOException e1) {
 			e1.printStackTrace();
 		}
 		if (!avaliable) {
 			return true; //wait and continue looping until we can read some more bytes
-		}
-		Message msg = Connections.readObject(in);									//receive message from socket
+		}*/
+		Message msg = null;
+		try {
+			msg = (Message)in.readObject();
+		} catch (Exception e1) {
+			//e1.printStackTrace();
+			try {
+				in.reset();
+			} catch (IOException e) {
+				//e.printStackTrace();
+			}
+			return true; 
+			//could not read and stuff, keep looping
+		} 							//receive message from socket
+			
 		System.out.println("Got read object of something");
 
 		if (msg == null) {														//if there was an error receiving the message
