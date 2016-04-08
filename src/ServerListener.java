@@ -113,7 +113,7 @@ public class ServerListener implements Runnable {
 			}
 		}
 		close();
-		 
+		  
 	}
 	boolean processMessage() throws InterruptedException { //this is what processes things
 		HashMap<String, Boolean> tasks = new HashMap<String, Boolean>();
