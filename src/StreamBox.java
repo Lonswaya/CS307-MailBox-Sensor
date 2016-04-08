@@ -33,26 +33,28 @@ public class StreamBox extends JFrame {
 	     addWindowListener(CloseListener());
 
 	}
+	
+	
 	private WindowListener CloseListener() {
 		WindowListener exitListener = new WindowAdapter() {
             @Override
             public void windowClosed(WindowEvent e) {
             	//System.out.println("STOP THE FUCK NOW");
-            	hRef.remove(address);
-            	setEnabled(false);
-                dispose();
-                aRef.StopStream(address);
+            	Close();
             }
             public void windowClosing(WindowEvent e) {
-            	
+            	Close();
             	System.out.println("STOP THE FUCK NOW");
-            	hRef.remove(address);
-            	setEnabled(false);
-                dispose();
-                aRef.StopStream(address);
             }
 		};
 		return exitListener;
+	}
+	
+	public void Close() {
+		hRef.remove(address);
+    	setEnabled(false);
+        dispose();
+        aRef.StopStream(address);
 	}
 	
 	

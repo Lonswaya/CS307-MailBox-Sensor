@@ -17,6 +17,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
+import java.net.Socket;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Date;
@@ -49,7 +50,7 @@ public class AutoAwareControlPanel extends JFrame implements MessageProcessor {/
 	private JPanel panelHolder;
 	public ArrayList<ClientConfig> configs;
 	public Hashtable<String, StreamBox> Streamers;
-	private CentralServer server;
+	protected CentralServer server;
 	private ConfigureMenu cf;
     private int controlIndex;
     private boolean isNotifying;
@@ -355,7 +356,8 @@ public class AutoAwareControlPanel extends JFrame implements MessageProcessor {/
         	System.out.println(cfg.isSensorActive());
     		if (cfg.isSensorActive())  {
     			t2bool = true;
-    			server.sendMessage(new StreamingMessage("Telling to start streaming",cfg, true));
+    			//server.sendMessage(new StreamingMessage("Telling to start streaming",cfg, true));
+    			server.SetStreaming(true, identifier, false, null);
     		} else {
     			t2bool = false;
     		}
@@ -421,15 +423,22 @@ public class AutoAwareControlPanel extends JFrame implements MessageProcessor {/
 		    	createNew(controlIndex, newSensor);
 		    	refreshSensorList();
 	    	} else {
+	    		//no message back because angry andrew
+	    		ConfigMessage cfg = new ConfigMessage("New sensor", newSensor);
+	    		cfg.type = MessageType.ADD_SENSOR;
+	    		
+	    		server.sendMessage(cfg);
+	    		
+	    		
 	    		//should get a message back after trying to add a sensor
-	    		Message m = server.AddSensor(new ConfigMessage("Updating config",newSensor));
+	    		/*Message m = server.AddSensor(new ConfigMessage("Updating config",newSensor));
 		    	if (m.message.equals("Connection succeeded")) {
 		    		configs.add(newSensor);
 			    	createNew(controlIndex, newSensor);
 			    	refreshSensorList();
 		    	} else {
 		    		JOptionPane.showMessageDialog(null,m.message, "error", JOptionPane.ERROR_MESSAGE, null);
-		    	}
+		    	}*/
 	    	}
 	    	
 	    	//get a return message from the server, if sensor type is null then blah
@@ -500,8 +509,10 @@ public class AutoAwareControlPanel extends JFrame implements MessageProcessor {/
     }
     public void StopStream(ClientConfig cfg) {
     	System.out.println("Stopping stream now");
-		server.sendMessage(new StreamingMessage("Telling to stop streaming",cfg, false));
-		t2bool = false;
+		//server.sendMessage(new StreamingMessage("Telling to stop streaming",cfg, false));
+		server.SetStreaming(false, cfg.ip, false, null); //setting streaming to be true (receiving thread)
+
+    	t2bool = false;
 		
     }
     public ClientConfig ConfigFind(String identifier) {
@@ -539,19 +550,17 @@ public class AutoAwareControlPanel extends JFrame implements MessageProcessor {/
     		
     		//if we have not yet 
     		System.out.println("refresh");
-    		if (!Connections.sendAndCheck(server.seperateIP, StaticPorts.serverPort, new Message("Are you still there?", null, null), 3000)) { //3 seconds to timeout
+    		if (server.serverConnection == null) { 
     			configs.removeAll(configs);
     			lostServer = true;
     			if (!notificationDialog) {
 	    			notificationDialog = true;
-	        		JOptionPane.showMessageDialog(getContentPane(), "Lost server connection, retrying in 5 seconds", "error", JOptionPane.ERROR_MESSAGE, null);
-	        		notificationDialog = false;
+	        		JOptionPane.showMessageDialog(getContentPane(), "Lost server connection, please change server information", "error", JOptionPane.ERROR_MESSAGE, null);
+	        		
     			}
     		} else {
-    			if (new Date().getTime() - lastRefresh.getTime() > 5000) {
-        			//if it has been more than 5 seconds since last refresh
-        			//configs = server.GetSensors();
-        		}
+    			notificationDialog = false;
+    			
     			if (lostServer) {
         			lostServer = false;
     				JOptionPane.showMessageDialog(null, "Connection restored");
@@ -652,28 +661,24 @@ public class AutoAwareControlPanel extends JFrame implements MessageProcessor {/
 	    	if (s == SensorType.VIDEO) {
 	    		ClientConfig c = ConfigFind(address);
 	    		
-	    		server.sendMessage(new StreamingMessage("Setting image/video streaming to true",c,true));
+	    		
 	    		stream.setTitle("Video stream on sensor " + address);
 	    		VideoStreamBox newVid = new VideoStreamBox(address, server);
 	    		stream.myPanel = newVid;
 		    	stream.add(newVid);
 		    	Streamers.put(address, stream);
-	    		/*if (connection) {
-		    		stream.setTitle("Video stream on sensor " + address);
-		    		VideoStreamBox newVid = new VideoStreamBox(address, server);
-		    		stream.myPanel = newVid;
-			    	stream.add(newVid);
-			    	Streamers.put(address, stream);
-			    	
-	    		} else {
-	    			JOptionPane.showMessageDialog(null, "Conneciton refused");
-	    			System.out.println("Connection refused");
-	    		}*/
+		    	
+		    	//server.sendMessage(new StreamingMessage("Setting image/video streaming to true",c,true));
+		    	
+    			server.SetStreaming(true, address, false, stream); //setting streaming to be true (receiving thread)
+
 		    	
 
 	    	} else {
 	    		ClientConfig c = ConfigFind(address);
-	    		server.sendMessage(new StreamingMessage("Setting streaming to true",c,true));
+	    		
+	    		
+	    		//server.sendMessage(new StreamingMessage("Setting streaming to true",c,true));
 	    		
 		    		stream.setTitle(c.sensor_type + " stream on sensor " + address);
 		    		ValueStreamBox newVal = new ValueStreamBox(c.sensor_type, c.sensing_threshold, address, server);
@@ -682,6 +687,8 @@ public class AutoAwareControlPanel extends JFrame implements MessageProcessor {/
 			    	Streamers.put(address, stream);
 			    	
 			    	System.out.println("setting to stream now");
+	    			server.SetStreaming(true, address, false, stream); //setting streaming to be true (receiving thread)
+
 	    		/*} else {
 	    			JOptionPane.showMessageDialog(null, "Connection refused");
 	    			System.out.println("Connection refused");
@@ -887,22 +894,21 @@ public class AutoAwareControlPanel extends JFrame implements MessageProcessor {/
     			
     		}
     		myAddr = myAddr.substring(myAddr.indexOf('/') + 1);
-			Message m = new Message("", null, MessageType.GET_SENSORS);
-			m.setFrom(myAddr);
-    		boolean success = Connections.sendAndCheck(server.seperateIP, StaticPorts.serverPort, m, 5000);
+			Message messageToSend = new Message("", null, MessageType.GET_SENSORS);
+			messageToSend.setFrom(myAddr);
+			Socket newSocket = Connections.getSocket(server.seperateIP, StaticPorts.serverPort, 5000);
+    		boolean success = Connections.sendAndCheck(newSocket, messageToSend, 5000);
     		if (!success) {
     			//System.out.println("server not found");
     			server.seperateIP = lastIP;
         		JOptionPane.showMessageDialog(null,"Server not found", "error", JOptionPane.ERROR_MESSAGE, null);
         		return false;
     		} else {
+    			server.setServerConnection(newSocket, server.seperateIP);
         		JOptionPane.showMessageDialog(null,"Server found, sensors updated", "success", JOptionPane.INFORMATION_MESSAGE, null);
         		return true;
     		}
     		
-    		/*server.seperateIP = address;
-    		System.out.println(address);
-    		System.out.println("Correct Ip format!");*/
     		
     	}
     	return false;
