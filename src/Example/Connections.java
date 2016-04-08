@@ -119,6 +119,7 @@ public class Connections {
 			try {
 				out.writeObject(toSend);
 				out.flush();
+				out.reset();
 				sent = true;
 			} catch (Exception e) {	
 				System.err.println("Issue sending object, retrying " + e.toString()); 	
@@ -143,7 +144,7 @@ public class Connections {
 	}
 	
 	//should be private but needs to be static. Try not to use
-	private static ObjectOutputStream getOutputStream(Socket sock, long timeout) {
+	public static ObjectOutputStream getOutputStream(Socket sock, long timeout) {
 		ObjectOutputStream out = null;
 		long time = new Date().getTime();
 		while (out == null && new Date().getTime() - time < timeout) {
@@ -158,7 +159,7 @@ public class Connections {
 	
 	
 	//should be private but needs to be static. Try not to use
-	private static ObjectInputStream getInputStream(Socket sock) {
+	public static ObjectInputStream getInputStream(Socket sock) {
 		ObjectInputStream in = null;
 		while (in == null) {
 			try {	in = new ObjectInputStream(sock.getInputStream());	}
@@ -187,6 +188,28 @@ public class Connections {
 	}
 	
 	//confirms that you can even connect to a server, even if you already have a socket
+		public static boolean sendAndCheck(ObjectOutputStream out, Object toSend, long timeout) {
+			long time = new Date().getTime();
+			while (true) {
+				try {
+					if (new Date().getTime() - time > timeout) {
+						return false; //TIMEOUT
+					}
+					
+					out.writeObject(toSend);
+					out.flush();
+					out.reset();
+					return true;
+				} catch (Exception e) {
+					System.err.println("Issue sendinng from socket, retrying until timeout " + e.toString()); 
+					break;
+				}
+			}
+			return false;
+				
+		}
+	
+	//confirms that you can even connect to a server, even if you already have a socket
 	public static boolean sendAndCheck(Socket sock, Object toSend, long timeout) {
 		long time = new Date().getTime();
 		while (true) {
@@ -197,6 +220,7 @@ public class Connections {
 				ObjectOutputStream out = Connections.getOutputStream(sock, 1000);
 				out.writeObject(toSend);
 				out.flush();
+				out.reset();
 				return true;
 			} catch (Exception e) {
 				System.err.println("Issue sendinng from socket, retrying until timeout " + e.toString()); 

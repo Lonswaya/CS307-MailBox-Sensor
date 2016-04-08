@@ -22,6 +22,9 @@ public class AudioSensor extends BaseSensor
 	private float threshold;
 	private boolean overThreshold = false;
 	private byte[] audioBytes = null;
+	
+	protected boolean doneStreaming;
+	protected boolean doneVoluming;
 	//private Capture listen = new Capture();
 	
 	String path = System.getProperty("user.home");
@@ -31,7 +34,10 @@ public class AudioSensor extends BaseSensor
 	//constructor: takes the config as parameter and sets the threshold
 	public AudioSensor(BaseConfig config)
 	{
+		
 		super(config);
+		doneStreaming = true;
+		doneVoluming = true;
 		format = new AudioFormat(44100.0f, 16, 2, true, false);
 		threshold = config.sensing_threshold*100; //*100 because we convert decimal to percentage. FIX LATER
 		
@@ -113,6 +119,7 @@ public class AudioSensor extends BaseSensor
 	//Reads in audio through the Target Dataline, then converts it to a byte[]
 	public void stream()
 	{
+		doneStreaming = false;
 		System.out.println("Start stream");
 		//AudioFormat format = new AudioFormat(AudioFormat.Encoding.PCM_SIGNED, 44100.0f, 16, 2, 4, 44100.0f,true);
 		//TargetDataLine microphone;	//Read sound into this
@@ -167,7 +174,7 @@ public class AudioSensor extends BaseSensor
 		line.close();
 		System.out.println("End stream");
 	
-		
+		doneStreaming = true;
 	}
 		
 	
@@ -192,8 +199,14 @@ public class AudioSensor extends BaseSensor
 		
 		AudioMessage msg = new AudioMessage("Volume above threshold", null);
 		msg.setFrom(getIP());
-		msg.setCurrentThreshold(this.currentVolume);
-		msg.setRecording(audioBytes);
+		if (this.currentVolume >= 0) {
+			msg.setCurrentThreshold(currentVolume);
+			currentVolume = -1;
+		}
+		if (audioBytes != null) {
+			msg.setRecording(audioBytes);
+			
+		}
 		
 		//Probably have to empty audioBytes so it can be used again
 		audioBytes = null;
@@ -208,7 +221,11 @@ public class AudioSensor extends BaseSensor
 		// TODO Auto-generated method stub
 		//do nothing
 		//System.out.println("Sensing audio stuff");
-		currentVolume = checkVolume();
+		if (doneVoluming) {
+			doneVoluming = false;
+			currentVolume = checkVolume();
+			doneVoluming = true;
+		}
 		
 		
 		

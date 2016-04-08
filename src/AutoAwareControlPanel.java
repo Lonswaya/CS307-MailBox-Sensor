@@ -453,7 +453,12 @@ public class AutoAwareControlPanel extends JFrame implements MessageProcessor {/
     	if (debug) {
         	configs = new ArrayList<ClientConfig>();
     	} else {
-    		new Thread(new GetConfigsListener()).start();
+    		if (server.serverConnection != null) {
+    			new Thread(new GetConfigsListener()).start();
+    		} else {
+        		JOptionPane.showMessageDialog(getContentPane(), "Server connection found at localhost", "success", JOptionPane.DEFAULT_OPTION, null);
+				server.sendMessage(new Message("", null, MessageType.GET_SENSORS));
+    		}
     	}
     	
     	/*ClientConfig firstConfig = new ClientConfig();
@@ -517,15 +522,17 @@ public class AutoAwareControlPanel extends JFrame implements MessageProcessor {/
     }
     public ClientConfig ConfigFind(String identifier) {
     	//System.out.println(configs);
-    	for (int i = 0; i < configs.size(); i++) {
-    		//System.out.println(configs.get(i).ip);
-    		if (configs.get(i) != null) {
-	    		if ((configs.get(i).ip).equals(identifier)) {
-	    			return configs.get(i);
+    	if (configs != null) {
+	    	for (int i = 0; i < configs.size(); i++) {
+	    		//System.out.println(configs.get(i).ip);
+	    		if (configs.get(i) != null) {
+		    		if ((configs.get(i).ip).equals(identifier)) {
+		    			return configs.get(i);
+		    		}
 	    		}
-    		}
+	    	}
+	    	//was not found
     	}
-    	//was not found
     	return null;
     }
     public void SaveSensors() {
@@ -966,7 +973,12 @@ public class AutoAwareControlPanel extends JFrame implements MessageProcessor {/
 				//System.out.println("Audio Clip got");
 				//audio clip in .wav format
 				byte[] recording = ((AudioMessage)gotMessage).recording;
-				if (Streamers.get(gotMessage.from) != null) ((ValueStreamBox)(Streamers.get(gotMessage.from).myPanel)).addClip(recording);
+				float currentAmount = ((AudioMessage)gotMessage).currentThreshold;
+				if (Streamers.get(gotMessage.from) != null) {
+					if (recording != null) ((ValueStreamBox)(Streamers.get(gotMessage.from).myPanel)).addClip(recording);
+					if (currentAmount < 0) ((ValueStreamBox)(Streamers.get(gotMessage.from).myPanel)).value = currentAmount;
+					
+				}
 				else {
 					//close the stream, it does not exist
 					//server.sendMessage(new StreamingMessage("Telling to stop streaming",gotMessage.config, false));

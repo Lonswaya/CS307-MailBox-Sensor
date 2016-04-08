@@ -469,7 +469,7 @@ public class ConfigureMenu extends JFrame {
 		parent.configs.set(inputNum, toSubmit);
 		System.out.println(toSubmit);
 		parent.StopStream(lastCfg); //stop the stream, pointless
-		parent.server.SetStreaming(false, lastCfg.ip, false, null); //setting streaming to be true (receiving thread)
+		parent.server.SetStreaming(false, lastCfg, null); //setting streaming to be true (receiving thread)
 
 		//parent.SendConfigToSensor(toSubmit);
 		parent.refreshSensorList();

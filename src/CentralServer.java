@@ -103,6 +103,9 @@ public class CentralServer extends Observable implements Runnable {
 	public void setServerConnection(Socket sock, String ip) {
 		if (sock != null) {
 			serverConnection = sock;
+			BooleanHolder b = new BooleanHolder();
+			b.value = false;
+			ThreadsToStop.put(ip, b);
 			new Thread(new SocketListener(serverConnection, true, null, ip)).start();
 		}
 	}

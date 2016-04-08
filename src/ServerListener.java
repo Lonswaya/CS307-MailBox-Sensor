@@ -36,8 +36,21 @@ public class ServerListener implements Runnable {
 	public ServerListener(Socket sock) {
 		
 		try {
+			this.sock = sock;
 			in = new ObjectInputStream(sock.getInputStream());
 			out = new ObjectOutputStream(sock.getOutputStream());
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public ServerListener(Socket sock, ObjectInputStream in, ObjectOutputStream out) {
+		try {
+			this.sock = sock;
+			if (in != null) this.in = in;
+			else in = new ObjectInputStream(sock.getInputStream());
+			if (out != null) this.out = out;
+			else out = new ObjectOutputStream(sock.getOutputStream());
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -58,20 +71,23 @@ public class ServerListener implements Runnable {
 	/*
 	 * Purpose:		adds the ip address that it 
 	 */
-	private void addUI(String from, Socket sock) {
+	private void addUI(String from, Socket socker) {
 		
 		if(from == null || from.equals("")) {
 			return;
 		} else {
 			if (SeparateServer.uiSockets.containsKey(from)) {
 				try {
-					SeparateServer.uiSockets.get(from).close();
+					SocketInfo socks = SeparateServer.uiSockets.get(from);
+					if (socks.out != null) socks.out.close();
+					if (socks.in != null) socks.in.close();
+					if (socks.sock != null) socks.sock.close();
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
 			}
-			System.out.println("Added user " + from + " to list");
-			SeparateServer.uiSockets.put(from, sock);
+			System.out.println("Added user " + from + " to list with socket " + socker);
+			SeparateServer.uiSockets.put(from, new SocketInfo(socker, null, null));
 		}
 	}
 	
@@ -87,7 +103,7 @@ public class ServerListener implements Runnable {
 				cf.add(SeparateServer.sendingList.get(s).sensorInfo);
 			}
 			ArrayList<ClientConfig> ar = cf; 
-			new Thread(new ClientNotifier(new SensorsMessage("here's your sensors, yo", ar), SeparateServer.uiSockets.get(ip), ip)).start();;
+			new Thread(new ClientNotifier(new SensorsMessage("here's your sensors, yo", ar), SeparateServer.uiSockets.get(ip).getOut(), ip)).start();;
 			//new Thread(new ClientNotifier(new SensorsMessage("Here's your sensors, yo", ar), ip, MessageType.GET_SENSORS)); 
 			
 		}
@@ -99,11 +115,11 @@ public class ServerListener implements Runnable {
 
 		
 		boolean run = true;
-		
+		System.out.println(sock);
 		while (run) {
 		
 			try {
-				
+				//System.out.println("Next connection from socket " + sock);
 				boolean canContinue = processMessage();
 				if (!canContinue) break;
 			} catch (Exception e) {
@@ -116,10 +132,17 @@ public class ServerListener implements Runnable {
 	}
 	boolean processMessage() { //this is what processes things
 		HashMap<String, Timer> timers = new HashMap<String, Timer>();
-
-		
-		Message msg = Connections.<Message>readObject(in);									//receive message from socket
-		
+		boolean avaliable = false;
+		try {
+			avaliable = in.available() > 0; //if we are able to read 
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		}
+		if (!avaliable) {
+			return true; //wait and continue looping until we can read some more bytes
+		}
+		Message msg = Connections.readObject(in);									//receive message from socket
+		System.out.println("Got read object of something");
 		if (msg == null) {														//if there was an error receiving the message
 			System.err.println("Error, failed receiving message");
 			return false;
@@ -130,7 +153,7 @@ public class ServerListener implements Runnable {
 				msg.type == MessageType.GET_SENSORS ||
 				msg.type == MessageType.ADD_SENSOR) 
 			addUI(msg.from, sock);
-		
+
 		if (msg.type != null) System.out.println("New message recieved:+\n" + msg);
 		
 															//add ip to list of gui ips
@@ -143,7 +166,7 @@ public class ServerListener implements Runnable {
 		if(msg.type == null) {
 			//System.out.println(msg);
 		} else {
-			
+			float reading = 0;
 			//parse the type of message
 			switch(msg.type) {
 				case VIDEO:
@@ -152,28 +175,35 @@ public class ServerListener implements Runnable {
 				case LIGHT:
 					//unused
 					break;
+				case AUDIO:
+					
+					reading = ((AudioMessage)msg).currentThreshold;
+					
+					break;
 				
 				case READING:
-					
-					ReadingMessage rmsg = (ReadingMessage) msg;
-					float threshold = rmsg.getCurrentThreshold()/100;
+					if (reading == 0) {
+						ReadingMessage rmsg = (ReadingMessage) msg;
+						reading = rmsg.getCurrentThreshold()/100;
+
+					}
 					ClientConfig cc = SeparateServer.sendingList.get(msg.from).sensorInfo;
 					//if threshold is exceeded and there is no timertask yet, start one
-					if (cc.sensing_threshold >= threshold && timers.get(cc.ip) == null) {
+					if (cc.sensing_threshold >= reading && timers.get(cc.ip) == null) {
 						Timer t = new Timer(cc.ip);
 							TimerTask tt = new TimerTask() {
 								@Override
 								public void run() {
 									if (cc.emailNotification == true) {
 										try {
-											Sender.send(cc.emailAddress, rmsg.getString());
+											Sender.send(cc.emailAddress, msg.getString());
 										} catch (IOException e){
 										//handle the exception
 										}
 									}
 									if (cc.textNotification == true) {
 										try {
-											TwilioSender.send(cc.phoneNumber, rmsg.getString());
+											TwilioSender.send(cc.phoneNumber, msg.getString());
 										} catch (TwilioRestException tre) {
 										//handle it
 										}
@@ -185,7 +215,7 @@ public class ServerListener implements Runnable {
 						timers.put(cc.ip, t);
 					}
 					//else if threshold is not exceeded but a timertask is running, stop it and remove it
-					else if (cc.sensing_threshold < threshold && timers.get(cc.ip) != null) {
+					else if (cc.sensing_threshold < reading && timers.get(cc.ip) != null) {
 						Timer t = timers.get(cc.ip);
 						t.cancel();
 						timers.remove(cc.ip);
@@ -195,7 +225,7 @@ public class ServerListener implements Runnable {
 					}
 					for (String ip : SeparateServer.uiSockets.keySet()) {
 						//notify all clients that the threshold was reached
-						new Thread(new ClientNotifier(rmsg, SeparateServer.uiSockets.get(ip), ip)).start();;
+						new Thread(new ClientNotifier(msg, SeparateServer.uiSockets.get(ip).getOut(), ip)).start();;
 						
 						
 						
@@ -218,10 +248,8 @@ public class ServerListener implements Runnable {
 						System.out.println("removing sensor from sendinglist");
 						SeparateServer.sendingList.remove(cm3.config.ip); 
 						
-						
-						
 					} else {
-						SeparateServer.sendMessage(SeparateServer.sendingList.get(cm3.config.ip).socket, msg, true);
+						SeparateServer.sendMessage(SeparateServer.sendingList.get(cm3.config.ip).obj, msg, true);
 					}
 					notify_uis();
 					break;
@@ -255,10 +283,13 @@ public class ServerListener implements Runnable {
 					}
 					if(success) { //I create success to allow a fake config 1234 in  
 						System.out.println("adding new sensor");
-						SeparateServer.sendMessage(newSocket, cm, true);
+						
+						out = Connections.getOutputStream(newSocket, 1000);
+						
+						SeparateServer.sendMessage(out, cm, true);
 						//Create a new thread that will be able to process a request from a sensor
-						new Thread(new ServerListener(newSocket)).start(); 
-						SeparateServer.sendingList.put(msg.config.ip, new SensorInfo(cm.config, newSocket));
+						new Thread(new ServerListener(newSocket, null, out)).start(); 
+						SeparateServer.sendingList.put(msg.config.ip, new SensorInfo(cm.config, out));
 						notify_uis(); 
 					} else {
 						//sensor connection failed
@@ -274,8 +305,9 @@ public class ServerListener implements Runnable {
 						System.out.println("Included in your package is sensor " + s);
 						cf.add(SeparateServer.sendingList.get(s).sensorInfo);
 					}
+					System.out.println("Sensors together, sending back");
 					ArrayList<ClientConfig> ar = cf;
-					SeparateServer.sendMessage(sock, new SensorsMessage("Here's your sensors, yo", ar), true); 
+					SeparateServer.sendMessage(out, new SensorsMessage("Here's your sensors, yo", ar), true); 
 					//closing = false;
 					break;
 				default:
@@ -288,9 +320,9 @@ public class ServerListener implements Runnable {
 	}
 	class ClientNotifier implements Runnable { 
 		Message msg;
-		Socket client;
+		ObjectOutputStream client;
 		String ip;
-		public ClientNotifier(Message msg, Socket client, String ip) {
+		public ClientNotifier(Message msg, ObjectOutputStream client, String ip) {
 			this.msg = msg;
 			this.client = client;
 			this.ip = ip;
@@ -298,7 +330,7 @@ public class ServerListener implements Runnable {
 		
     	public void run() {
     		
-    			if (!Connections.sendAndCheck(sock, msg, 1000)) {
+    			if (!Connections.sendAndCheck(client, msg, 1000)) {
     				switch(msg.type) {
     				case READING:
     				case GET_SENSORS:

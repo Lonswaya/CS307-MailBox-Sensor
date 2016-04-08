@@ -1,14 +1,15 @@
+import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.util.ArrayList;
 
 
 public class SensorInfo {
-	public SensorInfo(ClientConfig cfg, Socket sock) {
+	public SensorInfo(ClientConfig cfg, ObjectOutputStream obj) {
 		sensorInfo = cfg;
 		streaming = false;
-		socket = sock;
+		this.obj = obj;
 	}
 	protected boolean streaming;
-	protected Socket socket;
+	protected ObjectOutputStream obj;
 	protected ClientConfig sensorInfo;
 }

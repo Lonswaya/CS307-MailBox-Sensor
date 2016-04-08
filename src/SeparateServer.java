@@ -23,7 +23,9 @@ public class SeparateServer {
 	
 	static boolean run = true; 					 	 //used to allow the ServerListener thread end the main server's execution by setting this to false
 	
-	static Hashtable<String, Socket> uiSockets = new Hashtable<String, Socket>();
+	
+	
+	static Hashtable<String, SocketInfo> uiSockets = new Hashtable<String, SocketInfo>();
 	
 	static Hashtable<String, SensorInfo> sendingList = new Hashtable<String, SensorInfo>();
 	
@@ -78,7 +80,7 @@ public class SeparateServer {
 			msg.setFrom(myAddress);	
 		}
 		Connections.send(out, msg);
-		
+		System.out.println("Message sent of type " + msg.type);
 	}
 	
 	/*
@@ -101,7 +103,7 @@ public class SeparateServer {
 
 		do {
 			Socket sock = server.getNextConnection();			//get a new connection from the server
-			System.out.println("Next Connection");
+			System.out.println("Next Connection " + sock);
 			if(sock == null)									//if there was an error getting  a new connection
 				continue;										//restart to wait for a new, valid connection
 			
