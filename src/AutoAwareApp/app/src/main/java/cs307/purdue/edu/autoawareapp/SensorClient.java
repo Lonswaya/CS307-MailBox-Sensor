@@ -12,6 +12,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
@@ -22,7 +23,7 @@ import java.util.Date;
 /**
  * Created by Dhairya M. Doshi on 4/1/2016.
  */
-public class SensorClient extends AppCompatActivity {
+public class SensorClient extends AppCompatActivity implements View.OnClickListener {
     private RecyclerView recyclerView;
     RecyclerView.Adapter mAdapter = null;
     RecyclerView.LayoutManager llm;
@@ -32,6 +33,8 @@ public class SensorClient extends AppCompatActivity {
     private ArrayList<ClientConfig> sensorInfoList = new ArrayList<ClientConfig>();
     private int noSensorFlag = 0;
     Server server;
+    String ip;
+    Button addSensorButton, exitButton;
 
     public SensorClient() {
     }
@@ -64,9 +67,8 @@ public class SensorClient extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        //Intent mIntent = new Intent(this, SetServerIP.class);
-        //startActivity(mIntent);
-
+        ip  = (String) getIntent().getStringExtra("Server IP");
+        System.out.println("*********************" + ip);
 
         recyclerView = (RecyclerView) findViewById(R.id.sensorRCView);
         recyclerView.setHasFixedSize(true);
@@ -74,37 +76,48 @@ public class SensorClient extends AppCompatActivity {
         llm = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(llm);
 
-        server = new Server();
+        server = new Server(ip);
         mAdapter = new MyAdapter(this, sensors, sensorInfoList, server);
         recyclerView.setAdapter(mAdapter);
+
+        addSensorButton = (Button) findViewById(R.id.addButton);
+        addSensorButton.setOnClickListener(this);
+        exitButton = (Button) findViewById(R.id.exitButton);
+        exitButton.setOnClickListener(this);
+
         //llm.setOrientation(LinearLayoutManager.VERTICAL);
 
-        //int ret = createSensors();
+        /*//int ret = createSensors();
         sensors.add(new Sensor("Sensor 1", 0, "LIGHT", "100.0.0.1"));
-        sensorInfoList.add(new ClientConfig("100.0.0.1", "0", "0", false, false, SensorType.LIGHT, 50, "Sensor 1", false, false, false, false, "123456789", "abcd@email.com", 10));
+        sensorInfoList.add(new ClientConfig("100.0.0.1", "0", "0", false, false, SensorType.LIGHT, 90, "Sensor 1", false, false, false, false, "123456789", "abcd@email.com", 10));
         //server.addClientConfigObject(sensorInfoList.get(0));
         recyclerView.scrollToPosition(sensors.size() - 1);
         //mAdapter.notifyItemInserted(sensors.size() - 1);
-        mAdapter.notifyDataSetChanged();
+        mAdapter.notifyDataSetChanged();*/
 
-        /*try {
-            server = new Server();
+        try {
+            server = new Server(ip);
             server.setUpConnector();
 
             Thread mainServer = new Thread(server);
             mainServer.start();
-            /*sensorInfoList = server.getSensors();
-            System.out.println("*****************************" + sensorInfoList + "***************************");
+
+            sensorInfoList = server.getSensorLists();
+            while(sensorInfoList == null){
+                sensorInfoList = server.getSensorLists();
+                System.out.println("*****************************" + sensorInfoList + "***************************");
+            }
             for (int i = 0; i < sensorInfoList.size(); i++) {
                 Sensor sensor = convertClientConfigToSensor(sensorInfoList.get(i));
                 sensors.add(sensor);
+                System.out.println("????????????????????????" + sensor + "?????????????????????????");
                 recyclerView.scrollToPosition(sensors.size() - 1);
                 mAdapter.notifyDataSetChanged();
             }
         } catch(NullPointerException e) {
             //TODO: Display a waiting screen
             System.out.println("NULL POINTER EXCEPTION");
-        }*/
+        }
     }
 
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -118,7 +131,7 @@ public class SensorClient extends AppCompatActivity {
     }
 
     public int createSensors() {
-        Server server = new Server();
+        Server server = new Server(ip);
         sensorInfoList = server.getSensors();
         System.out.println(sensorInfoList);
         if (sensorInfoList != null) {
@@ -243,30 +256,21 @@ public class SensorClient extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-//    @Override
-//    public void onClick(View view) {
-//
-//        switch (view.getId()) {
-//            case R.id.sendButton:
-//
-//                String messString = messageText.getText().toString();
-//                if (!messString.equals("")) {
-//                    Message message = new Message("", messString, true, new Date());
-//                    messages.add(message);
-//                    messageList.scrollToPosition(messages.size() - 1);
-//                    mAdapter.notifyDataSetChanged();
-//                    sendMessage();
-//                    message = null;
-//                    messageText.setText("");
-//
-//                }
-//
-//                break;
-//
-//            default:
-//                break;
-//        }
-//    }
+    public void onClick(View view) {
+
+        switch (view.getId()) {
+            case R.id.addButton:
+                //Intent mIntent = new Intent(this, AddSensor.class);
+                //mIntent.putExtra("Name", "Add Sensor");
+                //startActivity(mIntent);
+                break;
+            case R.id.exitButton:
+                System.exit(0);
+                break;
+            default:
+                break;
+        }
+    }
 //
 //    private void sendMessage() {
 //

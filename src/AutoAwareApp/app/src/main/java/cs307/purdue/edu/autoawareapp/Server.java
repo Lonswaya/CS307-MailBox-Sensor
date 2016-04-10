@@ -1,5 +1,6 @@
 package cs307.purdue.edu.autoawareapp;
 
+import android.net.wifi.WifiManager;
 import android.support.annotation.RequiresPermission;
 import android.util.Log;
 
@@ -7,9 +8,11 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
+import java.lang.reflect.Array;
 import java.net.*;
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.Formatter;
 
 import javax.net.ssl.SSLServerSocketFactory;
 import javax.net.ssl.SSLSocketFactory;
@@ -33,8 +36,8 @@ public class Server implements Runnable, MessageProcessor, Serializable {
         this.server_ip = ip;
         //System.setProperty("javax.net.ssl.trustStore", "mySrvKeystore");  //get ssl working
         //System.setProperty("javax.net.ssl.trustStorePassword", "sensor"); //get ssl working
-        my_ip = getMyIP();
-        setupSocketAndThings();
+        my_ip = "128.210.106.76";
+        //setupSocketAndThings();
     }
     //use this after constructor to be safe
     public void setUpConnector(){
@@ -115,9 +118,27 @@ public class Server implements Runnable, MessageProcessor, Serializable {
         }
 
         while(true) {
+            if(godSocket == null){
+                try {
+                    godSocket = new Socket(server_ip, server_port);
+                    godOut = new ObjectOutputStream(godSocket.getOutputStream());
+                    godIn = new ObjectInputStream(godSocket.getInputStream());
+                }catch(Exception e){
+                    System.out.println("Can't fucking connect to server and streams and shits dumbshit");
+                    e.printStackTrace();
+                    System.exit(0);
+                }
+            }
+            if(godOut == null || godIn == null){
+                try {
 
-            if(godOut == null || godIn == null || godSocket == null){
-                setupSocketAndThings();
+                    godOut = new ObjectOutputStream(godSocket.getOutputStream());
+                    godIn = new ObjectInputStream(godSocket.getInputStream());
+                }catch(Exception e){
+                    System.out.println("Can't fucking connect to server and streams and shits dumbshit");
+                    e.printStackTrace();
+                    System.exit(0);
+                }
             }
 
             //shitty timer
@@ -137,6 +158,7 @@ public class Server implements Runnable, MessageProcessor, Serializable {
         msg.type = MessageType.ADD_SENSOR;
         try{
             godOut.writeObject(msg);
+            godOut.flush();
 
         }catch(Exception e){
 
@@ -149,15 +171,27 @@ public class Server implements Runnable, MessageProcessor, Serializable {
         if(godOut == null) return null;
         try {
             godOut.writeObject(msg);
+            godOut.flush();
             msg = null;
             while(msg == null){
+                System.out.println("waiting for messageasdadasdasdsadadasdasadsd");
                 msg = (SensorsMessage) godIn.readObject();
+
+                System.out.println("got listasdasdasdadasdasdsadasdasdds");
+                godIn.close();
+                godOut.close();
                 return msg.ar;
+
+
             }
         }catch(Exception e){
             e.printStackTrace();
         }
         return null;
+    }
+
+    public ArrayList<ClientConfig> getSensorLists(){
+        return this.sensorList;
     }
 
     public String getMyIP(){
@@ -167,7 +201,9 @@ public class Server implements Runnable, MessageProcessor, Serializable {
                 for (Enumeration<InetAddress> enumIpAddr = intf.getInetAddresses(); enumIpAddr.hasMoreElements();) {
                     InetAddress inetAddress = enumIpAddr.nextElement();
                     if (!inetAddress.isLoopbackAddress()) {
-                        return inetAddress.getHostAddress().toString();
+                        String tmp = inetAddress.getHostAddress().toString();
+                        System.out.println("IP:" + tmp);
+                        return tmp;
                     }
                 }
             }

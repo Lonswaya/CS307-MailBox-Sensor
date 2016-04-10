@@ -15,6 +15,7 @@ import java.nio.charset.Charset;
 //import java.nio.file.*;
 
 public class BaseConfig implements Serializable {
+    private static final long serialVersionUID = 1L;
 
     protected int start_hours; //in 24H format
     protected int start_minutes;

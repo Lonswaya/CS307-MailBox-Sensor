@@ -14,6 +14,7 @@ public class ClientConfig extends BaseConfig implements Serializable {
     protected boolean desktopNotification, magicMirrorNotification, textNotification, emailNotification;
     protected String phoneNumber, emailAddress, ip;
     protected int interval;
+    private static final long serialVersionUID = 1L;
 
 
     public ClientConfig (String ip, String start, String stop, boolean force_on, boolean force_off, SensorType type, float threshold, String name, /*Color color,*/ boolean desktopNotification, boolean magicMirrorNotification, boolean textNotification, boolean emailNotification, String phoneNumber, String emailAddress, int interval) {

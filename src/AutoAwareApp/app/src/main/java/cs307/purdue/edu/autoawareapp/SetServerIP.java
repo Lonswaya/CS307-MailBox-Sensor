@@ -16,20 +16,18 @@ import android.widget.EditText;
 /**
  * Created by Dhairya on 4/8/2016.
  */
-public class SetServerIP extends DialogFragment implements View.OnClickListener {
+public class SetServerIP extends AppCompatActivity implements View.OnClickListener {
     EditText ip_text;
     Button set_ip_button;
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.activity_setip, container);
-        ip_text = (EditText) view.findViewById(R.id.server_ip_text);
-        set_ip_button = (Button) view.findViewById(R.id.set_ip_button);
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_setip);
+
+        ip_text = (EditText) findViewById(R.id.server_ip_text);
+        set_ip_button = (Button) findViewById(R.id.set_ip_button);
         set_ip_button.setOnClickListener(this);
-
-        getDialog().setTitle("Set Server IP");
-
-        return view;
     }
 
     /**
@@ -42,9 +40,9 @@ public class SetServerIP extends DialogFragment implements View.OnClickListener 
         switch(v.getId()) {
             case R.id.set_ip_button:
                 String ip = ip_text.getText().toString();
-                //Intent mIntent = new Intent(this, SensorClient.class);
-                //mIntent.putExtra("Server IP", ip);
-                //startActivity(mIntent);
+                Intent mIntent = new Intent(this, SensorClient.class);
+                mIntent.putExtra("Server IP", ip);
+                startActivity(mIntent);
                 break;
             default:
                 break;
