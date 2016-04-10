@@ -1,32 +1,73 @@
-
-import java.applet.AudioClip;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.StreamCorruptedException;
-import java.net.InetAddress;
-import java.net.Socket;
-import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.Queue;
-import java.util.Timer;
-import java.util.TimerTask;
-import java.util.concurrent.TimeUnit;
-import java.util.Date;
-import java.util.HashMap;
-
-import com.twilio.sdk.TwilioRestException;
-
-import Example.Connections;
+import java.net.ServerSocket;
 
 /*
  * Handles individual requests from clients
  */
 
-public class ServerListener implements Runnable {
+public abstract class ServerListener implements Runnable {
+	
+	SocketWrapper sock;
+	
+	boolean run;
+	
+	public ServerListener(SocketWrapper sock) {
+		this.sock = sock;
+	}
+	
+	
+	public void HandleMessage(Message msg) throws Exception {
+		
+	}
 
-	private Socket sock;
+	public void run() {
+		run = true;
+		while (run) {
+			try {
+				Message msg = (Message)sock.in.readObject();
+				if (msg == null)
+					run = false;
+				else
+					HandleMessage(msg);
+			} catch (Exception e) {
+				run = false;
+			}
+		}
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+}
+
+	/*private Socket sock;
 	private ObjectOutputStream out = null;										//same
 	private ObjectInputStream in = null;											//same
 	
@@ -35,7 +76,7 @@ public class ServerListener implements Runnable {
 	 * Parameters:
 	 * 				sock: a socket to handle the request from
 	 */
-	public ServerListener(Socket sock) {
+	/*public ServerListener(Socket sock) {
 		
 		try {
 			this.sock = sock;
@@ -73,7 +114,7 @@ public class ServerListener implements Runnable {
 	/*
 	 * Purpose:		adds the ip address that it 
 	 */
-	private void addUI(String from, Socket socker) {
+	/*private void addUI(String from, Socket socker) {
 		
 		if(from == null || from.equals("")) {
 			return;
@@ -143,7 +184,7 @@ public class ServerListener implements Runnable {
 		if (!avaliable) {
 			return true; //wait and continue looping until we can read some more bytes
 		}*/
-		Message msg = null;
+		/*Message msg = null;
 		try {
 			msg = (Message)in.readObject();
 		} catch (Exception e1) {
@@ -351,7 +392,7 @@ public class ServerListener implements Runnable {
     					break;
     				case AUDIO:
     					SeparateServer.sendingList.get(msg.from).audioList.remove(client);
-    					break;*/
+    					break;
     				default:
     					break;
     				
@@ -363,4 +404,4 @@ public class ServerListener implements Runnable {
     	
 	}
     	
-}
+}*/

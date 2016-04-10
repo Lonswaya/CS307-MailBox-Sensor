@@ -19,8 +19,14 @@ import java.util.Observer;
 
 public class CentralServer extends Observable implements Runnable {
 
+	@Override
+	public void run() {
+		// TODO Auto-generated method stub
+		
+	}
+
 	
-	protected Socket serverConnection;
+	/*protected Socket serverConnection;
 	protected ObjectOutputStream objConnection;
 	
 	protected Hashtable<String, BooleanHolder> ThreadsToStop;
@@ -208,5 +214,5 @@ public class CentralServer extends Observable implements Runnable {
 				}
 			}	
 		}
-	}
+	}*/
 }

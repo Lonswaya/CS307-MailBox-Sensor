@@ -4,12 +4,12 @@ import java.util.ArrayList;
 
 
 public class SensorInfo {
-	public SensorInfo(ClientConfig cfg, ObjectOutputStream obj) {
+	public SensorInfo(ClientConfig cfg, Socket sock) {
 		sensorInfo = cfg;
 		streaming = false;
-		this.obj = obj;
+		this.sock = new SocketWrapper(sock);
 	}
 	protected boolean streaming;
-	protected ObjectOutputStream obj;
+	protected SocketWrapper sock;
 	protected ClientConfig sensorInfo;
 }
