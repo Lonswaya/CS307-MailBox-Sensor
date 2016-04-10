@@ -54,9 +54,23 @@ public class CentralServer extends Observable implements Runnable {
 		new Thread(new MessageSender(msg)).start();
 		
 	}
+	public ArrayList<ClientConfig> GetSensors() {
+		ArrayList<ClientConfig> ar = null;
+		try {
+
+		} catch (Exception e) {
+			
+		}
+		
+		
+		return ar;
+	}
+	
 	
 	public boolean sendMessage(Message msg) {
+		System.out.println("going to send");
 		if (serverConnection == null) {
+			System.out.println("server not found");
 			return false;
 		}
 		try {
@@ -67,6 +81,7 @@ public class CentralServer extends Observable implements Runnable {
 			if (msg.type != null) System.out.println("Sending message: " + msg);
 			
 			Connections.send(objConnection,msg);
+			System.out.println("sent a new message");
 			return true;
 			//Connections.closeSocket(sock);
 		} catch (Exception e) {
@@ -88,7 +103,7 @@ public class CentralServer extends Observable implements Runnable {
 		
 		try {
 			
-			//can be null
+			//can come back and be null
 			setServerConnection(Connections.getSocket(seperateIP, StaticPorts.serverPort, 5000), seperateIP);
 			
 		} catch (Exception e) {
@@ -120,7 +135,7 @@ public class CentralServer extends Observable implements Runnable {
 	public void SetStreaming(boolean startOrStopStreaming, ClientConfig cfg, StreamBox sref) {
 		if (startOrStopStreaming) {
 			BooleanHolder b = new BooleanHolder();
-			b.value = true;
+			b.value = false;
 			ThreadsToStop.put(cfg.ip, b);
 			//sendMessage(new StreamingMessage("Telling to start streaming", cfg, true));
 			Socket sensorStreaming = Connections.getSocket(cfg.ip, StaticPorts.piPort, 5000);
@@ -144,6 +159,8 @@ public class CentralServer extends Observable implements Runnable {
 	}
 	class SocketListener implements Runnable {
 		protected Socket sock;
+		protected ObjectOutputStream out;
+		protected ObjectInputStream in;
 		protected StreamBox rref;
 		protected boolean serverConnected; //if this is connected to a server (true) or to a sensor (false)
 		protected String ip;
@@ -151,6 +168,12 @@ public class CentralServer extends Observable implements Runnable {
 		
 		public SocketListener(Socket ss, boolean serverConnected, StreamBox rref, String ip) {
 			sock = ss;
+			try {
+				this.in = new ObjectInputStream(ss.getInputStream());
+				//this.out = new ObjectOutputStream(ss.getOutputStream());
+			} catch (Exception e) {
+				System.err.println("Uh oh many errors");
+			}
 			this.rref = rref;
 			this.serverConnected = serverConnected;
 			this.ip = ip;
@@ -161,10 +184,12 @@ public class CentralServer extends Observable implements Runnable {
 			while(run) {
 				Message m = null;
 				try {
-					m = Connections.readObject(sock);
-					ref.ProcessMessage(m);
-				} catch (Exception e) {}
-				
+					m = Connections.readObject(in);
+					if (m != null) {
+						ref.ProcessMessage(m);
+					}
+				} catch (Exception e) { e.printStackTrace();}
+					
 				if (m == null || ThreadsToStop.get(ip).value) { //if the message is still null, if there is an exception, or if we force stop
 					run = false;
 					if (rref != null) { //close any streamboxes

@@ -450,11 +450,16 @@ public class AutoAwareControlPanel extends JFrame implements MessageProcessor {/
     	//request to database, add sensors
     	//manually adding sensors for now
     	
+    	try {
+			Thread.sleep(2000); //wait for server
+		} catch (InterruptedException e) {
+		}
+    	
     	if (debug) {
         	configs = new ArrayList<ClientConfig>();
     	} else {
-    		if (server.serverConnection != null) {
-    			new Thread(new GetConfigsListener()).start();
+    		if (server.serverConnection == null) {
+    			new Thread(new GetConfigsListener()).start(); //probe for the sensors
     		} else {
         		JOptionPane.showMessageDialog(getContentPane(), "Server connection found at localhost", "success", JOptionPane.DEFAULT_OPTION, null);
 				server.sendMessage(new Message("", null, MessageType.GET_SENSORS));
@@ -558,6 +563,7 @@ public class AutoAwareControlPanel extends JFrame implements MessageProcessor {/
     		//if we have not yet 
     		System.out.println("refresh");
     		if (server.serverConnection == null) { 
+    			System.out.println("server not found");
     			configs.removeAll(configs);
     			lostServer = true;
     			if (!notificationDialog) {
@@ -566,13 +572,15 @@ public class AutoAwareControlPanel extends JFrame implements MessageProcessor {/
 	        		
     			}
     		} else {
+
+    			server.sendMessage(new Message("", null, MessageType.GET_SENSORS));
     			notificationDialog = false;
-    			
     			if (lostServer) {
         			lostServer = false;
     				JOptionPane.showMessageDialog(null, "Connection restored");
-    				server.sendMessage(new Message("", null, MessageType.GET_SENSORS));
-    				//configs = server.GetSensors();
+
+        			server.sendMessage(new Message("", null, MessageType.GET_SENSORS));
+    				//server.sendMessage(new Message("", null, MessageType.GET_SENSORS));
     			}
     		}
     		/*for (ClientConfig cfg : tempConfigs) {
