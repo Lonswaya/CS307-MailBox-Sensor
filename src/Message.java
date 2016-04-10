@@ -15,8 +15,17 @@ public class Message implements Serializable {
 		setConfig(config);
 		generateCreateTime();
 		this.type = type;
+		SetFromThis();
 	}
-	
+	public void SetFromThis() {
+		String myAddress = null;
+		try {
+			myAddress = InetAddress.getLocalHost().toString();
+		} catch (UnknownHostException e) {
+			
+		} //get the local ip address
+		setFrom(myAddress.substring(myAddress.indexOf('/') + 1));  //strip off the unnecessary bits
+	}
 	public String getString() {
 		return this.message;
 	}

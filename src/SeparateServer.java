@@ -51,6 +51,9 @@ public class SeparateServer {
 					case ADD_SENSOR:
 						HandleAddSensor((ConfigMessage)msg);
 						break;
+					case GET_SENSORS:
+						HandleGetSensors(msg, socket);
+						break;
 					default:
 						break;
 				
@@ -95,7 +98,7 @@ public class SeparateServer {
 		}
 	}
 	public static void HandleConfigMessage(ConfigMessage msg) {
-		//TODO check if sensor exists
+		//TODO check if sensor exists within the system
 		//TODO send config to sensor
 		//TODO update sensor list
 		//TODO notify clients
@@ -114,6 +117,9 @@ public class SeparateServer {
 	}
 	public static void NotifyClient(Message msg, SocketWrapper sock) {
 		//TODO notify all clients
+	}
+	public static void HandleGetSensors(Message msg, SocketWrapper sock) {
+		//TODO 
 	}
 }
 			

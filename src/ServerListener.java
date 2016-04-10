@@ -2,6 +2,10 @@ import java.net.ServerSocket;
 
 /*
  * Handles individual requests from clients
+ * 
+ * You will have to create a new server listener and implement HandleMessage
+ * 
+ * All that has to be provided is the SocketWrapper which should contain a new socket
  */
 
 public abstract class ServerListener implements Runnable {
@@ -16,7 +20,8 @@ public abstract class ServerListener implements Runnable {
 	
 	
 	public void HandleMessage(Message msg) throws Exception {
-		
+		/* HandleMessage is where you parse your own message received by a connection
+		 */
 	}
 
 	public void run() {
