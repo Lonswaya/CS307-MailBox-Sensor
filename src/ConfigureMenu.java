@@ -52,11 +52,11 @@ public class ConfigureMenu extends JFrame {
 	private Color c;
 	
 	private AutoAwareControlPanel parent;
-	
+	public String address; //address is used to verify to update the configure menu, in case you get a streaming message for it
 	public int inputNum;
 	
-	public ConfigureMenu(int inputNum, AutoAwareControlPanel parent) {
-		
+	public ConfigureMenu(int inputNum, AutoAwareControlPanel parent, String address) {
+		this.address = address;
 		//I just pass the whole damn parent through the constructor, saves any back-references we need. Unless java already has that built in. 
 		this.inputNum = inputNum;
 		this.parent = parent;
@@ -468,8 +468,10 @@ public class ConfigureMenu extends JFrame {
 		this.setEnabled(false);
 		parent.configs.set(inputNum, toSubmit);
 		System.out.println(toSubmit);
-		parent.StopStream(lastCfg); //stop the stream, pointless
-		parent.server.SetStreaming(false, lastCfg, null); //setting streaming to be true (receiving thread)
+		//stop the stream to the pi
+		parent.StopStream(lastCfg);
+		//stop the stream
+		UserBackend.SendStreaming(toSubmit.ip, parent);
 
 		//parent.SendConfigToSensor(toSubmit);
 		parent.refreshSensorList();

@@ -101,7 +101,7 @@ public class SeparateServer {
 		//TODO check if sensor exists within the system
 		//TODO send config to sensor
 		//TODO update sensor list
-		//TODO notify clients
+		//TODO notify clients with an entire arraylist
 	}
 	public static void HandleInitMessage(Message msg) {
 		//TODO add new client to uiList
@@ -116,10 +116,11 @@ public class SeparateServer {
 		//if yes, handle it if no, remove it from list
 	}
 	public static void NotifyClient(Message msg, SocketWrapper sock) {
-		//TODO notify all clients
+		Connections.send(sock.out, msg);
 	}
 	public static void HandleGetSensors(Message msg, SocketWrapper sock) {
-		//TODO 
+		//TODO respond to the socket marked Sock with the arraylist of sensors
+		//
 	}
 }
 			

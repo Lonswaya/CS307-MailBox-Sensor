@@ -42,22 +42,18 @@ import javax.swing.Timer;
 import Example.Connections;
 
 
-
-
-
 public class AutoAwareControlPanel extends JFrame implements MessageProcessor {//implements Observer {
 	private static final long serialVersionUID = 1L;
 	private JPanel panelHolder;
 	public ArrayList<ClientConfig> configs;
 	public Hashtable<String, StreamBox> Streamers;
-	protected CentralServer server;
+	public Hashtable<String, SocketWrapper> streamersConnection;
 	private ConfigureMenu cf;
     private int controlIndex;
-    private boolean isNotifying;
     private Stack<String> notificationStack;
-    private boolean t1bool, lostServer, notificationDialog;
+    private boolean notificationDialog;
 	private static boolean t2bool;
-	private Date lastRefresh;
+	protected SocketWrapper serverConnection;
 	
 	//true: GUI test to build things 
 	//false: full on, real connection
@@ -66,24 +62,22 @@ public class AutoAwareControlPanel extends JFrame implements MessageProcessor {/
 	
 	public AutoAwareControlPanel() {
         initUI();
-        //TODO ask to start up server if the server does not exist
+        
+        //this will create a new connection, and will call processMessage() on whatever has to be done
+      	serverConnection = UserBackend.SetServerConnection("localhost", this);      
+      	
+      	
+        
     }
 
     private void initUI() {
     	
-	   
-    	
-    	//server.addObserver(this);
-    	server = new CentralServer(this);
-		//start server recieving thread
-    	new Thread(server).start();
-		
     	notificationStack = new Stack<String>();
     	//server.addObserver(this);
     	//GridLayout experimentLayout = new GridLayout(5,3);
     	Streamers = new Hashtable<String, StreamBox>();
+    	streamersConnection = new Hashtable<String, SocketWrapper>();
     	this.setIconImage(Toolkit.getDefaultToolkit().getImage("resources/icon.png"));
-    	lastRefresh = new Date();
         Timer t = new Timer(10000, new Refresher());
         setTitle("AutoAware Control Panel");
         setSize(1000, 600);
@@ -91,7 +85,6 @@ public class AutoAwareControlPanel extends JFrame implements MessageProcessor {/
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
         addWindowListener(CloseListener());
         controlIndex = 0;
-        isNotifying = false;
         panelHolder = new JPanel(new GridLayout(0,2, 10, 10));
         panelHolder.setBackground(Color.black);
         InitConfigs();
@@ -311,7 +304,6 @@ public class AutoAwareControlPanel extends JFrame implements MessageProcessor {/
             public void actionPerformed(ActionEvent event) {
                 System.out.println("RefreshSensors");
                 //configs = server.GetSensors();
-                lastRefresh = new Date();
                 refreshSensorList();
             }
         });
@@ -350,14 +342,14 @@ public class AutoAwareControlPanel extends JFrame implements MessageProcessor {/
     	int sensorNumber = configs.indexOf(ConfigFind(identifier));
     	//System.out.println(configs.get(0));
     	if (cf == null || !cf.isEnabled()) {
-    		cf = new ConfigureMenu(sensorNumber, this);
+    		cf = new ConfigureMenu(sensorNumber, this, identifier);
     		System.out.println("Starting stream now");
         	ClientConfig cfg = ConfigFind(identifier);
         	System.out.println(cfg.isSensorActive());
     		if (cfg.isSensorActive())  {
     			t2bool = true;
-    			//server.sendMessage(new StreamingMessage("Telling to start streaming",cfg, true));
-    			server.SetStreaming(true, cfg, null);
+    			//this will tell the sensor to start streaming, and handles the connections with the processMessage
+		    	streamersConnection.put(cfg.ip, UserBackend.SendStreaming(cfg.ip, this));
     		} else {
     			t2bool = false;
     		}
@@ -412,7 +404,7 @@ public class AutoAwareControlPanel extends JFrame implements MessageProcessor {/
 	    	newSensor.force_off = true;
 	    	newSensor.force_on = false;
 	    	newSensor.SetIP(address);
-	    	newSensor.serverPort = server.seperatePort;
+	    	newSensor.serverPort = StaticPorts.serverPort;
 	    	Random r = new Random();
 	    	newSensor.SetColor(new Color(r.nextInt(255),r.nextInt(255),r.nextInt(255)));
 	    	newSensor.SetName("New Sensor");
@@ -423,22 +415,14 @@ public class AutoAwareControlPanel extends JFrame implements MessageProcessor {/
 		    	createNew(controlIndex, newSensor);
 		    	refreshSensorList();
 	    	} else {
-	    		//no message back because angry andrew
-	    		ConfigMessage cfg = new ConfigMessage("New sensor", newSensor);
-	    		cfg.type = MessageType.ADD_SENSOR;
-	    		
-	    		server.sendMessage(cfg);
-	    		
-	    		
-	    		//should get a message back after trying to add a sensor
-	    		/*Message m = server.AddSensor(new ConfigMessage("Updating config",newSensor));
-		    	if (m.message.equals("Connection succeeded")) {
+	    		if (UserBackend.AddSensor(newSensor, serverConnection)) {
 		    		configs.add(newSensor);
 			    	createNew(controlIndex, newSensor);
 			    	refreshSensorList();
 		    	} else {
-		    		JOptionPane.showMessageDialog(null,m.message, "error", JOptionPane.ERROR_MESSAGE, null);
-		    	}*/
+		    		JOptionPane.showMessageDialog(null,"Sensor not found", "error", JOptionPane.ERROR_MESSAGE, null);
+		    	}
+		    	
 	    	}
 	    	
 	    	//get a return message from the server, if sensor type is null then blah
@@ -450,19 +434,16 @@ public class AutoAwareControlPanel extends JFrame implements MessageProcessor {/
     	//request to database, add sensors
     	//manually adding sensors for now
     	
-    	try {
-			Thread.sleep(2000); //wait for server
-		} catch (InterruptedException e) {
-		}
-    	
     	if (debug) {
         	configs = new ArrayList<ClientConfig>();
     	} else {
-    		if (server.serverConnection == null) {
+    		
+    		if (serverConnection == null) {
     			new Thread(new GetConfigsListener()).start(); //probe for the sensors
     		} else {
         		JOptionPane.showMessageDialog(getContentPane(), "Server connection found at localhost", "success", JOptionPane.DEFAULT_OPTION, null);
-				server.sendMessage(new Message("", null, MessageType.GET_SENSORS));
+        		configs = UserBackend.GetSensors(serverConnection);
+        		//server.sendMessage(new Message("", null, MessageType.GET_SENSORS));
     		}
     	}
     	
@@ -505,9 +486,7 @@ public class AutoAwareControlPanel extends JFrame implements MessageProcessor {/
     		panelHolder.remove(index);
     		panelHolder.revalidate();
     		if (removeFromList) configs.remove(index);
-    		ConfigMessage cfgMessage = new ConfigMessage("Updating config, turning off",cfg);
-    		cfgMessage.delete = true;
-    		server.sendMessage(cfgMessage);
+    		UserBackend.SendConfig(cfg, true, serverConnection);
     		System.out.println("Deleted sensor " + name);
     		//JOptionPane.showMessageDialog(null, "Deleted sensor " + name, "Deleted sensor " + name, JOptionPane.INFORMATION_MESSAGE, null);
 	    	
@@ -519,12 +498,11 @@ public class AutoAwareControlPanel extends JFrame implements MessageProcessor {/
     }
     public void StopStream(ClientConfig cfg) {
     	System.out.println("Stopping stream now");
-		//server.sendMessage(new StreamingMessage("Telling to stop streaming",cfg, false));
-		server.SetStreaming(false, cfg, null); //setting streaming to be true (receiving thread)
-
+    	//stopping stream
+    	UserBackend.StopStreaming(streamersConnection.get(cfg.ip));
     	t2bool = false;
-		
     }
+    
     public ClientConfig ConfigFind(String identifier) {
     	//System.out.println(configs);
     	if (configs != null) {
@@ -553,7 +531,6 @@ public class AutoAwareControlPanel extends JFrame implements MessageProcessor {/
     }
     class RefreshListener implements Runnable { 
     	public void run() {
-    		ArrayList<ClientConfig> tempConfigs = configs;
     		if (configs == null) {
     			panelHolder.revalidate();
         		panelHolder.repaint();
@@ -561,82 +538,22 @@ public class AutoAwareControlPanel extends JFrame implements MessageProcessor {/
     		}
     		
     		//if we have not yet 
-    		System.out.println("refresh");
-    		if (server.serverConnection == null) { 
+    		
+    		if (!serverConnection.IsAlive()) { 
     			System.out.println("server not found");
     			configs.removeAll(configs);
-    			lostServer = true;
     			if (!notificationDialog) {
 	    			notificationDialog = true;
 	        		JOptionPane.showMessageDialog(getContentPane(), "Lost server connection, please change server information", "error", JOptionPane.ERROR_MESSAGE, null);
 	        		
     			}
     		} else {
-
-    			server.sendMessage(new Message("", null, MessageType.GET_SENSORS));
-    			notificationDialog = false;
-    			if (lostServer) {
-        			lostServer = false;
-    				JOptionPane.showMessageDialog(null, "Connection restored");
-
-        			server.sendMessage(new Message("", null, MessageType.GET_SENSORS));
-    				//server.sendMessage(new Message("", null, MessageType.GET_SENSORS));
-    			}
+    			//Is this necessary? We only get the sensors when needed
+    			configs = UserBackend.GetSensors(serverConnection);
     		}
-    		/*for (ClientConfig cfg : tempConfigs) {
-    			if (ConfigFind(cfg.ip) == null) {
-    				RemoveSensor(cfg, tempConfigs.indexOf(cfg), true, false);
-    			}
-    		}
-    		if (configs.size() == 0) {
-    			RemoveSensorPanels();
-    		}*/
     		RemoveSensorPanels();
     		for (int i = 0; i < configs.size(); i++) {
     			createNew(controlIndex, configs.get(i));
-    			
-    			
-	        		//System.out.println(i);
-	        		//JPanel myPanel = controlPanels[i];
-	        		/*try {
-	        			JPanel myPanel = (JPanel) panelHolder.getComponent(i);
-	            		//System.out.println(panelHolder.getComponent(i));
-	            		//myPanel.setBackground(Color.red);
-	            		myPanel.setBackground(configs.get(i).color);
-	            		JButton icon = (JButton) ((Container) myPanel.getComponent(3)).getComponent(0);
-	            		if (configs.get(i).sensor_type == SensorType.AUDIO) {
-	            			icon.setIcon(new ImageIcon("resources/mic.png"));
-	            		}
-	                    if (configs.get(i).sensor_type == SensorType.VIDEO) {
-	                    	icon.setIcon(new ImageIcon("resources/camera.png"));
-	                    }
-	                    if (configs.get(i).sensor_type == SensorType.LIGHT) {
-	                    	icon.setIcon(new ImageIcon("resources/light.png"));
-	                    }
-	                    if (configs.get(i).isSensorActive()) {
-	                    	if (icon.getBackground() == Color.gray) {
-	        	            	icon.setBackground(Color.white);
-	                    	}
-	                    } else {
-	                    	if (icon.getBackground() != Color.gray) {
-	        	            	icon.setBackground(Color.gray);
-	                    	}
-	                    }
-	                    JButton enabled = (JButton)((Container)myPanel.getComponent(2)).getComponent(1);
-	                    enabled.setText(configs.get(i).isSensorActive()?"Disable":"Enable");
-	                    //System.out.println("enabled : " + enabled.getText());
-	                    //System.out.println(configs.get(i).sensor_type);
-	                   // System.out.println("look here eugene you fucking prick " + configs.get(i).isSensorActive());
-	            		JLabel title = (JLabel) myPanel.getComponent(0);
-	            		title.setText("<html>" + configs.get(i).name + (configs.get(i).isSensorActive()?"":" <br />(Disabled)</html>"));
-	        		} catch (ArrayIndexOutOfBoundsException e) {
-	        			//Its okay, we just make a new sensor and add it in
-				    	createNew(controlIndex, configs.get(i));
-	        		} catch (Exception e) {
-	        			//Okay, now something bad is happening
-	        		}*/
-	        		
-	        	
     		}
     		panelHolder.revalidate();
     		panelHolder.repaint();
@@ -657,16 +574,6 @@ public class AutoAwareControlPanel extends JFrame implements MessageProcessor {/
         return exitListener;
 	}
     private void CloseOperation() {
-    	/*int confirm = JOptionPane.showOptionDialog(
-                null, "Save sensor information?", 
-                "Exit Confirmation", JOptionPane.YES_NO_OPTION, 
-                JOptionPane.QUESTION_MESSAGE, null, null, null);
-           if (confirm == 1) {
-           	//close menu, do not close application
-              SaveSensors();
-           } 
-           dispose();
-    	*/
     	dispose();
     }
     public void OpenStream(SensorType s, String address) {
@@ -674,18 +581,16 @@ public class AutoAwareControlPanel extends JFrame implements MessageProcessor {/
     	if (cfg.isSensorActive()) {
     		StreamBox stream = new StreamBox(Streamers, address, this);
 	    	if (s == SensorType.VIDEO) {
-	    		ClientConfig c = ConfigFind(address);
+	    		//ClientConfig c = ConfigFind(address);
 	    		
 	    		
 	    		stream.setTitle("Video stream on sensor " + address);
-	    		VideoStreamBox newVid = new VideoStreamBox(address, server);
+	    		VideoStreamBox newVid = new VideoStreamBox(address);
 	    		stream.myPanel = newVid;
 		    	stream.add(newVid);
 		    	Streamers.put(address, stream);
-		    	
-		    	//server.sendMessage(new StreamingMessage("Setting image/video streaming to true",c,true));
-		    	
-    			server.SetStreaming(true, c, stream); //setting streaming to be true (receiving thread)
+		    	//this adds another entry to the table, and stores a socketwrapper for each
+		    	streamersConnection.put(address, UserBackend.SendStreaming(address, this));
 
 		    	
 
@@ -695,19 +600,15 @@ public class AutoAwareControlPanel extends JFrame implements MessageProcessor {/
 	    		
 	    		//server.sendMessage(new StreamingMessage("Setting streaming to true",c,true));
 	    		
-		    		stream.setTitle(c.sensor_type + " stream on sensor " + address);
-		    		ValueStreamBox newVal = new ValueStreamBox(c.sensor_type, c.sensing_threshold, address, server);
-			    	stream.add(newVal);
-			    	stream.myPanel = newVal;
-			    	Streamers.put(address, stream);
+		    	stream.setTitle(c.sensor_type + " stream on sensor " + address);
+		    	ValueStreamBox newVal = new ValueStreamBox(c.sensor_type, c.sensing_threshold, address);
+			    stream.add(newVal);
+			    stream.myPanel = newVal;
+			    Streamers.put(address, stream);
 			    	
-			    	System.out.println("setting to stream now");
-	    			server.SetStreaming(true, c, stream); //setting streaming to be true (receiving thread)
+			    System.out.println("setting to stream now");
+			    streamersConnection.put(address, UserBackend.SendStreaming(address, this));
 
-	    		/*} else {
-	    			JOptionPane.showMessageDialog(null, "Connection refused");
-	    			System.out.println("Connection refused");
-	    		}*/
 	    	}
     	}
     }
@@ -751,7 +652,7 @@ public class AutoAwareControlPanel extends JFrame implements MessageProcessor {/
     	//Send a message through the server to update a sensors config
     	
     	System.out.println("Updating info to a sensor with type "  + cfg.sensor_type);
-    	server.sendMessageThreaded(new ConfigMessage("Updating config",cfg));
+    	UserBackend.SendConfig(cfg, false, serverConnection);
     }
     public class Refresher implements ActionListener {
     	
@@ -900,26 +801,14 @@ public class AutoAwareControlPanel extends JFrame implements MessageProcessor {/
 
     	if(address != null && !address.isEmpty())
     	{
-    		String lastIP = server.seperateIP;
-    		server.seperateIP = address;
-    		String myAddr = "";
-    		try {
-    			myAddr = InetAddress.getLocalHost().toString();
-    		} catch (Exception e) {
-    			
-    		}
-    		myAddr = myAddr.substring(myAddr.indexOf('/') + 1);
-			Message messageToSend = new Message("", null, MessageType.GET_SENSORS);
-			messageToSend.setFrom(myAddr);
-			Socket newSocket = Connections.getSocket(server.seperateIP, StaticPorts.serverPort, 5000);
-    		boolean success = Connections.sendAndCheck(newSocket, messageToSend, 5000);
-    		if (!success) {
+    		//String lastIP = UserBackend.serverIP;
+    		serverConnection = UserBackend.SetServerConnection(address, this);
+    		if (serverConnection != null) {
     			//System.out.println("server not found");
-    			server.seperateIP = lastIP;
+    			//UserBackend.serverIP = lastIP;
         		JOptionPane.showMessageDialog(null,"Server not found", "error", JOptionPane.ERROR_MESSAGE, null);
         		return false;
     		} else {
-    			server.setServerConnection(newSocket, server.seperateIP);
         		JOptionPane.showMessageDialog(null,"Server found, sensors updated", "success", JOptionPane.INFORMATION_MESSAGE, null);
         		return true;
     		}
@@ -960,9 +849,9 @@ public class AutoAwareControlPanel extends JFrame implements MessageProcessor {/
 
 				//if the streaming page exists, then update it
 				//include checking the sensor type, in case a message is sent and doesn't have the correct information (i.e. switching from light to video)
-				
-				if (Streamers.get(gotMessage.from) != null) ((ValueStreamBox)(Streamers.get(gotMessage.from).myPanel)).value = f;
-				else if (cf != null) cf.currentThreshold.setValue(Math.round(f * 100));
+				ValueStreamBox box = (ValueStreamBox)Streamers.get(gotMessage.from).myPanel;
+				if (box != null) box.value = f;
+				else if (cf != null && cf.address == gotMessage.from) cf.currentThreshold.setValue(Math.round(f * 100));
 				else {
 					//close the stream, it does not exist
 					//server.sendMessage(new StreamingMessage("Telling to stop streaming",gotMessage.config, false));
@@ -982,10 +871,10 @@ public class AutoAwareControlPanel extends JFrame implements MessageProcessor {/
 				//audio clip in .wav format
 				byte[] recording = ((AudioMessage)gotMessage).recording;
 				float currentAmount = ((AudioMessage)gotMessage).currentThreshold;
-				if (Streamers.get(gotMessage.from) != null) {
-					if (recording != null) ((ValueStreamBox)(Streamers.get(gotMessage.from).myPanel)).addClip(recording);
-					if (currentAmount < 0) ((ValueStreamBox)(Streamers.get(gotMessage.from).myPanel)).value = currentAmount;
-					
+				ValueStreamBox audioBox = (ValueStreamBox)Streamers.get(gotMessage.from).myPanel;
+				if (audioBox != null) {
+					if (recording != null) audioBox.addClip(recording);
+					audioBox.value = currentAmount;
 				}
 				else {
 					//close the stream, it does not exist
@@ -1008,6 +897,7 @@ public class AutoAwareControlPanel extends JFrame implements MessageProcessor {/
 				break;
 			case CONFIG:
 				//this code....  *shudder*
+				//this kind of stuff will not be happening, we should never get a config message from the server
 				System.out.println("Got config, updating/adding info now");
 				//can't use gotMessage.from because it may be from another client interface
 				if (((ConfigMessage)gotMessage).delete) {

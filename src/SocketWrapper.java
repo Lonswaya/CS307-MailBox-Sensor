@@ -21,4 +21,7 @@ public class SocketWrapper {
 		this.out = out;
 		this.in = in;
 	}
+	public boolean IsAlive() {
+		return sock.isConnected() && sock.isClosed();
+	}
 }

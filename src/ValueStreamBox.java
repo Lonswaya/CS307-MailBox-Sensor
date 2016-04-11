@@ -40,14 +40,14 @@ public class ValueStreamBox extends JPanel {
 	private Thread playerThread;
 	private JButton audioToggle;
 	private Timer t;
-	private CentralServer server;
+	//private CentralServer server;
 	
 	SourceDataLine speakers;	//Play sound out of here
 		
 	private int[] pointsX1, pointsX2, pointsY1, pointsY2, thresholdPointX, thresholdPointY;
-	public ValueStreamBox(SensorType sensorType, float threshold, String address, CentralServer server) {
+	public ValueStreamBox(SensorType sensorType, float threshold, String address) {
 		super();
-		this.server = server;
+		//this.server = server;
 		this.address = address;
 		t  = new Timer(1000, new repainter());
 		t.start();

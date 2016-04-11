@@ -3,9 +3,13 @@ import java.util.ArrayList;
 
 import Example.Connections;
 
+/* 
+ * Purpose: Static methods and a static string that are used by both the AutoAwareControlPanel
+ * 		and phone app to communicate and respond to a server.
+ * 
+ */
+
 public class UserBackend {
-	static String serverIP = "localhost";
-	
 	/* GetSensors: Takes a server connection, and reads/writes from it to get an array
 	 * Returns an arraylist of sensors
 	 */
@@ -18,20 +22,48 @@ public class UserBackend {
 	}
 	
 	/* SendStreaming: Sends a streaming message to a sensor determined by the IP
-	 * 
+	 * onOrOff: On to start streaming, Off to stop
 	 */
-	static void SendStreaming(String ip, MessageProcessor msgProccesser) {
+	static SocketWrapper SendStreaming(String ip, MessageProcessor msgProcessor) {
 		SocketWrapper sWrapper = new SocketWrapper(Connections.getSocket(ip, StaticPorts.piPort));
 		new Thread(new ServerListener(sWrapper) {
 			public void HandleMessage(Message msg) throws Exception  {
-				msgProccesser.ProcessMessage(msg);
+				msgProcessor.ProcessMessage(msg);
 			}
-		});
+		}).start();
+		//sets streaming on
+		Connections.send(sWrapper.out, new StreamingMessage("Setting Streaming to True", null, true));
+		return sWrapper;
+	}
+	/*
+	 * Stops the current streaming method for the connection
+	 * 
+	 */
+	static void StopStreaming(SocketWrapper sWrapper) {
+		Connections.send(sWrapper.out, new StreamingMessage("Setting Streaming to True", null, false));
+	}
+	/*
+	 * Creates a socketwrapper that will connect to the server
+	 * Also instances a new thread that will handle messages from that socket
+	 * If the conneciton is interrupted, then 
+	 * Returns null if the connection can not be made
+	 * 
+	 */
+	static SocketWrapper SetServerConnection(String ip, MessageProcessor msgProcessor) {
+		SocketWrapper sWrapper = new SocketWrapper(Connections.getSocket(ip, StaticPorts.serverPort));
+		new Thread(new ServerListener(sWrapper) {
+			public void HandleMessage(Message msg) throws Exception  {
+				msgProcessor.ProcessMessage(msg);
+			}
+		}).start();
+		if (sWrapper.sock == null) return null;
+		return sWrapper;
 	}
 	/* Sends a config to a server connection
 	 */
-	static void SendConfig(ClientConfig cfg, SocketWrapper serverConnection) {
+	static void SendConfig(ClientConfig cfg, boolean delete, SocketWrapper serverConnection) {
 		ConfigMessage confM = new ConfigMessage("To update", cfg);
+		confM.delete = delete;
 		Connections.send(serverConnection.out, confM);
 	}
 	/* Adds a new sensors
@@ -43,6 +75,7 @@ public class UserBackend {
 		if (newSensorSocket != null) {
 			Connections.closeSocket(newSensorSocket);
 			ConfigMessage confM = new ConfigMessage("To add", cfg);
+			confM.type = MessageType.ADD_SENSOR;
 			Connections.sendAndCheck(serverConnection.out, confM, 5000);		
 			return true;
 		} else {
