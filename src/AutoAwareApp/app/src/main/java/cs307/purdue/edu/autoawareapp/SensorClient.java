@@ -76,7 +76,7 @@ public class SensorClient extends AppCompatActivity implements View.OnClickListe
         llm = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(llm);
 
-        server = new Server(ip);
+        //server = new Server(ip);
         mAdapter = new MyAdapter(this, sensors, sensorInfoList, server);
         recyclerView.setAdapter(mAdapter);
 
@@ -97,15 +97,18 @@ public class SensorClient extends AppCompatActivity implements View.OnClickListe
 
         try {
             server = new Server(ip);
-            server.setUpConnector();
+            //server.setUpConnector();
+            System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+            Thread t = new Thread(server);
+            System.out.println("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
+            t.start();
+            //t.run();
+            System.out.println("GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG");
 
-            Thread mainServer = new Thread(server);
-            mainServer.start();
-
-            sensorInfoList = server.getSensorLists();
+            /*sensorInfoList = server.getSensorLists();
             while(sensorInfoList == null){
                 sensorInfoList = server.getSensorLists();
-                System.out.println("*****************************" + sensorInfoList + "***************************");
+                //System.out.println("*****************************" + sensorInfoList + "***************************");
             }
             for (int i = 0; i < sensorInfoList.size(); i++) {
                 Sensor sensor = convertClientConfigToSensor(sensorInfoList.get(i));
@@ -113,7 +116,7 @@ public class SensorClient extends AppCompatActivity implements View.OnClickListe
                 System.out.println("????????????????????????" + sensor + "?????????????????????????");
                 recyclerView.scrollToPosition(sensors.size() - 1);
                 mAdapter.notifyDataSetChanged();
-            }
+            }*/
         } catch(NullPointerException e) {
             //TODO: Display a waiting screen
             System.out.println("NULL POINTER EXCEPTION");

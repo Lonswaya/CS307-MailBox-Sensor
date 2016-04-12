@@ -1,6 +1,7 @@
 package cs307.purdue.edu.autoawareapp;
 
 import android.net.wifi.WifiManager;
+import android.os.Build;
 import android.support.annotation.RequiresPermission;
 import android.util.Log;
 
@@ -28,7 +29,7 @@ public class Server implements Runnable, MessageProcessor, Serializable {
 
     //public CentralServer connector = null;
     //public Thread connectorThread = null;
-    public Socket godSocket;
+    public Socket godSocket = null;
     public ObjectOutputStream godOut;
     public ObjectInputStream godIn;
 
@@ -36,7 +37,8 @@ public class Server implements Runnable, MessageProcessor, Serializable {
         this.server_ip = ip;
         //System.setProperty("javax.net.ssl.trustStore", "mySrvKeystore");  //get ssl working
         //System.setProperty("javax.net.ssl.trustStorePassword", "sensor"); //get ssl working
-        my_ip = "128.210.106.76";
+        my_ip = getMyIP();
+        System.out.println("***************************************************************************");
         //setupSocketAndThings();
     }
     //use this after constructor to be safe
@@ -74,7 +76,7 @@ public class Server implements Runnable, MessageProcessor, Serializable {
 
     public void setupSocketAndThings(){
         try {
-            godSocket = new Socket(server_ip, server_port);
+            //godSocket = new Socket(server_ip, server_port);
             godOut = new ObjectOutputStream(godSocket.getOutputStream());
             godIn = new ObjectInputStream(godSocket.getInputStream());
         }catch(Exception e){
@@ -93,6 +95,7 @@ public class Server implements Runnable, MessageProcessor, Serializable {
         }
     }
 
+    @Override
     public void run() {
         try {
             /*
@@ -150,7 +153,9 @@ public class Server implements Runnable, MessageProcessor, Serializable {
 
             this.sensorList = getSensors();
         }
+        System.out.println("IN RUNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN");
     }
+
     public void addSensor(ClientConfig config) {
         if (godOut == null) return;
         ConfigMessage msg = new ConfigMessage("Add Sensor", config);
@@ -171,18 +176,13 @@ public class Server implements Runnable, MessageProcessor, Serializable {
         if(godOut == null) return null;
         try {
             godOut.writeObject(msg);
-            godOut.flush();
             msg = null;
             while(msg == null){
                 System.out.println("waiting for messageasdadasdasdsadadasdasadsd");
                 msg = (SensorsMessage) godIn.readObject();
 
                 System.out.println("got listasdasdasdadasdasdsadasdasdds");
-                godIn.close();
-                godOut.close();
                 return msg.ar;
-
-
             }
         }catch(Exception e){
             e.printStackTrace();
@@ -195,6 +195,11 @@ public class Server implements Runnable, MessageProcessor, Serializable {
     }
 
     public String getMyIP(){
+        if (Build.FINGERPRINT.contains("generic")) {
+            System.out.println("*************************LocalHost**************************");
+            return "localhost";
+        }
+
         try {
             for (Enumeration<NetworkInterface> en = NetworkInterface.getNetworkInterfaces(); en.hasMoreElements();) {
                 NetworkInterface intf = en.nextElement();
