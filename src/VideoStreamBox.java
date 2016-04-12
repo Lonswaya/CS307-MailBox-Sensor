@@ -13,7 +13,7 @@ import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
-
+import cs307.purdue.edu.autoawareapp.*;
 
 
 public class VideoStreamBox extends JPanel {

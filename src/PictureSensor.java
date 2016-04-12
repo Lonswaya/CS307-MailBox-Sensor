@@ -8,7 +8,7 @@ import com.github.sarxos.webcam.WebcamDriver;
 import com.github.sarxos.webcam.WebcamDriverUtils;
 import com.github.sarxos.webcam.WebcamResolution;
 import com.github.sarxos.webcam.ds.v4l4j.V4l4jDriver;
-
+import cs307.purdue.edu.autoawareapp.*;
 public class PictureSensor extends BaseSensor{
 
 	private BufferedImage image;

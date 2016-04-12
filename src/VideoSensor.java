@@ -1,4 +1,4 @@
-
+import cs307.purdue.edu.autoawareapp.*;
 public class VideoSensor extends BaseSensor {
 	
 	public boolean picOrVid; //true if pictures only, false if whole videos are sent, will be affecting messagetype (picture or video)

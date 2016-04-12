@@ -13,6 +13,7 @@ import java.awt.event.WindowListener;
 import java.util.ArrayList;
 
 import javax.swing.*;
+import cs307.purdue.edu.autoawareapp.*;
 public class ConfigureMenu extends JFrame {
 	/* The menu which will take the users information, and change the settings on one of the sensors.
 	 * Values: Name(s), Color(c), Scheduled Times (two times), Sensor type (enum), Threshold (integer),

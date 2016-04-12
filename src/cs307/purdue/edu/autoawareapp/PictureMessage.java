@@ -14,7 +14,6 @@ import javax.imageio.ImageIO;
 
 public class PictureMessage extends Message implements Serializable {
 	private static final long serialVersionUID = 1L;
-	
 	private byte[] imager; //wtf kind of name is this
 	private int width;
 	private int height;

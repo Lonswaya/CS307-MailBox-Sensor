@@ -2,7 +2,7 @@ import java.net.Socket;
 import java.util.ArrayList;
 
 import Example.Connections;
-
+import cs307.purdue.edu.autoawareapp.*;
 /* 
  * Purpose: Static methods and a static string that are used by both the AutoAwareControlPanel
  * 		and phone app to communicate and respond to a server.

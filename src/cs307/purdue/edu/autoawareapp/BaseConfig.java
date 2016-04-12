@@ -11,19 +11,19 @@ import java.nio.charset.Charset;
 import java.nio.file.*;
 
 public class BaseConfig implements Serializable {
-
-	protected int start_hours; //in 24H format
-	protected int start_minutes; 
-	protected int stop_hours; //in 24H format
-	protected int stop_minutes;
-	protected boolean force_on;
-	protected boolean force_off;
+	private static final long serialVersionUID = 1L;
+	public int start_hours; //in 24H format
+	public int start_minutes; 
+	public int stop_hours; //in 24H format
+	public int stop_minutes;
+	public boolean force_on;
+	public boolean force_off;
 	
-	protected SensorType sensor_type;
+	public SensorType sensor_type;
 	public float sensing_threshold; //percentage?
 	//no need for the serverip
 	//protected String serverIP;
-	protected int serverPort;
+	public int serverPort;
 	
 	//creates a new config based on the parameters. Start and stop are the times to start and stop sensing in 24H format "HH:MM"
 	public BaseConfig(String start, String stop, boolean force_on, boolean force_off, SensorType type, float threshold) {

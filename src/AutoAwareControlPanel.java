@@ -40,6 +40,7 @@ import javax.swing.JScrollPane;
 import javax.swing.Timer;
 
 import Example.Connections;
+import cs307.purdue.edu.autoawareapp.*;
 
 
 public class AutoAwareControlPanel extends JFrame implements MessageProcessor {//implements Observer {

@@ -1,26 +1,32 @@
 package cs307.purdue.edu.autoawareapp;
 import java.io.*;
+import java.net.*;
 import java.util.Calendar;
 
 public class Message implements Serializable {
-	
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 1L;
-	protected String message;
-	protected ClientConfig config;
-	protected MessageType type;
-	protected String from;
-	protected String creationTime;
+	public String message;
+	public ClientConfig config;
+	public MessageType type;
+	public String from;
+	public String creationTime;
 	
 	public Message(String message, ClientConfig config, MessageType type) {
 		setString(message);
 		setConfig(config);
 		generateCreateTime();
 		this.type = type;
+		SetFromThis();
 	}
-	
+	public void SetFromThis() {
+		String myAddress = null;
+		try {
+			myAddress = InetAddress.getLocalHost().toString();
+		} catch (UnknownHostException e) {
+			
+		} //get the local ip address
+		setFrom(myAddress.substring(myAddress.indexOf('/') + 1));  //strip off the unnecessary bits
+	}
 	public String getString() {
 		return this.message;
 	}
@@ -65,4 +71,8 @@ public class Message implements Serializable {
 			"\nType: " + this.type;
 		return s;
 	}
+	
+	
+	
+	
 }

@@ -1,6 +1,6 @@
 import java.net.Socket;
 import java.util.ArrayList;
-
+import cs307.purdue.edu.autoawareapp.*;
 
 public class SensorSendingList {
 	public SensorSendingList(ClientConfig cfg, Socket sock) {

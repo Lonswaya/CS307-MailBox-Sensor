@@ -3,7 +3,7 @@ import java.io.Serializable;
 
 
 public class ReadingMessage extends Message implements Serializable {
-	
+	private static final long serialVersionUID = 1L;
 	private float currentThreshold;
 	
 	public ReadingMessage(String message, ClientConfig config) {

@@ -14,7 +14,7 @@ import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
 
 import Example.Connections;
-
+import cs307.purdue.edu.autoawareapp.*;
 public class RaspberryPi {
 	public BaseSensor sensor;
 	private ServerSocket receiveServer;

@@ -21,7 +21,7 @@ import javax.swing.JLabel;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.JPanel;
-
+import cs307.purdue.edu.autoawareapp.*;
 
 
 public class ValueStreamBox extends JPanel {

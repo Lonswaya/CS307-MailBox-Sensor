@@ -1,5 +1,5 @@
 import java.io.IOException;
-
+import cs307.purdue.edu.autoawareapp.*;
 public class SensorMain {
 	
 	protected static RaspberryPi pi;

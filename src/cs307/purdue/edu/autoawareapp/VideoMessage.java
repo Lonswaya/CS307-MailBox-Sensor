@@ -4,7 +4,7 @@ import java.io.Serializable;
 
 public class VideoMessage extends Message implements Serializable {
 	//date type for video
-	
+	private static final long serialVersionUID = 1L;
 	private float video_length;
 	private float motion_level;
 	

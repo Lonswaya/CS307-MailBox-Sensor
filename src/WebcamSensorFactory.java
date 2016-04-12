@@ -1,4 +1,4 @@
-
+import cs307.purdue.edu.autoawareapp.*;
 public class WebcamSensorFactory implements SensorFactory {
 
 	@Override

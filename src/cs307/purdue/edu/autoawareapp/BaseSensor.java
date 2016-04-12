@@ -16,15 +16,15 @@ import java.util.zip.Inflater;
 import javax.imageio.ImageIO;
 
 public abstract class BaseSensor{
-	
-	protected boolean ready;
-	protected BaseConfig config;
-	protected SensorType sType;
-	protected float upperBound; //some meaningful boundary values used to calculate percentage
-	protected float lowerBound;
-	protected BlockingQueue<byte[]> byteQueue;
-	protected Thread sendFromQueue;
-	protected String ip;
+	private static final long serialVersionUID = 1L;
+	public boolean ready;
+	public BaseConfig config;
+	public SensorType sType;
+	public float upperBound; //some meaningful boundary values used to calculate percentage
+	public float lowerBound;
+	public BlockingQueue<byte[]> byteQueue;
+	public Thread sendFromQueue;
+	public String ip;
 	
 	public BaseSensor(BaseConfig config){
 		ready = true;
