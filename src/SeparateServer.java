@@ -1,20 +1,29 @@
 import java.io.IOException;
 import java.net.ServerSocket;
+import java.net.Socket;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.concurrent.TimeUnit;
+
+import javax.net.SocketFactory;
 
 import com.twilio.sdk.TwilioRestException;
 
 import Example.Connections;
 import cs307.purdue.edu.autoawareapp.*;
 public class SeparateServer {
+	
+	//TODO: polling shit
+	
 	static Hashtable<String, SocketWrapper> uiList = new Hashtable<String, SocketWrapper>();
 	static Hashtable<String, SensorInfo> sensorList = new Hashtable<String, SensorInfo>();
+	//SensorInfo contains a SocketWrapper for communicating with that Sensor.
 	
+	static ServerSocket serverSock = null;
 	
 	public static void main(String[] args) {
-		ServerSocket serverSock = Connections.getServerSocket(StaticPorts.serverPort);
+		serverSock = Connections.getServerSocket(StaticPorts.serverPort);
 		new Thread(new Runnable() {
 			public void run() {
 				while (true) {
@@ -28,10 +37,64 @@ public class SeparateServer {
 			
 		}).start();
 		
-		
-		
+
 	}
-	private static Thread GetHandler(SocketWrapper socket) {
+	
+	//COMMIT ALL OF THESE
+	public static void sendAllConfigsToAllUis() {
+		ArrayList<ClientConfig> configs = new ArrayList<ClientConfig>();
+		for (String ip : sensorList.keySet()) {
+			SensorInfo info = sensorList.get(ip);
+			configs.add(info.sensorInfo);
+		}
+		for(String ip : uiList.keySet()) {
+			sendAllConfigs(ip, configs);
+		}
+	}
+	
+	public static void sendAllConfigs(String ip) {
+		SocketWrapper ui = uiList.get(ip);
+		if (ui != null) {
+			//get arraylist of all clientConfigs in SensorList
+			ArrayList<ClientConfig> configs = new ArrayList<ClientConfig>();
+			for (String key : sensorList.keySet()) {
+				SensorInfo sensorInfo = sensorList.get(key);
+				configs.add(sensorInfo.sensorInfo);
+			}
+			SensorsMessage sm = new SensorsMessage("SDKJL", configs);
+			Connections.send(ui.out, sm);
+		}
+	}
+	
+	public static void sendAllConfigs(String ip, ArrayList<ClientConfig> configs) {
+		SocketWrapper ui = uiList.get(ip);
+		if (ui != null)
+			Connections.send(ui.out, new SensorsMessage("sdffs", configs));
+	}
+	
+	public static void sendAllConfigs(SocketWrapper wrapper) {
+		ArrayList<ClientConfig> configs = new ArrayList<ClientConfig>();
+		for (String key : sensorList.keySet()) {
+			SensorInfo info = sensorList.get(key);
+			configs.add(info.sensorInfo);
+		}
+		Connections.send(wrapper.out, new SensorsMessage("sdkjds", configs));
+	}
+	
+	/*
+	 * INIT comes from UIs. Resets the SockWrapper related to that UI in uiList HashMap
+	 * 
+	 * READING comes from Sensor. Notifies the users on the server.
+	 * 
+	 * CONFIG comes from UIs. Resets the config in the sensorList Hashtable's SensorInfo and re-sends all configs to all UIs
+	 * 
+	 * ADD_SENSOR comes from UIs. Checks if sensor exists. If it exists, sends the config to it, adds a new entry to the sensorList 
+	 * HashMap and re-sends all configs to all UIs
+	 * 
+	 * GET_SENSORS comes from UIs. It re-sends all configs to all UIs.
+	 */
+	
+	private static Thread GetHandler(final SocketWrapper socket) {
 		return new Thread(new ServerListener(socket) {
 			public void HandleMessage(Message msg) throws Exception  {
 				if (msg == null) {
@@ -40,24 +103,25 @@ public class SeparateServer {
 				
 				switch (msg.type) {
 					case INIT:
-						HandleInitMessage(msg);
+						//reset the SocketWrapper related to this UI in HashMap.
+						//have UI re-send a GET_SENSORS message if they ever send this
+						HandleInitMessage(msg, socket);
 						break;
 					case READING:
+						//Notify users about the sensor going off.
 						HandleReadingMessage((ReadingMessage)msg);
 						break;
 					case CONFIG:
+						//Check that the sensor exists. If it does, reset the config in sensorList Hashtable, else remove it from Hashtable.
+						//then re-send all configs to all UIs
 						HandleConfigMessage((ConfigMessage)msg);
 						break;
-					case ADD_SENSOR:
-						HandleAddSensor((ConfigMessage)msg);
-						break;
 					case GET_SENSORS:
+						//just send them all of the sensors configs in an arraylist.
 						HandleGetSensors(msg, socket);
 						break;
 					default:
 						break;
-				
-				
 				}
 			}
 		});
@@ -97,33 +161,70 @@ public class SeparateServer {
 			NotifyClient(msg,uiList.get(key));
 		}
 	}
-	public static void HandleConfigMessage(ConfigMessage msg) {
-		//TODO check if sensor exists within the system
-		//TODO send config to sensor
-		//TODO update sensor list
-		//TODO notify clients with an entire arraylist
-	}
-	public static void HandleInitMessage(Message msg) {
-		//TODO add new client to uiList
-	}
-	public static void HandleAddSensor(ConfigMessage msg) {
-		HandleConfigMessage(msg);
-		//TODO return to client 
+	
+	//wrote this part COMMIT
+	public static void HandleConfigMessage(ConfigMessage msg) {		
+		if (msg.delete) {
+			SensorInfo info = sensorList.get(msg.config.ip);
+			if (info != null)
+				sensorList.remove(info);			
+			SeparateServer.sendAllConfigsToAllUis();
+			return;
+		}
 		
-		//Get ip of sensor from msg
-		//check if sensor is in list
-		//check if can connect to sensor
-		//if yes, handle it if no, remove it from list
+		boolean exists = true;
+		boolean inList = false;
+		Socket sock = null;
+		//checking existance
+		SensorInfo info = sensorList.get(msg.config.ip);
+		if (info == null) {
+			try {
+				sock = new Socket(msg.config.ip, StaticPorts.piPort);
+			} catch (Exception e) {
+				exists = false; //not in sensorList and couldn't connect to it.
+				sock.close();
+			}
+		} else {
+			//has info
+			inList = true;
+			Message to_check = new Message("testing connection", null, null);
+			try {
+				info.sock.out.writeObject(to_check);
+			} catch(Exception e) {
+				exists = false; //was in sensorList and couldn't connect to its socket
+				info.sock.sock.close();
+			}
+		}				
+		//if it does exists and is already in the list, update the SensorInfo's config in HashTable.
+		//if it does exist and is not in the list, new SensorInfo using sock
+		if (exists && !inList) {
+			info = new SensorInfo(msg.config, sock);
+			sensorList.put(msg.config.ip, info);
+		} else if (exists && inList) {
+			info.sensorInfo = msg.config;
+			sensorList.put(msg.config.ip, info);
+		}
+		
+		SeparateServer.sendAllConfigsToAllUis();
 	}
+	
+	//wrote this part COMMIT
+	public static void HandleInitMessage(Message msg, SocketWrapper sock) {
+		uiList.put(msg.from, sock);
+	}
+	
+	public static void HandleGetSensors(Message msg, SocketWrapper sock) {
+		sendAllConfigs(sock);
+	}
+	
 	public static void NotifyClient(Message msg, SocketWrapper sock) {
 		Connections.send(sock.out, msg);
 	}
-	public static void HandleGetSensors(Message msg, SocketWrapper sock) {
-		//TODO respond to the socket marked Sock with the arraylist of sensors
-		//
-	}
 }
-			
+		
+
+
+
 	/*protected ServerSocket ss = null; 			     //SSL Server socket for accepting connections
 	
 	
