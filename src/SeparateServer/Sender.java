@@ -1,3 +1,4 @@
+package SeparateServer;
 import java.io.IOException;
 import cs307.purdue.edu.autoawareapp.*;
 

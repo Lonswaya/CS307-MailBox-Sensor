@@ -1,3 +1,4 @@
+package Sensor;
 import java.io.IOException;
 import cs307.purdue.edu.autoawareapp.*;
 public class SensorMain {

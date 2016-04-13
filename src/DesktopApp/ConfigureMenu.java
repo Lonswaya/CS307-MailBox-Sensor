@@ -1,3 +1,4 @@
+package DesktopApp;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
@@ -13,6 +14,8 @@ import java.awt.event.WindowListener;
 import java.util.ArrayList;
 
 import javax.swing.*;
+
+import Utilities.UserBackend;
 import cs307.purdue.edu.autoawareapp.*;
 public class ConfigureMenu extends JFrame {
 	/* The menu which will take the users information, and change the settings on one of the sensors.

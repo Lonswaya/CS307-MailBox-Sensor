@@ -1,12 +1,13 @@
+package Utilities;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 
 public class SocketWrapper {
-	protected ObjectInputStream in;
-	protected ObjectOutputStream out;
-	protected Socket sock;
+	public ObjectInputStream in;
+	public ObjectOutputStream out;
+	public Socket sock;
 	public SocketWrapper(Socket sock) {
 		try {
 			in = new ObjectInputStream(sock.getInputStream());

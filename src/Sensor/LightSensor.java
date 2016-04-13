@@ -1,3 +1,4 @@
+package Sensor;
 import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.io.File;

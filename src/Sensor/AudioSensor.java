@@ -1,3 +1,4 @@
+package Sensor;
 import cs307.purdue.edu.autoawareapp.*;
 import java.io.ByteArrayOutputStream;
 import java.net.InetAddress;

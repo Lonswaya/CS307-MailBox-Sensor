@@ -1,3 +1,4 @@
+package Sensor;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -13,7 +14,10 @@ import javax.net.ssl.SSLServerSocketFactory;
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
 
-import Example.Connections;
+import Utilities.Connections;
+import Utilities.ServerListener;
+import Utilities.SocketWrapper;
+import Utilities.StaticPorts;
 import cs307.purdue.edu.autoawareapp.*;
 public class RaspberryPi {
 	public BaseSensor sensor;

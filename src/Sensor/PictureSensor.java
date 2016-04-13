@@ -1,3 +1,4 @@
+package Sensor;
 import java.awt.image.BufferedImage;
 import java.net.InetAddress;
 import java.net.NetworkInterface;

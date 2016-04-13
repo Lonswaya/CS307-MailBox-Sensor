@@ -1,3 +1,4 @@
+package DesktopApp;
 import java.applet.Applet;
 import java.applet.AudioClip;
 import java.awt.Color;
@@ -39,7 +40,10 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.Timer;
 
-import Example.Connections;
+import Utilities.MessageProcessor;
+import Utilities.SocketWrapper;
+import Utilities.StaticPorts;
+import Utilities.UserBackend;
 import cs307.purdue.edu.autoawareapp.*;
 
 
@@ -350,7 +354,12 @@ public class AutoAwareControlPanel extends JFrame implements MessageProcessor {/
     		if (cfg.isSensorActive())  {
     			t2bool = true;
     			//this will tell the sensor to start streaming, and handles the connections with the processMessage
-		    	streamersConnection.put(cfg.ip, UserBackend.SendStreaming(cfg.ip, this));
+    			SocketWrapper newSocketWrapper = UserBackend.SendStreaming(cfg.ip, this);
+    			if (newSocketWrapper != null) {
+    				streamersConnection.put(cfg.ip, newSocketWrapper);
+    			} else {
+    				System.err.println("Sensor connection was not made to start streaming");
+    			}
     		} else {
     			t2bool = false;
     		}
@@ -500,7 +509,7 @@ public class AutoAwareControlPanel extends JFrame implements MessageProcessor {/
     public void StopStream(ClientConfig cfg) {
     	System.out.println("Stopping stream now");
     	//stopping stream
-    	UserBackend.StopStreaming(streamersConnection.get(cfg.ip));
+    	UserBackend.StopStreaming(streamersConnection.remove(cfg.ip));
     	t2bool = false;
     }
     
@@ -586,13 +595,19 @@ public class AutoAwareControlPanel extends JFrame implements MessageProcessor {/
 	    		
 	    		
 	    		stream.setTitle("Video stream on sensor " + address);
-	    		VideoStreamBox newVid = new VideoStreamBox(address);
-	    		stream.myPanel = newVid;
-		    	stream.add(newVid);
-		    	Streamers.put(address, stream);
-		    	//this adds another entry to the table, and stores a socketwrapper for each
-		    	streamersConnection.put(address, UserBackend.SendStreaming(address, this));
-
+	    		SocketWrapper newSocketWrapper = UserBackend.SendStreaming(cfg.ip, this);
+    			if (newSocketWrapper != null) {
+    				streamersConnection.put(cfg.ip, newSocketWrapper);
+    				VideoStreamBox newVid = new VideoStreamBox(address);
+    	    		stream.myPanel = newVid;
+    		    	stream.add(newVid);
+    		    	Streamers.put(address, stream);
+    			} else {
+    				System.err.println("Sensor connection was not made to start streaming");
+    				stream.Close();
+    			}
+	    		
+		    	
 		    	
 
 	    	} else {
@@ -602,13 +617,20 @@ public class AutoAwareControlPanel extends JFrame implements MessageProcessor {/
 	    		//server.sendMessage(new StreamingMessage("Setting streaming to true",c,true));
 	    		
 		    	stream.setTitle(c.sensor_type + " stream on sensor " + address);
-		    	ValueStreamBox newVal = new ValueStreamBox(c.sensor_type, c.sensing_threshold, address);
-			    stream.add(newVal);
-			    stream.myPanel = newVal;
-			    Streamers.put(address, stream);
+		    	SocketWrapper newSocketWrapper = UserBackend.SendStreaming(cfg.ip, this);
+    			if (newSocketWrapper != null) {
+    				streamersConnection.put(cfg.ip, newSocketWrapper);
+    				ValueStreamBox newVal = new ValueStreamBox(c.sensor_type, c.sensing_threshold, address);
+    			    stream.add(newVal);
+    			    stream.myPanel = newVal;
+    			    Streamers.put(address, stream);
+    			} else {
+    				System.err.println("Sensor connection was not made to start streaming");
+    				stream.Close();
+    			}
+		    	
 			    	
 			    System.out.println("setting to stream now");
-			    streamersConnection.put(address, UserBackend.SendStreaming(address, this));
 
 	    	}
     	}
@@ -806,7 +828,6 @@ public class AutoAwareControlPanel extends JFrame implements MessageProcessor {/
     		serverConnection = UserBackend.SetServerConnection(address, this);
     		if (serverConnection != null) {
     			//System.out.println("server not found");
-    			//UserBackend.serverIP = lastIP;
         		JOptionPane.showMessageDialog(null,"Server not found", "error", JOptionPane.ERROR_MESSAGE, null);
         		return false;
     		} else {

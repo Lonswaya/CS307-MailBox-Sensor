@@ -1,3 +1,4 @@
+package SeparateServer;
 //You may want to be more specific in your imports 
 import java.util.*; 
 import org.apache.http.*;

@@ -1,3 +1,4 @@
+package Utilities;
 import java.net.ServerSocket;
 
 import cs307.purdue.edu.autoawareapp.*;
@@ -11,9 +12,9 @@ import cs307.purdue.edu.autoawareapp.*;
 
 public abstract class ServerListener implements Runnable {
 	
-	SocketWrapper sock;
+	public SocketWrapper sock;
 	
-	boolean run;
+	public boolean run;
 	
 	public ServerListener(SocketWrapper sock) {
 		this.sock = sock;
