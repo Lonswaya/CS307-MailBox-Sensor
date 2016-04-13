@@ -3,102 +3,73 @@ package cs307.purdue.edu.autoawareapp;
 import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.support.annotation.RequiresPermission;
-import android.util.Log;
-
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.OutputStream;
 import java.io.Serializable;
-import java.lang.reflect.Array;
 import java.net.*;
 import java.util.ArrayList;
 import java.util.Enumeration;
-import java.util.Formatter;
 
 import javax.net.ssl.SSLServerSocketFactory;
 import javax.net.ssl.SSLSocketFactory;
 /**
- * Used to grab sensor infos from central server
+ * Used to bridge android to server
  */
 public class Server implements Runnable, MessageProcessor, Serializable {
-    public ArrayList<ClientConfig> sensorList;
+
+    public volatile ArrayList<ClientConfig> sensorList;
 
     public String server_ip;
     public String my_ip;
     public int server_port = StaticPorts.serverPort;
-
-    //public CentralServer connector = null;
-    //public Thread connectorThread = null;
-    public Socket godSocket = null;
-    public ObjectOutputStream godOut;
-    public ObjectInputStream godIn;
+    public SocketWrapper centralServer = null;
+    public boolean running = true;
+    public boolean suspended = false;
 
     public Server(String ip) {
         this.server_ip = ip;
         //System.setProperty("javax.net.ssl.trustStore", "mySrvKeystore");  //get ssl working
         //System.setProperty("javax.net.ssl.trustStorePassword", "sensor"); //get ssl working
-        my_ip = getMyIP();
-        System.out.println("***************************************************************************");
-        //setupSocketAndThings();
-    }
-    //use this after constructor to be safe
-    public void setUpConnector(){
-        //connector = new CentralServer(this);
-        //connectorThread = new Thread(connector);
+        my_ip = Server.getMyIP();
     }
 
-    public void addClientConfigObject(ClientConfig sensorInfo) {
-        if (sensorInfo != null) {
-            sensorList.add(sensorInfo);
-        }
+    /*
+    Initializes the connection to central server
+    Return: true if connection is set up, false if connection is not setup
+     */
+    public boolean serverInit(){
+        this.centralServer = UserBackend.SetServerConnection(server_ip, this);
+        if(this.centralServer == null) return false;
+        return true;
+    }
+    /*
+    Get a list of sensor infos (ClientConfig) from central server
+    Used By Server.java only
+    */
+    private void getSensorsFromServer(){
+        UserBackend.GetSensors(centralServer);
     }
 
-    public void ProcessMessage(Message msg){
-        try{
-            switch(msg.type){
-                case READING:
-                    ReadingMessage rMsg = (ReadingMessage) msg;
-                    float reading = rMsg.getCurrentThreshold();
-
-                    //update the reading. I don't know how do you want readings strutured ? in ClientConfig?
-
-                case GET_SENSORS:
-                    SensorsMessage sMsg = (SensorsMessage) msg;
-                    sensorList = sMsg.ar;
-                    break;
-                default:
-                    System.out.println("Message type: " + msg.type + " not supported");
-            }
-        }catch(Exception e){
-            e.printStackTrace();
-        }
-    }
-
-    public void setupSocketAndThings(){
-        try {
-            //godSocket = new Socket(server_ip, server_port);
-            godOut = new ObjectOutputStream(godSocket.getOutputStream());
-            godIn = new ObjectInputStream(godSocket.getInputStream());
-        }catch(Exception e){
-            System.out.println("Can't fucking connect to server and streams and shits dumbshit");
-            e.printStackTrace();
-            System.exit(0);
-        }
-    }
-
-    public void updateClientConfigList(ClientConfig sensorInfo) {
+    /*
+    Find the position of a sensor in the ArrayList
+    Param: clientconfig
+    Return: int if success, -1 if not found
+     */
+    private int getSensorPosition(ClientConfig config){
         for (int i = 0; i < sensorList.size(); i++) {
-            if (sensorInfo.ip == sensorList.get(i).ip) {
-                sensorList.set(i, sensorInfo);
-                break;
+            if (config.ip == sensorList.get(i).ip){
+                return i;
             }
         }
+        System.out.println("    BACKEND SREVER DEBUG: Sensor Not Found");
+        return -1;
     }
 
+    /*
+    Run of the thread
+     */
     @Override
     public void run() {
-        try {
-            /*
+        /*try {
+
                 TESTING SHIT IF THIS BREAKS NOTHIGN WORKS
             SensorsMessage msg = new SensorsMessage("asdasdasd", null);
             System.out.println("IP: " + my_ip);
@@ -115,88 +86,116 @@ public class Server implements Runnable, MessageProcessor, Serializable {
             System.out.print("stream good");
             Message msg2 = (Message) in.readObject();
             System.out.println(msg2.toString());
-            */
+
         }catch(Exception e){
             e.printStackTrace();
-        }
+        }*/
 
-        while(true) {
-            if(godSocket == null){
-                try {
-                    godSocket = new Socket(server_ip, server_port);
-                    godOut = new ObjectOutputStream(godSocket.getOutputStream());
-                    godIn = new ObjectInputStream(godSocket.getInputStream());
-                }catch(Exception e){
-                    System.out.println("Can't fucking connect to server and streams and shits dumbshit");
-                    e.printStackTrace();
-                    System.exit(0);
-                }
-            }
-            if(godOut == null || godIn == null){
-                try {
-
-                    godOut = new ObjectOutputStream(godSocket.getOutputStream());
-                    godIn = new ObjectInputStream(godSocket.getInputStream());
-                }catch(Exception e){
-                    System.out.println("Can't fucking connect to server and streams and shits dumbshit");
-                    e.printStackTrace();
-                    System.exit(0);
-                }
-            }
-
+        while(running) {
             //shitty timer
-            int interval = 5000;
-            long lastMilli = System.currentTimeMillis();
-            while (true) {
-                if ((int) (System.currentTimeMillis() - lastMilli) >= interval) break;
+            if(!suspended) {
+                int interval = 5000;
+                long lastMilli = System.currentTimeMillis();
+                while (true) {
+                    if ((int) (System.currentTimeMillis() - lastMilli) >= interval) break;
+                }
+                getSensorsFromServer();
+            }else System.out.println("    BACKEND SREVER DEBUG: Server thread suspended");
+        }
+    }
+
+    /*
+    Used to handle messages catched from central server
+     */
+    public void ProcessMessage(Message msg){
+        System.out.println("    BACKEND SREVER DEBUG: Got message, type = " + msg.type);
+        Thread msgHandler = new Thread(new Runnable() {
+            Message msg;
+            Server ref;
+
+            @Override
+            public void run() {
+                try{
+                    switch(msg.type){
+                        case READING:
+                            ReadingMessage rMsg = (ReadingMessage) msg;
+                            float reading = rMsg.getCurrentThreshold();
+
+                            //How do you want to handle messags sent to android? Notify UI or store and wait until UI request?
+
+                        case GET_SENSORS:
+                            SensorsMessage sMsg = (SensorsMessage) msg;
+                            ref.sensorList = sMsg.ar;
+                            break;
+                        default:
+                            System.out.println("    BACKEND SREVER DEBUG: Message type (" + msg.type + ") not supported");
+                    }
+                }catch(Exception e){
+                    e.printStackTrace();
+                }
             }
 
-            this.sensorList = getSensors();
-        }
-        System.out.println("IN RUNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN");
-    }
-
-    public void addSensor(ClientConfig config) {
-        if (godOut == null) return;
-        ConfigMessage msg = new ConfigMessage("Add Sensor", config);
-        msg.setFrom(my_ip);
-        msg.type = MessageType.ADD_SENSOR;
-        try{
-            godOut.writeObject(msg);
-            godOut.flush();
-
-        }catch(Exception e){
-
-        }
-    }
-    public ArrayList<ClientConfig> getSensors(){
-        SensorsMessage msg = new SensorsMessage("Get list of sensors", null);
-        msg.setFrom(my_ip);
-
-        if(godOut == null) return null;
-        try {
-            godOut.writeObject(msg);
-            msg = null;
-            while(msg == null){
-                System.out.println("waiting for messageasdadasdasdsadadasdasadsd");
-                msg = (SensorsMessage) godIn.readObject();
-
-                System.out.println("got listasdasdasdadasdasdsadasdasdds");
-                return msg.ar;
+            private Runnable inti(Message msg, Server ref){
+                this.msg = msg;
+                this.ref = ref;
+                return this;
             }
-        }catch(Exception e){
-            e.printStackTrace();
-        }
-        return null;
+        }.inti(msg, this));
+        System.out.println("    BACKEND SREVER DEBUG: Starting mesage handler");
+        msgHandler.start();
     }
 
+    /*
+    Updates informtion of a sensor to the central server
+    Param: sensor's config
+    Return: true if success false if fail
+    */
+    public boolean updateSensor(ClientConfig config) {
+        int pos = getSensorPosition(config);
+        if(pos < 0) return false;
+        UserBackend.SendConfig(config, false, centralServer);
+        sensorList.set(pos, config);
+        return true;
+    }
+
+    /*
+    Deletes a sensor from the central server
+    Param: ClientConfig
+    Return: true if success false if fail
+     */
+    public boolean deleteSensor(ClientConfig config){
+        int pos = getSensorPosition(config);
+        if(pos < 0) return false;
+        UserBackend.SendConfig(config, true, centralServer);
+        sensorList.remove(pos);
+        return true;
+    }
+
+    /*
+    Add a sensor to central server
+    Param: a sensor configuration
+    Return: true if success false if fail
+     */
+    public boolean addSensor(ClientConfig config) {
+      if(UserBackend.AddSensor(config, this.centralServer)) return true;
+      else return false;
+    }
+
+    /*
+    Get a list of sensor infos (ClientConfig) from android backend server
+    Return: ArrayList of clientconfig
+     */
     public ArrayList<ClientConfig> getSensorLists(){
         return this.sensorList;
     }
 
-    public String getMyIP(){
+    /*
+    Get the ip of current device running the app
+    Return: string of ip address, null if unsuccessful
+     */
+    public static String getMyIP(){
         if (Build.FINGERPRINT.contains("generic")) {
-            System.out.println("*************************LocalHost**************************");
+            System.out.println("    BACKEND SREVER DEBUG: IP set to Localhost");
             return "localhost";
         }
 
@@ -207,7 +206,7 @@ public class Server implements Runnable, MessageProcessor, Serializable {
                     InetAddress inetAddress = enumIpAddr.nextElement();
                     if (!inetAddress.isLoopbackAddress()) {
                         String tmp = inetAddress.getHostAddress().toString();
-                        System.out.println("IP:" + tmp);
+                        System.out.println("    BACKEND SREVER DEBUG: IP = :" + tmp);
                         return tmp;
                     }
                 }
@@ -218,75 +217,14 @@ public class Server implements Runnable, MessageProcessor, Serializable {
         }
         return null;
     }
-    /*public void sendMessage(Message msg){
-        this.connector.sendMessageThreaded(msg);
+
+    /*
+    Checks if ip address is valid
+    Param: String of ip
+    Return: true if valid false if not valid
+    */
+    public static boolean isValidIP(String ip){
+        //implement this?
+        return true;
     }
-    public void addSensor(ClientConfig info){
-        connector.AddSensor(new ConfigMessage("Adding a new sensor", info));
-    }
-    public ArrayList<ClientConfig> getSensors() {
-        //this.sensorList = connectorObject.GetSensors();
-        return connector.GetSensors();
-    }
-
-    class MessageHandler extends Thread{
-        Message msg;
-        Server ref;
-        public MessageHandler(Message msg, Server ref){
-            this.msg = msg;
-            this.ref = ref;
-        }
-
-        public void run(){
-            try{
-
-            }catch(Exception e){
-                e.printStackTrace();
-            }
-        }
-    }
-    class SendMessage extends Thread {
-        public Message msg;
-        public String ip;
-        public int port;
-
-        public SendMessage(Message msg , String ip, int port) {
-            this.msg = msg;
-            this.ip = ip;
-            this.port = port;
-        }
-
-        public void run() {
-            try {
-                Socket socket = factory.createSocket(ip, port);
-                ObjectOutputStream out;
-                out = new ObjectOutputStream(socket.getOutputStream());
-                out.writeObject(msg);
-                out.flush();
-                out.close();
-                socket.close();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    class GetMessage extends Thread{
-        public ServerSocket serverSocket;
-        private Server serverRef;
-        public GetMessage(ServerSocket serverSocket, Server serverRef){
-            this.serverSocket = serverSocket;
-            this.serverRef = serverRef;
-        }
-        public void run(){
-            while(true) {
-                try {
-                    Socket socket = serverSocket.accept();
-                    new MessageHandler(socket, serverRef);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-    }*/
 }
