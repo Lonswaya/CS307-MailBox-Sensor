@@ -443,7 +443,7 @@ public class AutoAwareControlPanel extends JFrame implements MessageProcessor {/
     			new Thread(new GetConfigsListener()).start(); //probe for the sensors
     		} else {
         		JOptionPane.showMessageDialog(getContentPane(), "Server connection found at localhost", "success", JOptionPane.DEFAULT_OPTION, null);
-        		configs = UserBackend.GetSensors(serverConnection);
+        		UserBackend.GetSensors(serverConnection);
         		//server.sendMessage(new Message("", null, MessageType.GET_SENSORS));
     		}
     	}
@@ -550,7 +550,7 @@ public class AutoAwareControlPanel extends JFrame implements MessageProcessor {/
     			}
     		} else {
     			//Is this necessary? We only get the sensors when needed
-    			configs = UserBackend.GetSensors(serverConnection);
+    			UserBackend.GetSensors(serverConnection);
     		}
     		RemoveSensorPanels();
     		for (int i = 0; i < configs.size(); i++) {

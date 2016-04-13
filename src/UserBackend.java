@@ -10,15 +10,16 @@ import cs307.purdue.edu.autoawareapp.*;
  */
 
 public class UserBackend {
-	/* GetSensors: Takes a server connection, and reads/writes from it to get an array
-	 * Returns an arraylist of sensors
+	/* GetSensors: Takes a server connection, and sends a get sensors message
+	 * You should promptly get back a message through ProcessMessage that contains the servers
 	 */
-	static ArrayList<ClientConfig> GetSensors(SocketWrapper serverConnection) {
-		ArrayList<ClientConfig> ar = null;
-		Message msg = new Message("Gib sensors plz", null, MessageType.GET_SENSORS);
-		Connections.send(serverConnection.out, msg);
-		ar = Connections.readObject(serverConnection.in);
-		return ar;
+	static void GetSensors(SocketWrapper serverConnection) {
+		if (serverConnection != null) {
+			Message msg = new Message("Gib sensors plz", null, MessageType.GET_SENSORS);
+			Connections.send(serverConnection.out, msg);
+		} else {
+			System.err.println("get sensors: server not found");
+		}
 	}
 	
 	/* SendStreaming: Sends a streaming message to a sensor determined by the IP
@@ -50,13 +51,14 @@ public class UserBackend {
 	 * 
 	 */
 	static SocketWrapper SetServerConnection(String ip, MessageProcessor msgProcessor) {
-		SocketWrapper sWrapper = new SocketWrapper(Connections.getSocket(ip, StaticPorts.serverPort));
+		SocketWrapper sWrapper = new SocketWrapper(Connections.getSocket(ip, StaticPorts.serverPort, 1000));
+		if (sWrapper.sock == null) return null;
+		Connections.send(sWrapper.out, new Message("Hi there I am a new dude", null, MessageType.INIT));
 		new Thread(new ServerListener(sWrapper) {
 			public void HandleMessage(Message msg) throws Exception  {
 				msgProcessor.ProcessMessage(msg);
 			}
 		}).start();
-		if (sWrapper.sock == null) return null;
 		return sWrapper;
 	}
 	/* Sends a config to a server connection

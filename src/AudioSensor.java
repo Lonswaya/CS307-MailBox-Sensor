@@ -198,18 +198,23 @@ public class AudioSensor extends BaseSensor
 		System.out.println("Forming Audio message");
 		
 		AudioMessage msg = new AudioMessage("Volume above threshold", null);
+		boolean messageHasValues = false;
 		msg.setFrom(getIP());
 		if (this.currentVolume >= 0) {
 			msg.setCurrentThreshold(currentVolume);
+			messageHasValues = true;
 			currentVolume = -1;
 		}
 		if (audioBytes != null) {
 			msg.setRecording(audioBytes);
-			
+			messageHasValues = true;
+			//Probably have to empty audioBytes so it can be used again
+			audioBytes = null;
 		}
 		
-		//Probably have to empty audioBytes so it can be used again
-		audioBytes = null;
+		if (!messageHasValues) { //if there is nothing in here, why send it
+			return null;
+		}
 		
 		return msg;
 		//return null;

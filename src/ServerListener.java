@@ -1,4 +1,6 @@
 import java.net.ServerSocket;
+
+import Example.Connections;
 import cs307.purdue.edu.autoawareapp.*;
 /*
  * Handles individual requests from clients
@@ -28,7 +30,7 @@ public abstract class ServerListener implements Runnable {
 		run = true;
 		while (run) {
 			try {
-				Message msg = (Message)sock.in.readObject();
+				Message msg = Connections.readObject(sock.in);
 				if (msg == null)
 					run = false;
 				else

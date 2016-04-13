@@ -9,7 +9,7 @@ public class SensorMain {
 		pi = new RaspberryPi();
 		
 		
-		// main loop
+		// main loop, this loop only connects to the server and notifies if the threshold is above.
 		while (true) {
 			//System.out.println("from sense thread");
 			pi.sleepAmt = 3000;
@@ -18,17 +18,17 @@ public class SensorMain {
 				pi.sleepAmt = 10000;
 			} else {
 				
-				if (pi.sensor.isSensorActive()) {
+				if (pi.sensor.isSensorActive() ) {
 					new Thread(new SenseThread(pi)).run(); // tell sensor to sense shit maybe a
 					
-					if (pi.sensor.sType == SensorType.AUDIO && ((AudioSensor)pi.sensor).doneStreaming) {
+					/*if (pi.sensor.sType == SensorType.AUDIO && ((AudioSensor)pi.sensor).doneStreaming) {
+						
 						new Thread(new StreamThread(pi)).run();
-					}
+					}*/ //we are not going to be wanting to stream audio if this is only for connecting to the server
 						// time interval in between, currently one second
-					if (pi.sensor.check_threshold() || pi.streaming) { //if the threshold is above, or if we are supposed to stream constantly
-						System.out.println("currently sending a message");
+					if (pi.sensor.check_threshold()) { //if the threshold is above, or if we are supposed to stream constantly
+						System.out.println("sending a message");
 						new Thread(new SendThread(pi)).run();
-						pi.sleepAmt = 0; //for lower latency
 					} else {
 						pi.sensor.close();
 					}

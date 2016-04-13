@@ -23,109 +23,96 @@ public class RaspberryPi {
 
 	boolean streaming = false;
 	
-	private Socket serverConnection;
+	private SocketWrapper serverConnection;
+	
+	ServerSocket serverSock;
 	
 	public RaspberryPi() throws IOException {
 		
 		streaming = false;
 
 		serverConnection = null;
-		
-		//TODO: pull config from text file and create sensor or if no config, leave sensor null
 		BaseConfig config = new BaseConfig();
 		sensor = (!config.Load()) ? null : new WebcamSensorFactory().get_sensor(config);
-		
-		
-		
 		// makes the thread that constantly receive message
+		
+		//create new receiving thing
+		serverSock = Connections.getServerSocket(StaticPorts.piPort);
 		new Thread(new Runnable() {
-
-			private ServerSocket receiveServer;
-			private RaspberryPi ref;
-			
-			@Override
 			public void run() {
-
-				try {
-					receiveServer = Connections.getServerSocket(StaticPorts.piPort);
-					
-					while (true) {
-						
-						Socket sock = receiveServer.accept();
-						Message msg = Connections.readObject(sock);
-						
-						switch(msg.type) {
-							case CONFIG:
-								ConfigMessage conf = (ConfigMessage)msg;
-								if(ref.sensor == null || ref.sensor.sType != conf.getConfig().sensor_type) {
-									//create sensor
-									System.out.println("sensor created");
-									if (ref.sensor != null)ref.sensor.close();
-									ref.sensor = new WebcamSensorFactory().get_sensor(conf.getConfig());
-									if (!ref.sensor.ready) {
-										System.out.println("Oh, we couldn't make that sensor work right. \nSorry.\nSend a better config next time");
-										ref.sensor = null;
-										conf.delete = true;
-										send_message(conf); //send it back, delete us
-									}
-									System.out.println("new sensor: " + ref.sensor);
-									serverConnection = sock;
-								} 
-								if (ref.sensor != null) ref.sensor.setConfig(conf.getConfig());
-								break;
-							case STREAMING:
-								
-								streaming = ((StreamingMessage)msg).streaming;
-								if (streaming) {
-									//refresh the thread, so we aren't sleeping as soon as we get a streaming message
-									//the delay really builds up
-									sleepAmt = 0;
-									
-									//start new thread to socket
-									new Thread(new Runnable() {
-										final private Socket socket = sock;
-										final ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
-										public void run() {
-											
-											while(true) {
-												try {
-													out.writeObject(sensor.form_message());																										
-												} catch (Exception e) {
-													break;
-												}
-											}
-											
-											try {
-												socket.close();
-											} catch (Exception e) { }
-											
-										}
-									}).start();
-								}
-								//System.out.println("Pi streaming set to " + streaming);
-								//set Pi to constantly send values back to the server, send a new ReadingMessage
-								//note: it will still send ReadingMessage if the threshold is greater than normal.
-							default:
-								break;
-								
-						}
-						
-						sock.close();
+				while (true) {
+					try {
+						SocketWrapper newSock = new SocketWrapper(serverSock.accept());
+						new Thread(new ServerListener(newSock) {
+							public void HandleMessage(Message msg) throws Exception  {
+								run = ProcessMessage(msg, sock);
+							}
+						}).start();
+					} catch (Exception e) {
+						e.printStackTrace();
 					}
-
-				} catch (Exception e) {
-					e.printStackTrace();
-				} 
+				}
 			}
-
-			public Runnable init(ServerSocket serverSocket, RaspberryPi ref) {
-				this.receiveServer = serverSocket;
-				this.ref = ref;
-				return this;
-			}
-		}.init(this.receiveServer, this)).start();
+			
+		}).start();
 	}
-
+	
+	
+	/*
+	 * Process message processes the message. It can either be from a client (streaming) or from a server (config)
+	 * If it is from a server, it updates the server connection socket wrapper so we can send messages back
+	 * If it is from a client, it will keep the same thread and write objects until the connection fails.
+	 * Throws an exception if we fail to write another object. 
+	 */
+	
+	public boolean ProcessMessage(Message msg, SocketWrapper connectionSocket) throws Exception {
+		switch(msg.type) {
+		case CONFIG:
+			serverConnection = connectionSocket; //update so we can send messages
+			ConfigMessage conf = (ConfigMessage)msg;
+			if(sensor == null || sensor.sType != conf.getConfig().sensor_type) {
+				//create sensor
+				System.out.println("sensor created");
+				if (sensor != null) sensor.close();
+				sensor = new WebcamSensorFactory().get_sensor(conf.getConfig());
+				if (!sensor.ready) {
+					System.out.println("Oh, we couldn't make that sensor work right. \nSorry.\nSend a better config next time");
+					sensor = null;
+					conf.delete = true;
+					send_message(conf); //send it back, delete us
+				}
+				System.out.println("new sensor: " + sensor);
+				
+			} 
+			if (sensor != null) sensor.setConfig(conf.getConfig());
+			break;
+		case STREAMING:
+			
+			streaming = ((StreamingMessage)msg).streaming;
+			if (streaming && sensor != null && sensor.ready) {
+				//open a new connection, start streaming as fast as humanly possible until the connection quits
+				boolean run = true;
+				while (run) {
+					sensor.sense();
+					if (sensor.sType == SensorType.AUDIO && ((AudioSensor)sensor).doneStreaming) {
+						((AudioSensor)sensor).stream();
+					}
+					Message toSend = sensor.form_message();
+					if (toSend != null) {
+						boolean result = Connections.send(connectionSocket.out, msg);
+						if (!result) { //if we fail to send a message
+							return false;
+						}
+					}
+				}				
+			}
+			return true;
+		default:
+			break;
+			
+		}
+	}
+	
 	// get the sensor specifically to this pi
 	public BaseSensor getSensor() {
 		return this.sensor;
@@ -133,23 +120,15 @@ public class RaspberryPi {
 
 	public void send_message(Message msg) {
 		new Thread(new Runnable(){
-    		public void run(){
-				long tempTime = System.currentTimeMillis();
-				System.out.println("start sending msg");
-				
-				try {
-					Connections.send(serverConnection, msg);
-					
-				} catch (Exception e) {
-					e.printStackTrace();
-					serverConnection = null;
-					streaming = false;
-					
-					
+
+			public void run() {
+				if (serverConnection == null) {
+					System.err.println("we can't send a message bruh, no server");
+					return; 
 				}
-				System.out.println("Debug: End compression, Time:" + (int) (System.currentTimeMillis() - tempTime) + "\n");
-				System.out.println("msg sent");
-    		}
+				Connections.send(serverConnection.out, msg);
+			}
+    		
 		}).start();
 	}
 	
