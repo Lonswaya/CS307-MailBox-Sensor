@@ -15,7 +15,7 @@ import android.widget.SeekBar;
 
 import java.io.Serializable;
 
-public class SettingsActivity extends AppCompatActivity implements View.OnClickListener {
+public class SettingsActivityUI extends AppCompatActivity implements View.OnClickListener {
     EditText sensorName;
     Button setTextButton;
     CheckBox setTimeBox;

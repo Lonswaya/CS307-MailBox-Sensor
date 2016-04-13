@@ -6,24 +6,17 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.Toolbar;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.EditText;
-import android.widget.ImageButton;
-import android.widget.TextView;
 
 import java.util.ArrayList;
-import java.util.Date;
 
 /**
  * Created by Dhairya M. Doshi on 4/1/2016.
  */
-public class SensorClient extends AppCompatActivity implements View.OnClickListener {
+public class SensorClientUI extends AppCompatActivity implements View.OnClickListener {
     private RecyclerView recyclerView;
     RecyclerView.Adapter mAdapter = null;
     RecyclerView.LayoutManager llm;
@@ -36,7 +29,7 @@ public class SensorClient extends AppCompatActivity implements View.OnClickListe
     String ip;
     Button addSensorButton, exitButton;
 
-    public SensorClient() {
+    public SensorClientUI() {
     }
 
     public int getNumOfSensors() {
@@ -264,7 +257,7 @@ public class SensorClient extends AppCompatActivity implements View.OnClickListe
 
         switch (view.getId()) {
             case R.id.addButton:
-                Intent mIntent = new Intent(this, AddSensor.class);
+                Intent mIntent = new Intent(this, AddSensorUI.class);
                 mIntent.putExtra("Name", "Add Sensor");
                 startActivity(mIntent);
                 break;

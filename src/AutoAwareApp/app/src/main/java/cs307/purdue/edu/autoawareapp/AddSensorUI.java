@@ -15,7 +15,7 @@ import android.widget.SeekBar;
 /**
  * Created by Dhairya on 4/8/2016.
  */
-public class AddSensor extends AppCompatActivity implements View.OnClickListener {
+public class AddSensorUI extends AppCompatActivity implements View.OnClickListener {
     EditText sensorName;
     Button setTextButton;
     CheckBox setTimeBox;

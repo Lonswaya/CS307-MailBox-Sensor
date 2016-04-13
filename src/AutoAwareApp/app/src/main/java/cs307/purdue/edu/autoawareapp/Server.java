@@ -39,8 +39,11 @@ public class Server implements Runnable, MessageProcessor, Serializable {
     Return: true if connection is set up, false if connection is not setup
      */
     private boolean serverInit(){
+        System.out.println("!!!!!!!!!!!!!!!!!!!!!In Server Init()!!!!!!!!!!!!!!!!!!!!!!");
         this.centralServer = UserBackend.SetServerConnection(server_ip, this);
-        if(this.centralServer == null) return false;
+        System.out.println("!!!!!!!!!!!!!!!!!!!!!Returning!!!!!!!!!!!!!!!!!!!!!!");
+        if(this.centralServer == null)
+            return false;
         return true;
     }
     /*

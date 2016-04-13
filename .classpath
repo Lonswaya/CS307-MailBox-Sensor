@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<classpath> 
+<classpath>
 	<classpathentry kind="src" path="src"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8"/>
-	<classpathentry kind="lib" path="C:/Users/Lonswaya/workspace/CS307-MailBox-Sensor/lib/twilio-java-sdk-5.9.0-jar-with-dependencies.jar"/>
-	<classpathentry kind="lib" path="C:/Users/Lonswaya/workspace/CS307-MailBox-Sensor/lib/bridj-0.6.3-20130316.190111-13.jar"/>
-	<classpathentry kind="lib" path="C:/Users/Lonswaya/workspace/CS307-MailBox-Sensor/lib/slf4j-api-1.7.2.jar"/>
-	<classpathentry kind="lib" path="C:/Users/Lonswaya/workspace/CS307-MailBox-Sensor/lib/v4l4j-0.9.1-r507.jar"/>
-	<classpathentry kind="lib" path="C:/Users/Lonswaya/workspace/CS307-MailBox-Sensor/lib/webcam-capture-0.3.11.jar"/>
-	<classpathentry kind="lib" path="C:/Users/Lonswaya/workspace/CS307-MailBox-Sensor/lib/webcam-capture-driver-v4l4j-0.3.11.jar"/>
+	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8"/>
+	<classpathentry exported="true" kind="lib" path="C:/Users/Dhairya/Documents/GitHub/CS307-MailBox-Sensor/lib/bridj-0.6.3-20130316.190111-13.jar"/>
+	<classpathentry exported="true" kind="lib" path="C:/Users/Dhairya/Documents/GitHub/CS307-MailBox-Sensor/lib/h2-1.4.191.jar"/>
+	<classpathentry exported="true" kind="lib" path="C:/Users/Dhairya/Documents/GitHub/CS307-MailBox-Sensor/lib/slf4j-api-1.7.2.jar"/>
+	<classpathentry exported="true" kind="lib" path="C:/Users/Dhairya/Documents/GitHub/CS307-MailBox-Sensor/lib/twilio-java-sdk-5.9.0-jar-with-dependencies.jar"/>
+	<classpathentry exported="true" kind="lib" path="C:/Users/Dhairya/Documents/GitHub/CS307-MailBox-Sensor/lib/v4l4j-0.9.1-r507.jar"/>
+	<classpathentry exported="true" kind="lib" path="C:/Users/Dhairya/Documents/GitHub/CS307-MailBox-Sensor/lib/webcam-capture-0.3.11.jar"/>
+	<classpathentry exported="true" kind="lib" path="C:/Users/Dhairya/Documents/GitHub/CS307-MailBox-Sensor/lib/webcam-capture-driver-v4l4j-0.3.11.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

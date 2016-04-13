@@ -1,22 +1,16 @@
 package cs307.purdue.edu.autoawareapp;
 
-import android.app.Activity;
-import android.app.AlertDialog;
-import android.app.DialogFragment;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 
 /**
  * Created by Dhairya on 4/8/2016.
  */
-public class SetServerIP extends AppCompatActivity implements View.OnClickListener {
+public class SetServerIPUI extends AppCompatActivity implements View.OnClickListener {
     EditText ip_text;
     Button set_ip_button;
 
@@ -40,7 +34,7 @@ public class SetServerIP extends AppCompatActivity implements View.OnClickListen
         switch(v.getId()) {
             case R.id.set_ip_button:
                 String ip = ip_text.getText().toString();
-                Intent mIntent = new Intent(this, SensorClient.class);
+                Intent mIntent = new Intent(this, SensorClientUI.class);
                 mIntent.putExtra("Server IP", ip);
                 startActivity(mIntent);
                 break;

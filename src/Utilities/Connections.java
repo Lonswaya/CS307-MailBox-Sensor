@@ -82,6 +82,7 @@ public class Connections {
 		while (read == null) {
 			try {	read = (T)in.readObject();	}
 			catch (Exception e) {	
+				e.printStackTrace();
 				System.err.println("Issue reading object "  + e.toString());     
 				break;
 			}
