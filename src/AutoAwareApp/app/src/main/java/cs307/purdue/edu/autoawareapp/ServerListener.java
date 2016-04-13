@@ -11,9 +11,9 @@ import java.net.ServerSocket;
 
 public abstract class ServerListener implements Runnable {
 	
-	SocketWrapper sock;
+	public SocketWrapper sock;
 	
-	boolean run;
+	public boolean run;
 	
 	public ServerListener(SocketWrapper sock) {
 		this.sock = sock;
@@ -29,12 +29,14 @@ public abstract class ServerListener implements Runnable {
 		run = true;
 		while (run) {
 			try {
+				if (sock.in == null) continue; //the server has not flushed anything yet, so we must wait
 				Message msg = Connections.readObject(sock.in);
 				if (msg == null)
 					run = false;
 				else
 					HandleMessage(msg);
 			} catch (Exception e) {
+				e.printStackTrace();
 				run = false;
 			}
 		}

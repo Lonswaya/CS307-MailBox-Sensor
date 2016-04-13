@@ -1,5 +1,6 @@
-
 package cs307.purdue.edu.autoawareapp;
+
+
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -46,6 +47,7 @@ public class Connections {
 		while (sock == null) {
 			try {	sock = Connections.socketFact.createSocket(ip, port);	}
 			catch (Exception e) {		
+				e.printStackTrace();
 				break; 
 			}
 		}
@@ -66,7 +68,7 @@ public class Connections {
 				sock = Connections.socketFact.createSocket(ip, port);
 				return sock;
 			} catch (Exception e) {	
-				System.err.println("Issue getting socket, retrying  " + e.toString()); 	
+				System.err.println("Issue getting socket   " + e.toString()); 	
 				return null;
 			}
 		}
@@ -80,7 +82,7 @@ public class Connections {
 		while (read == null) {
 			try {	read = (T)in.readObject();	}
 			catch (Exception e) {	
-				System.err.println("Issue reading object, retrying "  + e.toString());     
+				System.err.println("Issue reading object "  + e.toString());     
 				break;
 			}
 		}
@@ -94,7 +96,7 @@ public class Connections {
 		while (time - new Date().getTime() < timeout) {
 			try {	read = (T)in.readObject();	}
 			catch (Exception e) {	
-				System.err.println("Issue reading object, retrying until timeout "  + e.toString());     
+				System.err.println("Issue reading object  until timeout "  + e.toString());     
 				break;
 			}
 		}
@@ -130,7 +132,7 @@ public class Connections {
 		while (out == null) {
 			try {	out = new ObjectOutputStream(sock.getOutputStream());	}
 			catch (Exception e) { 
-				System.err.println("Issue getting outputstream, retrying " + e.toString());     
+				System.err.println("Issue getting outputstream  " + e.toString());     
 				break;
 			}
 		}
@@ -144,7 +146,7 @@ public class Connections {
 		while (out == null && new Date().getTime() - time < timeout) {
 			try {	out = new ObjectOutputStream(sock.getOutputStream());	}
 			catch (Exception e) { 
-				System.err.println("Issue getting outputstream, retrying until timeout " + e.toString());
+				System.err.println("Issue getting outputstream  until timeout " + e.toString());
 				break;
 			}
 		}
@@ -158,7 +160,7 @@ public class Connections {
 		while (in == null) {
 			try {	in = new ObjectInputStream(sock.getInputStream());	}
 			catch (Exception e) {	
-				System.err.println("Issue getting inputstream, retrying " + e.toString());    
+				System.err.println("Issue getting inputstream  " + e.toString());    
 				break;
 			}
 		}
@@ -170,7 +172,7 @@ public class Connections {
 		ObjectInputStream in = null;
 		while (in == null) {
 			try {	in = new ObjectInputStream(sock.getInputStream());	}
-			catch (Exception e) {	System.err.println("Issue getting inputstream, retrying");    }
+			catch (Exception e) {	System.err.println("Issue getting inputstream ");    }
 		}
 		return in;
 	}*/
@@ -195,7 +197,7 @@ public class Connections {
 					out.reset();
 					return true;
 				} catch (Exception e) {
-					System.err.println("Issue sendinng from socket, retrying until timeout " + e.toString()); 
+					System.err.println("Issue sendinng from socket  until timeout " + e.toString()); 
 					break;
 				}
 			}
@@ -217,7 +219,7 @@ public class Connections {
 				out.reset();
 				return true;
 			} catch (Exception e) {
-				System.err.println("Issue sendinng from socket, retrying until timeout " + e.toString()); 
+				System.err.println("Issue sendinng from socket  until timeout " + e.toString()); 
 				break;
 			}
 		}
@@ -239,7 +241,7 @@ public class Connections {
 				sock.close();
 				return b;
 			} catch (Exception e) {
-				System.err.println("Issue getting socket to send, retrying until timeout " + e.toString()); 
+				System.err.println("Issue getting socket to send  until timeout " + e.toString()); 
 				break;
 			}
 		}
@@ -279,7 +281,7 @@ public class Connections {
 	public static void closeSocket(Socket sock) {
 		try {	sock.close();	} 
 		catch (Exception e) { 
-			System.err.println("Issue closing socket, retrying " + e.toString());   
+			System.err.println("Issue closing socket  " + e.toString());   
 			//break;
 		}
 	}
