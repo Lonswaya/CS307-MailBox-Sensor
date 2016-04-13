@@ -101,16 +101,16 @@ public class RaspberryPi {
 					if (toSend != null) {
 						boolean result = Connections.send(connectionSocket.out, msg);
 						if (!result) { //if we fail to send a message
-							return false;
+							return false; //stop the thread
 						}
 					}
 				}				
 			}
-			return true;
 		default:
 			break;
 			
 		}
+		return true; //continue the thread
 	}
 	
 	// get the sensor specifically to this pi

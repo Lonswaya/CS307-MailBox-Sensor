@@ -36,8 +36,6 @@ public class SeparateServer {
 			}
 			
 		}).start();
-		
-
 	}
 	
 	//COMMIT ALL OF THESE
@@ -182,7 +180,11 @@ public class SeparateServer {
 				sock = new Socket(msg.config.ip, StaticPorts.piPort);
 			} catch (Exception e) {
 				exists = false; //not in sensorList and couldn't connect to it.
-				sock.close();
+				try {
+					sock.close();
+				} catch (IOException e1) {
+					e1.printStackTrace();
+				}
 			}
 		} else {
 			//has info
@@ -192,7 +194,11 @@ public class SeparateServer {
 				info.sock.out.writeObject(to_check);
 			} catch(Exception e) {
 				exists = false; //was in sensorList and couldn't connect to its socket
-				info.sock.sock.close();
+				try {
+					info.sock.sock.close();
+				} catch (IOException e1) {
+					e1.printStackTrace();
+				}
 			}
 		}				
 		//if it does exists and is already in the list, update the SensorInfo's config in HashTable.

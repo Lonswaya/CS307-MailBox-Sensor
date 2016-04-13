@@ -75,7 +75,7 @@ public class Connections {
 	
 	//Reads an object of type T. No need to check return value.
 	//Usage: Message msg = Connections.<Message>readObject(in);
-	public static <T> T readObject(ObjectInputStream in) {
+	public static synchronized <T> T readObject(ObjectInputStream in) {
 		T read = null;
 		while (read == null) {
 			try {	read = (T)in.readObject();	}
@@ -89,7 +89,7 @@ public class Connections {
 	}
 	//Reads an object of type T. No need to check return value.
 	//Usage: Message msg = Connections.<Message>readObject(in);
-	public static <T> T readObject(ObjectInputStream in, long timeout) {
+	public static synchronized <T> T readObject(ObjectInputStream in, long timeout) {
 		T read = null;
 		long time = new Date().getTime();
 		while (time - new Date().getTime() < timeout) {
@@ -106,32 +106,29 @@ public class Connections {
 	
 	//same as before but only takes a Socket.
 	//no need to check return values
-	public static <T> T readObject(Socket sock) {
+	public static synchronized <T> T readObject(Socket sock) {
 		ObjectInputStream in = Connections.getInputStream(sock);
 		return Connections.readObject(in);
 	}
 	
 	
 	//ensures that the message is sent 
-	public static void send(ObjectOutputStream out, Object toSend) {
-		boolean sent = false;
-		while (!sent) {
-			try {
-				out.writeObject(toSend);
-				out.flush();
-				out.reset();
-				sent = true;
-			} catch (Exception e) {	
-				System.err.println("Issue sending object, retrying " + e.toString()); 	
-				break;
-			}
+	public static synchronized boolean send(ObjectOutputStream out, Object toSend) {
+		try {
+			out.writeObject(toSend);
+			out.flush();
+			out.reset();
+			return true;
+		} catch (Exception e) {	
+			System.err.println("Issue sending object, retrying " + e.toString()); 	
+			return false;
 		}
 	}
 	
 	
 	
 	//should be private but needs to be static. Try not to use
-	private static ObjectOutputStream getOutputStream(Socket sock) {
+	private static synchronized ObjectOutputStream getOutputStream(Socket sock) {
 		ObjectOutputStream out = null;
 		while (out == null) {
 			try {	out = new ObjectOutputStream(sock.getOutputStream());	}
@@ -144,7 +141,7 @@ public class Connections {
 	}
 	
 	//should be private but needs to be static. Try not to use
-	public static ObjectOutputStream getOutputStream(Socket sock, long timeout) {
+	public static synchronized ObjectOutputStream getOutputStream(Socket sock, long timeout) {
 		ObjectOutputStream out = null;
 		long time = new Date().getTime();
 		while (out == null && new Date().getTime() - time < timeout) {
@@ -159,7 +156,7 @@ public class Connections {
 	
 	
 	//should be private but needs to be static. Try not to use
-	public static ObjectInputStream getInputStream(Socket sock) {
+	public static synchronized ObjectInputStream getInputStream(Socket sock) {
 		ObjectInputStream in = null;
 		while (in == null) {
 			try {	in = new ObjectInputStream(sock.getInputStream());	}
@@ -182,13 +179,13 @@ public class Connections {
 	}*/
 	
 	//ensures that a message is sent
-	public static void send(Socket sock, Object toSend) {
+	public static synchronized void send(Socket sock, Object toSend) {
 		ObjectOutputStream out = Connections.getOutputStream(sock);
 		Connections.send(out, toSend);
 	}
 	
 	//confirms that you can even connect to a server, even if you already have a socket
-		public static boolean sendAndCheck(ObjectOutputStream out, Object toSend, long timeout) {
+	public static synchronized boolean sendAndCheck(ObjectOutputStream out, Object toSend, long timeout) {
 			long time = new Date().getTime();
 			while (true) {
 				try {
@@ -210,7 +207,7 @@ public class Connections {
 		}
 	
 	//confirms that you can even connect to a server, even if you already have a socket
-	public static boolean sendAndCheck(Socket sock, Object toSend, long timeout) {
+	public static synchronized boolean sendAndCheck(Socket sock, Object toSend, long timeout) {
 		long time = new Date().getTime();
 		while (true) {
 			try {
@@ -233,7 +230,7 @@ public class Connections {
 	
 	
 	//confirms that you can even connect to a server
-	public static boolean sendAndCheck(String ip, int port, Object toSend, long timeout) {
+	public static synchronized boolean sendAndCheck(String ip, int port, Object toSend, long timeout) {
 		long time = new Date().getTime();
 		while (true) {
 			if (new Date().getTime() - time > timeout) {
@@ -254,7 +251,7 @@ public class Connections {
 	}
 	
 	//closes a socket and catches exceptions for you so closing is only one line
-	public static void closeSocket(Socket sock) {
+	public static synchronized void closeSocket(Socket sock) {
 		try {	sock.close();	} 
 		catch (Exception e) { 
 			System.err.println("Issue closing socket, retrying " + e.toString());   
