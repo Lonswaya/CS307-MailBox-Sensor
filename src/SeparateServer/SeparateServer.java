@@ -1,10 +1,12 @@
 package SeparateServer;
+import java.awt.Color;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 import javax.net.SocketFactory;
@@ -28,12 +30,23 @@ public class SeparateServer {
 	static ServerSocket serverSock = null;
 	
 	public static void main(String[] args) {
+		Random r = new Random();
+		ClientConfig cfg = new ClientConfig();
+		cfg.r = r.nextFloat();
+		cfg.g = r.nextFloat();
+		cfg.b = r.nextFloat();
+		SensorInfo randSensor = new SensorInfo(cfg, null);
+		sensorList.put("1234", randSensor);
+		
+		
 		serverSock = Connections.getServerSocket(StaticPorts.serverPort);
 		new Thread(new Runnable() {
 			public void run() {
+				System.out.println("Server started");
 				while (true) {
 					try {
 						GetHandler(new SocketWrapper(serverSock.accept())).start();
+						System.out.println("New connection");
 					} catch (Exception e) {
 						e.printStackTrace();
 					}
@@ -64,7 +77,7 @@ public class SeparateServer {
 				SensorInfo sensorInfo = sensorList.get(key);
 				configs.add(sensorInfo.sensorInfo);
 			}
-			SensorsMessage sm = new SensorsMessage("SDKJL", configs);
+			SensorsMessage sm = new SensorsMessage("Here is your configs!", configs);
 			Connections.send(ui.out, sm);
 		}
 	}
@@ -72,7 +85,7 @@ public class SeparateServer {
 	public static void sendAllConfigs(String ip, ArrayList<ClientConfig> configs) {
 		SocketWrapper ui = uiList.get(ip);
 		if (ui != null)
-			Connections.send(ui.out, new SensorsMessage("sdffs", configs));
+			Connections.send(ui.out, new SensorsMessage("Here is your configs!", configs));
 	}
 	
 	public static void sendAllConfigs(SocketWrapper wrapper) {
@@ -81,7 +94,7 @@ public class SeparateServer {
 			SensorInfo info = sensorList.get(key);
 			configs.add(info.sensorInfo);
 		}
-		Connections.send(wrapper.out, new SensorsMessage("sdkjds", configs));
+		Connections.send(wrapper.out, new SensorsMessage("Here is your configs!", configs));
 	}
 	
 	/*
@@ -103,7 +116,7 @@ public class SeparateServer {
 				if (msg == null) {
 					throw(new Exception("Message was returned as null"));
 				}
-				
+				System.out.println("New message: " + msg.message);
 				switch (msg.type) {
 					case INIT:
 						//reset the SocketWrapper related to this UI in HashMap.

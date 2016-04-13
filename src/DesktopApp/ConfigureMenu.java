@@ -84,7 +84,7 @@ public class ConfigureMenu extends JFrame {
 	        ClientConfig input = parent.configs.get(inputNum);
 	        name = new JTextField(input.name);
 		    name.setPreferredSize(new Dimension(100, 25));
-		    c = input.color;
+		    c = new Color(input.r, input.g, input.b);
 	        colorChooser = new JButton("Color");
 	        colorChooser.setBackground(c);
 	        colorChooser.setPreferredSize(new Dimension(90, 30));
@@ -461,7 +461,7 @@ public class ConfigureMenu extends JFrame {
 				type, 
 				threshold.getValue() * .01f, 
 				nameString,
-				c,
+				c.getRed()/255, c.getGreen()/255, c.getBlue()/255, //cause otherwise I would have to get a float array and eaugh
 				desktopBool,
 				magicMirrorBool,
 				textBool,

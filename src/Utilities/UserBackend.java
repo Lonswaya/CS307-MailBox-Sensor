@@ -1,4 +1,5 @@
 package Utilities;
+import java.io.IOException;
 import java.net.Socket;
 import java.util.ArrayList;
 
@@ -52,13 +53,19 @@ public class UserBackend {
 	 * 
 	 */
 	public static SocketWrapper SetServerConnection(String ip, MessageProcessor msgProcessor) {
-		SocketWrapper sWrapper = new SocketWrapper(Connections.getSocket(ip, StaticPorts.serverPort, 1000));
-		if (sWrapper.sock == null) return null;
+		SocketWrapper sWrapper = new SocketWrapper(Connections.getSocket(ip, StaticPorts.serverPort));
+		if (sWrapper.sock == null) {
+			System.out.println("Server not found");
+			return null;
+		} else {
+			System.out.println("Created server connection " + sWrapper.sock);
+		}
 		new Thread(new ServerListener(sWrapper) {
 			public void HandleMessage(Message msg) throws Exception  {
 				msgProcessor.ProcessMessage(msg);
 			}
 		}).start();
+		
 		Connections.send(sWrapper.out, new Message("Hi there I am a new dude", null, MessageType.INIT));
 		return sWrapper;
 	}
@@ -74,13 +81,12 @@ public class UserBackend {
 	 * if true, sends a new sensor info to the server
 	 */
 	public static boolean AddSensor(ClientConfig cfg, SocketWrapper serverConnection) {
-		Socket newSensorSocket = Connections.getSocket(cfg.ip, StaticPorts.piPort, 5000);
+		Socket newSensorSocket = Connections.getSocket(cfg.ip, StaticPorts.piPort);
 		if (newSensorSocket != null) {
 			Connections.closeSocket(newSensorSocket);
 			ConfigMessage confM = new ConfigMessage("To add", cfg);
 			confM.type = MessageType.ADD_SENSOR;
-			Connections.sendAndCheck(serverConnection.out, confM, 5000);		
-			return true;
+			return Connections.send(serverConnection.out, confM);		
 		} else {
 			return false;
 		}

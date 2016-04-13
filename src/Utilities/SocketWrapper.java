@@ -8,14 +8,28 @@ public class SocketWrapper {
 	public ObjectInputStream in;
 	public ObjectOutputStream out;
 	public Socket sock;
-	public SocketWrapper(Socket sock) {
+	public SocketWrapper(Socket newSocket) {
 		try {
-			in = new ObjectInputStream(sock.getInputStream());
-			out = new ObjectOutputStream(sock.getOutputStream());
+			sock = newSocket;
+			//we get out instantly, so no problem
+			out = new ObjectOutputStream(newSocket.getOutputStream());
 		} catch (Exception e) {
 			in = null;
 			out = null;
 		}
+		//we have to create a new thread, as the inputstream will be blocked until the server flushes with its outputstream
+		//so we will have to check to see if it is null. If it is null, we must continue waiting (i.e. continue in the loop)
+		new Thread(new Runnable() {
+			public void run() {
+				try {
+					if (sock != null) {
+						in = new ObjectInputStream(sock.getInputStream());
+					}
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}).start();
 	}
 	public SocketWrapper(Socket sock, ObjectInputStream in, ObjectOutputStream out) {
 		this.sock = sock;
