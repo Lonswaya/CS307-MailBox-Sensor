@@ -1,7 +1,9 @@
+package cs307.purdue.edu.autoawareapp;
 import java.net.Socket;
 import java.util.ArrayList;
 
-import cs307.purdue.edu.autoawareapp.*;
+
+
 /* 
  * Purpose: Static methods and a static string that are used by both the AutoAwareControlPanel
  * 		and phone app to communicate and respond to a server.
@@ -24,7 +26,7 @@ public class UserBackend {
 	/* SendStreaming: Sends a streaming message to a sensor determined by the IP
 	 * onOrOff: On to start streaming, Off to stop
 	 */
-	static SocketWrapper SendStreaming(String ip, MessageProcessor msgProcessor) {
+	static SocketWrapper SendStreaming(String ip, final MessageProcessor msgProcessor) {
 		SocketWrapper sWrapper = new SocketWrapper(Connections.getSocket(ip, StaticPorts.piPort));
 		if (sWrapper.sock == null) return null;
 		new Thread(new ServerListener(sWrapper) {
@@ -50,7 +52,7 @@ public class UserBackend {
 	 * Returns null if the connection can not be made
 	 * 
 	 */
-	static SocketWrapper SetServerConnection(String ip, MessageProcessor msgProcessor) {
+	static SocketWrapper SetServerConnection(String ip, final MessageProcessor msgProcessor) {
 		SocketWrapper sWrapper = new SocketWrapper(Connections.getSocket(ip, StaticPorts.serverPort, 1000));
 		if (sWrapper.sock == null) return null;
 		new Thread(new ServerListener(sWrapper) {
