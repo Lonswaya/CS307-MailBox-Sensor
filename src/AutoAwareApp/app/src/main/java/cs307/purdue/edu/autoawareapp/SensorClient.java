@@ -97,6 +97,7 @@ public class SensorClient extends AppCompatActivity implements View.OnClickListe
 
         try {
             server = new Server(ip);
+            //server.serverInit();
             //server.setUpConnector();
             System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
             Thread t = new Thread(server);
@@ -105,10 +106,10 @@ public class SensorClient extends AppCompatActivity implements View.OnClickListe
             //t.run();
             System.out.println("GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG");
 
-            /*sensorInfoList = server.getSensorLists();
+            //sensorInfoList = server.getSensorLists();
             while(sensorInfoList == null){
                 sensorInfoList = server.getSensorLists();
-                //System.out.println("*****************************" + sensorInfoList + "***************************");
+                System.out.println("*****************************" + sensorInfoList + "***************************");
             }
             for (int i = 0; i < sensorInfoList.size(); i++) {
                 Sensor sensor = convertClientConfigToSensor(sensorInfoList.get(i));
@@ -116,7 +117,7 @@ public class SensorClient extends AppCompatActivity implements View.OnClickListe
                 System.out.println("????????????????????????" + sensor + "?????????????????????????");
                 recyclerView.scrollToPosition(sensors.size() - 1);
                 mAdapter.notifyDataSetChanged();
-            }*/
+            }
         } catch(NullPointerException e) {
             //TODO: Display a waiting screen
             System.out.println("NULL POINTER EXCEPTION");
@@ -135,7 +136,7 @@ public class SensorClient extends AppCompatActivity implements View.OnClickListe
 
     public int createSensors() {
         Server server = new Server(ip);
-        sensorInfoList = server.getSensors();
+        sensorInfoList = server.getSensorLists();
         System.out.println(sensorInfoList);
         if (sensorInfoList != null) {
             setNumOfSensors(sensorInfoList.size());
@@ -162,7 +163,7 @@ public class SensorClient extends AppCompatActivity implements View.OnClickListe
     }
 
     public int updateSensors(Server server) {
-        sensorInfoList = server.getSensors();
+        sensorInfoList = server.getSensorLists();
         if (sensorInfoList != null) {
             setNumOfSensors(sensorInfoList.size());
         }
@@ -263,9 +264,9 @@ public class SensorClient extends AppCompatActivity implements View.OnClickListe
 
         switch (view.getId()) {
             case R.id.addButton:
-                //Intent mIntent = new Intent(this, AddSensor.class);
-                //mIntent.putExtra("Name", "Add Sensor");
-                //startActivity(mIntent);
+                Intent mIntent = new Intent(this, AddSensor.class);
+                mIntent.putExtra("Name", "Add Sensor");
+                startActivity(mIntent);
                 break;
             case R.id.exitButton:
                 System.exit(0);

@@ -10,11 +10,22 @@ android {
         targetSdkVersion 22
         versionCode 1
         versionName "1.0"
+        buildConfigField "String", "LOCAL_IP", '\"' + getLocalIp("eth0") + '\"'
     }
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+def getLocalIp(String interfaceName) {
+    NetworkInterface iface =  NetworkInterface.getByName(interfaceName);
+    for (InterfaceAddress address : iface.getInterfaceAddresses()) {
+        String ip =  address.getAddress().getHostAddress()
+        if (ip.length() <= 15) {
+            return ip;
         }
     }
 }

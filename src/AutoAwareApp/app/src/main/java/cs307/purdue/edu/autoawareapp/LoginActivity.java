@@ -141,7 +141,7 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
             mAuthTask = new UserLoginTask(email, password);
             mAuthTask.execute((Void) null);
 
-            Intent mIntent = new Intent(this, SensorClient.class);
+            Intent mIntent = new Intent(this, SetServerIP.class);
             startActivity(mIntent);
         }
     }

@@ -3,6 +3,9 @@ package cs307.purdue.edu.autoawareapp;
 import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.support.annotation.RequiresPermission;
+
+import org.apache.http.conn.util.InetAddressUtils;
+
 import java.io.Serializable;
 import java.net.*;
 import java.util.ArrayList;
@@ -35,7 +38,7 @@ public class Server implements Runnable, MessageProcessor, Serializable {
     Initializes the connection to central server
     Return: true if connection is set up, false if connection is not setup
      */
-    public boolean serverInit(){
+    private boolean serverInit(){
         this.centralServer = UserBackend.SetServerConnection(server_ip, this);
         if(this.centralServer == null) return false;
         return true;
@@ -68,6 +71,13 @@ public class Server implements Runnable, MessageProcessor, Serializable {
      */
     @Override
     public void run() {
+        System.out.println("Debug message: In run() method");
+        if(centralServer == null){
+            System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+            if(!serverInit()){
+                System.out.println("    BACKEND SREVER DEBUG: Can't get central server connection");
+            }
+        }
         /*try {
 
                 TESTING SHIT IF THIS BREAKS NOTHIGN WORKS
@@ -91,9 +101,12 @@ public class Server implements Runnable, MessageProcessor, Serializable {
             e.printStackTrace();
         }*/
 
+        System.out.println("Debug Message: Going into running");
+
         while(running) {
             //shitty timer
             if(!suspended) {
+                System.out.println("Debug Message: In Server call");
                 int interval = 5000;
                 long lastMilli = System.currentTimeMillis();
                 while (true) {
@@ -115,6 +128,7 @@ public class Server implements Runnable, MessageProcessor, Serializable {
 
             @Override
             public void run() {
+
                 try{
                     switch(msg.type){
                         case READING:
@@ -194,17 +208,18 @@ public class Server implements Runnable, MessageProcessor, Serializable {
     Return: string of ip address, null if unsuccessful
      */
     public static String getMyIP(){
-        if (Build.FINGERPRINT.contains("generic")) {
-            System.out.println("    BACKEND SREVER DEBUG: IP set to Localhost");
-            return "localhost";
-        }
+        /*if (Build.FINGERPRINT.contains("generic")) {
+            System.out.println("    BACKEND SREVER DEBUG: IP set to " + BuildConfig.LOCAL_IP);
+            return BuildConfig.LOCAL_IP;
+        }*/
 
         try {
             for (Enumeration<NetworkInterface> en = NetworkInterface.getNetworkInterfaces(); en.hasMoreElements();) {
                 NetworkInterface intf = en.nextElement();
                 for (Enumeration<InetAddress> enumIpAddr = intf.getInetAddresses(); enumIpAddr.hasMoreElements();) {
                     InetAddress inetAddress = enumIpAddr.nextElement();
-                    if (!inetAddress.isLoopbackAddress()) {
+                    String ipv4;
+                    if (!inetAddress.isLoopbackAddress() && InetAddressUtils.isIPv4Address(ipv4 = inetAddress.getHostAddress())) {
                         String tmp = inetAddress.getHostAddress().toString();
                         System.out.println("    BACKEND SREVER DEBUG: IP = :" + tmp);
                         return tmp;

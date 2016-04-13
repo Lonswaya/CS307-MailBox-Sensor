@@ -317,7 +317,7 @@
         android:padding="5dp"
         android:layout_below="@id/desktop_box"
         android:layout_marginTop="5dp"
-        android:layout_marginLeft="15dp"
+        android:layout_marginLeft="22dp"
         android:hint="@string/mobile_hint"
         android:capitalize="characters"
         android:background="@drawable/edittext_bg"
@@ -343,25 +343,14 @@
         />
 
     <Button
-        android:id="@+id/defualt_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/default_string"
-        android:textSize="15dp"
-        android:layout_marginTop="10dp"
-        android:layout_below="@id/mobile_number"
-        android:layout_marginLeft="77dp"
-        />
-
-    <Button
         android:id="@+id/apply_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="ADD SENSOR"
-        android:layout_toRightOf="@id/defualt_button"
-        android:textSize="15dp"
+        android:textSize="18dp"
         android:layout_marginTop="10dp"
         android:layout_below="@id/mobile_number"
         android:layout_marginLeft="7dp"
+        android:layout_centerHorizontal="true"
         />
 </RelativeLayout>

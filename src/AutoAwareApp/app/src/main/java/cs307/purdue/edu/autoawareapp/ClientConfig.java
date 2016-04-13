@@ -1,5 +1,5 @@
 package cs307.purdue.edu.autoawareapp;
-import java.awt.Color;
+//import java.awt.Color;
 import java.io.Serializable;
 import java.util.Calendar;
 
@@ -7,16 +7,16 @@ import java.util.Calendar;
 public class ClientConfig extends BaseConfig implements Serializable {
 	private static final long serialVersionUID = 1L;
 	public String name;
-	public Color color;
+	//public Color color;
 	public boolean desktopNotification, magicMirrorNotification, textNotification, emailNotification;
 	public String phoneNumber, emailAddress, ip;
 	public int interval;
 	
 	
-	public ClientConfig(String ip, String start, String stop, boolean force_on, boolean force_off, SensorType type, float threshold, String name, Color color, boolean desktopNotification, boolean magicMirrorNotification, boolean textNotification, boolean emailNotification, String phoneNumber, String emailAddress, int interval) {
+	public ClientConfig(String ip, String start, String stop, boolean force_on, boolean force_off, SensorType type, float threshold, String name, boolean desktopNotification, boolean magicMirrorNotification, boolean textNotification, boolean emailNotification, String phoneNumber, String emailAddress, int interval) {
 		super(start, stop, force_on, force_off , type, threshold);
 		this.ip = ip;
-		this.color = color;
+		//this.color = color;
 		this.name = name;
 		this.desktopNotification = desktopNotification;
 		this.magicMirrorNotification = magicMirrorNotification;
@@ -28,7 +28,7 @@ public class ClientConfig extends BaseConfig implements Serializable {
 	}
 	public ClientConfig() {
 		super();
-		this.color = Color.white;
+		//this.color = Color.white;
 		this.name = "";
 		this.phoneNumber = "";
 		this.emailAddress = "";
@@ -47,7 +47,7 @@ public class ClientConfig extends BaseConfig implements Serializable {
 				+	"THRESHOLD=" + sensing_threshold + "%\n"
 				+   "[USER SETTINGS]\n"
 				+   "NAME=\"" + name + "\"\n"
-				+   "COLOR=" + color + "\n"
+				//+   "COLOR=" + color + "\n"
 				+   "DESKTOP NOTIFICATIONS=" + desktopNotification + "\n"
 				+   "MAGIC MIRROR NOTIFICATION=" + magicMirrorNotification + "\n"
 				+   "TEXT NOTIFICATION=" + textNotification + ", NUMBER=" + phoneNumber + "\n"
@@ -57,9 +57,9 @@ public class ClientConfig extends BaseConfig implements Serializable {
 	public void SetIP(String s) {
 		ip = s;
 	}
-	public void SetColor(Color c) {
+	/*public void SetColor(Color c) {
 		color = c;
-	}
+	}*/
 	public void SetName(String s) {
 		name = s;
 	}
