@@ -471,11 +471,11 @@ public class ConfigureMenu extends JFrame {
 		);
 		this.setEnabled(false);
 		parent.configs.set(inputNum, toSubmit);
-		System.out.println(toSubmit);
+		//System.out.println(toSubmit);
 		//stop the stream to the pi
-		parent.StopStream(lastCfg);
+		parent.StopStream(toSubmit.ip);
 		//stop the stream
-		UserBackend.SendStreaming(toSubmit.ip, parent);
+		//UserBackend.SendStreaming(toSubmit.ip, parent);
 
 		//parent.SendConfigToSensor(toSubmit);
 		parent.refreshSensorList();

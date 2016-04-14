@@ -28,7 +28,10 @@ public class UserBackend {
 	 */
 	public static SocketWrapper SendStreaming(String ip, MessageProcessor msgProcessor) {
 		SocketWrapper sWrapper = new SocketWrapper(Connections.getSocket(ip, StaticPorts.piPort));
-		if (sWrapper.sock == null) return null;
+		if (sWrapper.sock == null) {
+			System.out.println("Sensor connection came back as null, could not connect");
+			return null;
+		}
 		new Thread(new ServerListener(sWrapper) {
 			public void HandleMessage(Message msg) throws Exception  {
 				msgProcessor.ProcessMessage(msg);
@@ -82,10 +85,9 @@ public class UserBackend {
 	 */
 	public static boolean AddSensor(ClientConfig cfg, SocketWrapper serverConnection) {
 		Socket newSensorSocket = Connections.getSocket(cfg.ip, StaticPorts.piPort);
-		if (newSensorSocket != null) {
+		if (newSensorSocket != null && Connections.send(newSensorSocket, new Message("Hi do you exist plz respond", null, null))) {
 			Connections.closeSocket(newSensorSocket);
 			ConfigMessage confM = new ConfigMessage("To add", cfg);
-			confM.type = MessageType.ADD_SENSOR;
 			return Connections.send(serverConnection.out, confM);		
 		} else {
 			return false;

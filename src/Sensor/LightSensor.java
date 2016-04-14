@@ -128,6 +128,14 @@ public class LightSensor extends BaseSensor {
 		// TODO Auto-generated method stub
 		if (this.webcam.isOpen()) this.webcam.close();
 	}
+	/*
+	 * If the camera is locked (in use), return true
+	 * Otherwise, if the camera is ready to go, return false
+	 */
+	public boolean IsLocked() {
+		return (!this.ready || this.webcam.getLock().isLocked());
+		
+	}
 	
 	/*public static void main (String[] args) throws Exception{
 		

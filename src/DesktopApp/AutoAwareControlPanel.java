@@ -122,7 +122,8 @@ public class AutoAwareControlPanel extends JFrame implements MessageProcessor {/
 		configure.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent event) {
-               //System.out.println("Open configure menu for sensor " + identifier);
+               System.out.println("Open configure menu for sensor " + identifier);
+            
                createConfigureMenu(identifier);
                //Notify(identifier);
             }
@@ -357,7 +358,7 @@ public class AutoAwareControlPanel extends JFrame implements MessageProcessor {/
     			//this will tell the sensor to start streaming, and handles the connections with the processMessage
     			SocketWrapper newSocketWrapper = UserBackend.SendStreaming(cfg.ip, this);
     			if (newSocketWrapper != null) {
-    				streamersConnection.put(cfg.ip, newSocketWrapper);
+    				streamersConnection.put(identifier, newSocketWrapper);
     			} else {
     				System.err.println("Sensor connection was not made to start streaming");
     			}
@@ -498,13 +499,20 @@ public class AutoAwareControlPanel extends JFrame implements MessageProcessor {/
     	refreshSensorList();
     }
     public void StopStream(String address) {
-    	StopStream(ConfigFind(address));
+    	SocketWrapper sWrapper = streamersConnection.get(address);
+    	if (sWrapper != null) {
+    		UserBackend.StopStreaming(sWrapper);
+        	streamersConnection.remove(address);
+
+    	}
+    	//StopStream(ConfigFind(address));
     }
     public void StopStream(ClientConfig cfg) {
-    	System.out.println("Stopping stream now");
+    	//System.out.println("Stopping stream now");
     	//stopping stream
-    	UserBackend.StopStreaming(streamersConnection.remove(cfg.ip));
+    	//UserBackend.StopStreaming(streamersConnection.remove(cfg.ip));
     	t2bool = false;
+    	StopStream(cfg.ip);
     }
     
     public ClientConfig ConfigFind(String identifier) {
@@ -826,6 +834,7 @@ public class AutoAwareControlPanel extends JFrame implements MessageProcessor {/
         		return false;
     		} else {
         		JOptionPane.showMessageDialog(null,"Server found, sensors updated", "success", JOptionPane.INFORMATION_MESSAGE, null);
+        		UserBackend.GetSensors(serverConnection);
         		return true;
     		}
     		

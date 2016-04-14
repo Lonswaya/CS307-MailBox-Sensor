@@ -30,13 +30,14 @@ public class SeparateServer {
 	static ServerSocket serverSock = null;
 	
 	public static void main(String[] args) {
-		Random r = new Random();
+		//new sensor for basic tests
+		/*Random r = new Random();
 		ClientConfig cfg = new ClientConfig();
 		cfg.r = r.nextFloat();
 		cfg.g = r.nextFloat();
 		cfg.b = r.nextFloat();
 		SensorInfo randSensor = new SensorInfo(cfg, null);
-		sensorList.put("1234", randSensor);
+		sensorList.put("1234", randSensor);*/
 		
 		
 		serverSock = Connections.getServerSocket(StaticPorts.serverPort);
@@ -190,16 +191,22 @@ public class SeparateServer {
 		
 		boolean exists = true;
 		boolean inList = false;
-		Socket sock = null;
+		SocketWrapper sock = null;
 		//checking existance
 		SensorInfo info = sensorList.get(msg.config.ip);
 		if (info == null) {
 			try {
-				sock = new Socket(msg.config.ip, StaticPorts.piPort);
+				Socket newSocket = Connections.getSocket(msg.config.ip, StaticPorts.piPort);
+				if (newSocket == null) {
+					System.out.println("Socket connection was null for a new sensor");
+					exists = false;
+				} else {
+					sock = new SocketWrapper(newSocket);
+				}
 			} catch (Exception e) {
 				exists = false; //not in sensorList and couldn't connect to it.
 				try {
-					sock.close();
+					sock.sock.close();
 				} catch (IOException e1) {
 					e1.printStackTrace();
 				}
@@ -209,7 +216,7 @@ public class SeparateServer {
 			inList = true;
 			Message to_check = new Message("testing connection", null, null);
 			try {
-				info.sock.out.writeObject(to_check);
+				Connections.send(info.sock.out, to_check);
 			} catch(Exception e) {
 				exists = false; //was in sensorList and couldn't connect to its socket
 				try {
@@ -221,12 +228,20 @@ public class SeparateServer {
 		}				
 		//if it does exists and is already in the list, update the SensorInfo's config in HashTable.
 		//if it does exist and is not in the list, new SensorInfo using sock
+		
+		msg.SetFromThis(); //sets from to be from this server
 		if (exists && !inList) {
 			info = new SensorInfo(msg.config, sock);
 			sensorList.put(msg.config.ip, info);
+			Connections.send(sock.out, msg);
+			System.out.println("Sending a new config message to a new sensor");
 		} else if (exists && inList) {
 			info.sensorInfo = msg.config;
 			sensorList.put(msg.config.ip, info);
+			System.out.println("Sending a new config message to an existing sensor");
+			Connections.send(info.sock.out, msg);
+		} else {
+			System.out.println("Nothing happened");
 		}
 		
 		SeparateServer.sendAllConfigsToAllUis();

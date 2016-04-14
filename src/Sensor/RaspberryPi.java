@@ -47,12 +47,14 @@ public class RaspberryPi {
 				while (true) {
 					try {
 						SocketWrapper newSock = new SocketWrapper(serverSock.accept());
+						System.out.println("new connection");
 						new Thread(new ServerListener(newSock) {
 							public void HandleMessage(Message msg) throws Exception  {
 								run = ProcessMessage(msg, sock);
 							}
 						}).start();
 					} catch (Exception e) {
+						
 						e.printStackTrace();
 					}
 				}
@@ -70,6 +72,11 @@ public class RaspberryPi {
 	 */
 	
 	public boolean ProcessMessage(Message msg, SocketWrapper connectionSocket) throws Exception {
+		if (msg.type == null) {
+			System.out.println("Debug message, " + msg.message);
+			return true;
+		}
+		System.out.println("New message: " + msg.message);
 		switch(msg.type) {
 		case CONFIG:
 			serverConnection = connectionSocket; //update so we can send messages
@@ -96,7 +103,12 @@ public class RaspberryPi {
 			if (streaming && sensor != null && sensor.ready) {
 				//open a new connection, start streaming as fast as humanly possible until the connection quits
 				boolean run = true;
+				System.out.println("Hello user. We are going to start streaming now.");
 				while (run) {
+					System.out.println("Streaming loop");
+					if (sensor.sType == SensorType.VIDEO && ((PictureSensor)sensor).IsLocked()) continue; //if we are occupied, continue
+					if (sensor.sType == SensorType.LIGHT && ((LightSensor)sensor).IsLocked()) continue; //if we are occupied, continue
+					System.out.println("Able to take picture, as no cameras are open");
 					sensor.sense();
 					if (sensor.sType == SensorType.AUDIO && ((AudioSensor)sensor).doneStreaming) {
 						((AudioSensor)sensor).stream();
@@ -104,7 +116,10 @@ public class RaspberryPi {
 					Message toSend = sensor.form_message();
 					if (toSend != null) {
 						boolean result = Connections.send(connectionSocket.out, msg);
+						System.out.println("Yay, we were able to send a message. Let's do this again.");
+						Thread.sleep(500);
 						if (!result) { //if we fail to send a message
+							System.out.println("Connection lost, stopping thread");
 							return false; //stop the thread
 						}
 					}

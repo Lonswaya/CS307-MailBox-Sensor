@@ -29,7 +29,7 @@ public class Connections {
 	static ServerSocketFactory serverSockFact = ServerSocketFactory.getDefault();
 	
 	//returns a ServerSocket on that port. No need to check the return value.
-	public static synchronized ServerSocket getServerSocket(final int port) {
+	public static ServerSocket getServerSocket(final int port) {
 		ServerSocket ss = null;
 		while (ss == null) {
 			try {	ss = Connections.serverSockFact.createServerSocket(port, 1000);	}
@@ -42,7 +42,7 @@ public class Connections {
 	}
 	
 	//returns a Socket connecting to a ServerSocket. No need to check the return value.
-	public static synchronized Socket getSocket(final String ip, final int port) {		
+	public static Socket getSocket(final String ip, final int port) {		
 		Socket sock = null;
 		while (sock == null) {
 			try {	sock = Connections.socketFact.createSocket(ip, port);	}
@@ -55,7 +55,7 @@ public class Connections {
 	}
 	
 	//ensures that the message is sent, if it is not sent within a reasonable timeout, it stops and returns false
-	public static synchronized Socket getSocket(final String ip, final int port, long timeout) {
+	public static Socket getSocket(final String ip, final int port, long timeout) {
 			
 		boolean stop = false;
 		long time = new Date().getTime();
