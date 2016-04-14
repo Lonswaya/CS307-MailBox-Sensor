@@ -18,8 +18,8 @@ public class SensorMain {
 				System.out.println("no sensor found");
 				pi.sleepAmt = 10000;
 			} else {
-				
-				if (pi.sensor.isSensorActive() ) {
+				if (RaspberryPi.streaming) pi.sleepAmt = 0;
+				if (pi.sensor.isSensorActive() || RaspberryPi.streaming) {
 					new Thread(new SenseThread(pi)).run(); // tell sensor to sense shit maybe a
 					
 					/*if (pi.sensor.sType == SensorType.AUDIO && ((AudioSensor)pi.sensor).doneStreaming) {

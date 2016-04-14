@@ -1,6 +1,7 @@
 package Utilities;
 import java.net.ServerSocket;
 
+import Sensor.RaspberryPi;
 import cs307.purdue.edu.autoawareapp.*;
 /*
  * Handles individual requests from clients
@@ -15,6 +16,8 @@ public abstract class ServerListener implements Runnable {
 	public SocketWrapper sock;
 	
 	public boolean run;
+	
+	
 	
 	public ServerListener(SocketWrapper sock) {
 		this.sock = sock;
@@ -32,6 +35,7 @@ public abstract class ServerListener implements Runnable {
 			try {
 				if (sock == null) {
 					System.err.println("ServerListener: Ending connection because the socket was null");
+					RaspberryPi.streaming = false;
 					run = false;
 					break;
 				}
@@ -39,12 +43,14 @@ public abstract class ServerListener implements Runnable {
 				Message msg = Connections.readObject(sock.in);
 				if (msg == null) {
 					System.err.println("ServerListener: Ending connection because the message returned null");
+					RaspberryPi.streaming = false;
 					run = false;
 				} else
 					HandleMessage(msg);
 			} catch (Exception e) {
 				System.err.println("ServerListener: Connection lost due to exception " + e.toString());
 				e.printStackTrace();
+				RaspberryPi.streaming = false;
 				run = false;
 			}
 		}

@@ -430,8 +430,8 @@ public class AutoAwareControlPanel extends JFrame implements MessageProcessor {/
 		    	refreshSensorList();
 	    	} else {
 	    		if (UserBackend.AddSensor(newSensor, serverConnection)) {
-		    		configs.add(newSensor);
-			    	createNew(controlIndex, newSensor);
+		    		//configs.add(newSensor);
+			    	//createNew(controlIndex, newSensor);
 			    	refreshSensorList();
 		    	} else {
 		    		JOptionPane.showMessageDialog(null,"Sensor not found", "error", JOptionPane.ERROR_MESSAGE, null);

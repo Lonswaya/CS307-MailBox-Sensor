@@ -25,7 +25,7 @@ public class RaspberryPi {
 	public int sleepAmt;
 	//this is the port and IP for the separate server 
 
-	boolean streaming = false;
+	static public boolean streaming = false;
 	
 	private SocketWrapper serverConnection;
 	
@@ -105,23 +105,24 @@ public class RaspberryPi {
 				boolean run = true;
 				System.out.println("Hello user. We are going to start streaming now.");
 				while (run) {
-					System.out.println("Streaming loop");
+					//System.out.println("Streaming loop");
 					if (sensor.sType == SensorType.VIDEO && ((PictureSensor)sensor).IsLocked()) continue; //if we are occupied, continue
 					if (sensor.sType == SensorType.LIGHT && ((LightSensor)sensor).IsLocked()) continue; //if we are occupied, continue
 					System.out.println("Able to take picture, as no cameras are open");
-					sensor.sense();
+					//sensor.sense();
 					if (sensor.sType == SensorType.AUDIO && ((AudioSensor)sensor).doneStreaming) {
 						((AudioSensor)sensor).stream();
 					}
 					Message toSend = sensor.form_message();
 					if (toSend != null) {
-						boolean result = Connections.send(connectionSocket.out, toSend); 
-						System.out.println("Yay, we were able to send a message. Let's do this again.");
-						//Thread.sleep(500); //we may want to consider telling the thread to sleep if it goes... too fast
-						if (!result) { //if we fail to send a message
+						if (Connections.send(connectionSocket.out, toSend)) {
+							System.out.println("Yay, we were able to send a message. Let's do this again.");
+						} else {
 							System.out.println("Connection lost, stopping thread");
+							streaming = false;
 							return false; //stop the thread
 						}
+						
 					}
 				}				
 			}

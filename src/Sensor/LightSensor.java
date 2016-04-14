@@ -44,27 +44,33 @@ public class LightSensor extends BaseSensor {
 	@Override
 	public void sense() {
 		take_picture();
-		this.light_intensity = get_reading(this.image);
+		if (this.image == null) {
+			System.out.println("Oh hey, the image was null. Not good.");
+			this.light_intensity = 0;
+		} else {
+			this.light_intensity = get_reading(this.image);
+		}
 	}
 	
 	public Message form_message(){		
 		System.out.println("forming light message");
-		ReadingMessage msg = new ReadingMessage("Light above threshold", null);
-		msg.setFrom(this.ip);
+		ReadingMessage msg = new ReadingMessage("Light reading message", null);
 		msg.setCurrentThreshold(this.light_intensity);
 		return msg;
 	}
 	
 	public void take_picture(){
-		System.out.println("picture taken");
 		if(isSensorActive()) {
 			if(!webcam.isOpen())
 				webcam.open();
 			this.image = webcam.getImage();
+			System.out.println("picture taken");
+
 		} else {
 			if(webcam.isOpen())
 				webcam.close();
 		}
+		
 	}
 	
 	//turn image into greyscale

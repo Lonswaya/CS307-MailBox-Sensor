@@ -200,7 +200,6 @@ public class AudioSensor extends BaseSensor
 		
 		AudioMessage msg = new AudioMessage("Volume above threshold", null);
 		boolean messageHasValues = false;
-		msg.setFrom(getIP());
 		if (this.currentVolume >= 0) {
 			msg.setCurrentThreshold(currentVolume);
 			messageHasValues = true;
