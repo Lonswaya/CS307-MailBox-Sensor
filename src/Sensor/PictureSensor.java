@@ -42,15 +42,19 @@ public class PictureSensor extends BaseSensor{
 	@Override
 	public Message form_message() {
 		System.out.println("Debug: Start forming picture");
-
-		if(!webcam.isOpen())
-			webcam.open();
-		
-		System.out.println("Debug: Taking a picture");
-		long tempTime = System.currentTimeMillis();
-		this.image = webcam.getImage();
-		System.out.println("Debug: End taking a picture, Time:" + (int) (System.currentTimeMillis() - tempTime) + "\n");
-		//webcam.close();
+		try {
+			if(!webcam.isOpen())
+				webcam.open();
+			
+			System.out.println("Debug: Taking a picture");
+			long tempTime = System.currentTimeMillis();
+			this.image = webcam.getImage();
+			System.out.println("Debug: End taking a picture, Time:" + (int) (System.currentTimeMillis() - tempTime) + "\n");
+			//webcam.close();
+		} catch (Exception e) {
+			return null; //so we can not send this message, and try again
+		}
+		if (this.image == null) return null;
 		
 		PictureMessage msg = new PictureMessage("Picture Message", null); //message will be set from setImage()
 		msg.setImage(this.image, false);						   //in picture message class
