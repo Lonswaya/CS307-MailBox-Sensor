@@ -115,9 +115,9 @@ public class RaspberryPi {
 					}
 					Message toSend = sensor.form_message();
 					if (toSend != null) {
-						boolean result = Connections.send(connectionSocket.out, msg);
+						boolean result = Connections.send(connectionSocket.out, toSend); 
 						System.out.println("Yay, we were able to send a message. Let's do this again.");
-						Thread.sleep(500);
+						//Thread.sleep(500); //we may want to consider telling the thread to sleep if it goes... too fast
 						if (!result) { //if we fail to send a message
 							System.out.println("Connection lost, stopping thread");
 							return false; //stop the thread
