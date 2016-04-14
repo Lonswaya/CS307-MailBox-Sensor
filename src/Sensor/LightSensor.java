@@ -43,17 +43,23 @@ public class LightSensor extends BaseSensor {
 	
 	@Override
 	public void sense() {
-		take_picture();
-		if (this.image == null) {
-			System.out.println("Oh hey, the image was null. Not good.");
-			this.light_intensity = 0;
-		} else {
-			this.light_intensity = get_reading(this.image);
+		try {
+			take_picture();
+			if (this.image == null) {
+				System.out.println("Oh hey, the image was null. Not good.");
+				this.light_intensity = -1;
+			} else {
+				this.light_intensity = get_reading(this.image);
+			}
+		} catch (Exception e) {
+			//uh oh, could not read
+			this.light_intensity = -1;
 		}
 	}
 	
 	public Message form_message(){		
 		System.out.println("forming light message");
+		if (this.light_intensity == -1) return null; //so we can continue, get the exception, and not worry about it
 		ReadingMessage msg = new ReadingMessage("Light reading message", null);
 		msg.setCurrentThreshold(this.light_intensity);
 		return msg;
