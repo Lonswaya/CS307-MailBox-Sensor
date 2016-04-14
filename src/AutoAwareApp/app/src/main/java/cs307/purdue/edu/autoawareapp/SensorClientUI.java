@@ -60,6 +60,8 @@ public class SensorClientUI extends AppCompatActivity implements View.OnClickLis
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>TEST MESSAGE<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
+
         ip  = (String) getIntent().getStringExtra("Server IP");
         System.out.println("*********************" + ip);
 

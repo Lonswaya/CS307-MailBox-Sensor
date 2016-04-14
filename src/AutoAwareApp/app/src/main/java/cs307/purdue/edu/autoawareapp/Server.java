@@ -75,6 +75,7 @@ public class Server implements Runnable, MessageProcessor, Serializable {
     @Override
     public void run() {
         System.out.println("Debug message: In run() method");
+        addSensor(new ClientConfig());
         if(centralServer == null){
             System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
             if(!serverInit()){
