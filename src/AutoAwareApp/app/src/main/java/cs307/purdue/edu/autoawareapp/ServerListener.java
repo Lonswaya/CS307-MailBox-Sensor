@@ -1,6 +1,7 @@
 package cs307.purdue.edu.autoawareapp;
 import java.net.ServerSocket;
 
+import cs307.purdue.edu.autoawareapp.*;
 /*
  * Handles individual requests from clients
  * 
@@ -29,13 +30,20 @@ public abstract class ServerListener implements Runnable {
 		run = true;
 		while (run) {
 			try {
-				if (sock.in == null) continue; //the server has not flushed anything yet, so we must wait
-				Message msg = Connections.readObject(sock.in);
-				if (msg == null)
+				if (sock == null) {
+					System.err.println("ServerListener: Ending connection because the socket was null");
 					run = false;
-				else
+					break;
+				}
+				if (sock.in == null) continue; //continue because it isnt ready yet
+				Message msg = Connections.readObject(sock.in);
+				if (msg == null) {
+					System.err.println("ServerListener: Ending connection because the message returned null");
+					run = false;
+				} else
 					HandleMessage(msg);
 			} catch (Exception e) {
+				System.err.println("ServerListener: Connection lost due to exception " + e.toString());
 				e.printStackTrace();
 				run = false;
 			}

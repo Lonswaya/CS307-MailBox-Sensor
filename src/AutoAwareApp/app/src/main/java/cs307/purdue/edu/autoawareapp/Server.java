@@ -75,13 +75,16 @@ public class Server implements Runnable, MessageProcessor, Serializable {
     @Override
     public void run() {
         System.out.println("Debug message: In run() method");
-        addSensor(new ClientConfig());
         if(centralServer == null){
             System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
             if(!serverInit()){
                 System.out.println("    BACKEND SREVER DEBUG: Can't get central server connection");
             }
         }
+
+        //addSensor(new ClientConfig("100.0.0.1", "0:00", "0:00", false, false, SensorType.LIGHT, 90, "Sensor 1", false, false, false, false, "123456789", "abcd@email.com", 10));
+        //System.out.println(sensorList.get(0));
+        //sensorList.add(new ClientConfig("100.0.0.1", "0:00", "0:00", false, false, SensorType.LIGHT, 90, "Sensor 1", false, false, false, false, "123456789", "abcd@email.com", 10));
         /*try {
 
                 TESTING SHIT IF THIS BREAKS NOTHIGN WORKS
@@ -110,7 +113,8 @@ public class Server implements Runnable, MessageProcessor, Serializable {
         while(running) {
             //shitty timer
             if(!suspended) {
-                System.out.println("Debug Message: In Server call");
+                boolean check = addSensor(new ClientConfig("100.0.0.1", "0:00", "0:00", false, false, SensorType.LIGHT, 90, "Sensor 1", false, false, false, false, "123456789", "abcd@email.com", 10));
+                System.out.println("Debug Message: In Server call " + check);
                 int interval = 5000;
                 long lastMilli = System.currentTimeMillis();
                 while (true) {
@@ -195,8 +199,9 @@ public class Server implements Runnable, MessageProcessor, Serializable {
     Return: true if success false if fail
      */
     public boolean addSensor(ClientConfig config) {
-      if(UserBackend.AddSensor(config, this.centralServer)) return true;
-      else return false;
+        System.out.println("In Add sensor");
+        if(UserBackend.AddSensor(config, this.centralServer)) return true;
+        else return false;
     }
 
     /*
