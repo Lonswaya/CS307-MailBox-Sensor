@@ -17,7 +17,7 @@ public class Message implements Serializable {
 		generateCreateTime();
 		this.type = type;
 		SetFromThis();
-		System.out.println("Creating new message with ip " + this.from);
+		//System.out.println("Creating new message with ip " + this.from);
 	}
 	public void SetFromThis() {
 		String myAddress = null;

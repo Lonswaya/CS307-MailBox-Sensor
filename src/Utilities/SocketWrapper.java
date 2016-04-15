@@ -8,7 +8,9 @@ public class SocketWrapper {
 	public ObjectInputStream in;
 	public ObjectOutputStream out;
 	public Socket sock;
+	public boolean lostConnection;
 	public SocketWrapper(Socket newSocket) {
+		lostConnection = false;
 		try {
 			sock = newSocket;
 			//we get out instantly, so no problem
@@ -42,6 +44,6 @@ public class SocketWrapper {
 		this.in = in;
 	}
 	public boolean IsAlive() {
-		return sock.isConnected() && sock.isClosed();
+		return sock.isConnected() && !sock.isClosed();
 	}
 }

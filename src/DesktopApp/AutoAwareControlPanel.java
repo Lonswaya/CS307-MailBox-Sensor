@@ -113,6 +113,7 @@ public class AutoAwareControlPanel extends JFrame implements MessageProcessor {/
 		controlIndex++;
     	JPanel myPanel;
 		myPanel = new JPanel(new GridLayout(2,2,10,10));
+		System.out.println(c.r + " " + c.g + " " + c.b);
 		myPanel.setBackground(new Color(c.r, c.g, c.b));
 		final String identifier = configs.get(i).ip;
 		JButton configure = new JButton("Configure");
@@ -123,7 +124,6 @@ public class AutoAwareControlPanel extends JFrame implements MessageProcessor {/
             @Override
             public void actionPerformed(ActionEvent event) {
                System.out.println("Open configure menu for sensor " + identifier);
-            
                createConfigureMenu(identifier);
                //Notify(identifier);
             }
@@ -485,12 +485,12 @@ public class AutoAwareControlPanel extends JFrame implements MessageProcessor {/
     	}
     	if (confirm == 0) {
     		controlIndex--;
-    		String name = cfg.name; //TODO figure out why this is null
+    		String name = cfg.name; 
     		cfg.force_off = true;
     		cfg.force_on = false;
-    		panelHolder.remove(index);
-    		panelHolder.revalidate();
+    		
     		if (removeFromList) configs.remove(index);
+    		
     		UserBackend.SendConfig(cfg, true, serverConnection);
     		System.out.println("Deleted sensor " + name);
     		//JOptionPane.showMessageDialog(null, "Deleted sensor " + name, "Deleted sensor " + name, JOptionPane.INFORMATION_MESSAGE, null);
@@ -503,7 +503,6 @@ public class AutoAwareControlPanel extends JFrame implements MessageProcessor {/
     	if (sWrapper != null) {
     		UserBackend.StopStreaming(sWrapper);
         	streamersConnection.remove(address);
-
     	}
     	//StopStream(ConfigFind(address));
     }
@@ -552,13 +551,12 @@ public class AutoAwareControlPanel extends JFrame implements MessageProcessor {/
     		
     		//if we have not yet 
     		
-    		if (serverConnection == null) {
+    		if (serverConnection == null || serverConnection.lostConnection) {
     			System.out.println("server not found");
     			configs.removeAll(configs);
     			if (!notificationDialog) {
 	    			notificationDialog = true;
 	        		JOptionPane.showMessageDialog(getContentPane(), "Lost server connection, please change server information", "error", JOptionPane.ERROR_MESSAGE, null);
-	        		
     			}
     		} else {
     			//Is this necessary? We only get the sensors when needed
@@ -874,9 +872,15 @@ public class AutoAwareControlPanel extends JFrame implements MessageProcessor {/
 
 				//if the streaming page exists, then update it
 				//include checking the sensor type, in case a message is sent and doesn't have the correct information (i.e. switching from light to video)
-				ValueStreamBox box = (ValueStreamBox)Streamers.get(gotMessage.from).myPanel;
-				if (box != null) box.value = f;
-				else if (cf != null && cf.address == gotMessage.from) cf.currentThreshold.setValue(Math.round(f * 100));
+				//System.out.println(cf);
+				if (cf != null) System.out.println(cf.address + " " + gotMessage.from);
+				
+				StreamBox temp = Streamers.get(gotMessage.from);
+				if (temp != null) ((ValueStreamBox)temp.myPanel).value = f;
+				else if (cf != null && cf.address.equals(gotMessage.from)) {
+					System.out.println("Updating slider");
+					cf.currentThreshold.setValue(Math.round(f * 100));
+				}
 				else {
 					
 					
@@ -911,7 +915,7 @@ public class AutoAwareControlPanel extends JFrame implements MessageProcessor {/
 			case CONFIG:
 				//this code....  *shudder*
 				//this kind of stuff will not be happening, we should never get a config message from the server
-				System.out.println("Got config, updating/adding info now");
+				/*System.out.println("Got config, updating/adding info now");
 				//can't use gotMessage.from because it may be from another client interface
 				if (((ConfigMessage)gotMessage).delete) {
 					//remove sensor
@@ -923,7 +927,7 @@ public class AutoAwareControlPanel extends JFrame implements MessageProcessor {/
 				} else {
 					//otherewise update sensor
 					configs.set(configs.indexOf(ConfigFind((gotMessage.config.ip))), gotMessage.config);
-				}
+				}*/ 	
 				refreshSensorList();
 				break;
 			case STREAMING:

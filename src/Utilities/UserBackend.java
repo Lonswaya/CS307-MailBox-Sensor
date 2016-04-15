@@ -43,10 +43,11 @@ public class UserBackend {
 	}
 	/*
 	 * Stops the current streaming method for the connection
-	 * 
+	 * It just directly kills the current thread in the socketwrapper
 	 */
 	public static void StopStreaming(SocketWrapper sWrapper) {
-		Connections.send(sWrapper.out, new StreamingMessage("Setting Streaming to False", null, false));
+		Connections.closeSocket(sWrapper.sock);
+		//Connections.send(sWrapper.out, new StreamingMessage("Setting Streaming to False", null, false));
 	}
 	/*
 	 * Creates a socketwrapper that will connect to the server

@@ -210,7 +210,7 @@ public class ConfigureMenu extends JFrame {
 		    JLabel leftBuffer = new JLabel("Current: " + (input.isSensorActive()?"":"(Disabled)"));
 
 
-		    currentThreshold = new JSlider(JSlider.HORIZONTAL, 0, 100, 0); //the updating slider 
+		    currentThreshold = new JSlider(JSlider.HORIZONTAL, 0, 100, 50); //the updating slider 
 		    
 		    
 		    currentThreshold.setEnabled(false);
@@ -461,7 +461,7 @@ public class ConfigureMenu extends JFrame {
 				type, 
 				threshold.getValue() * .01f, 
 				nameString,
-				c.getRed()/255, c.getGreen()/255, c.getBlue()/255, //cause otherwise I would have to get a float array and eaugh
+				(float)c.getRed()/255, (float)c.getGreen()/255, (float)c.getBlue()/255, 
 				desktopBool,
 				magicMirrorBool,
 				textBool,
@@ -477,8 +477,8 @@ public class ConfigureMenu extends JFrame {
 		//stop the stream
 		//UserBackend.SendStreaming(toSubmit.ip, parent);
 
-		//parent.SendConfigToSensor(toSubmit);
-		parent.refreshSensorList();
+		parent.SendConfigToSensor(toSubmit);
+		//parent.refreshSensorList();
     	dispose();
     }
 	private void UpdateTypeOnly(final SensorType t) {

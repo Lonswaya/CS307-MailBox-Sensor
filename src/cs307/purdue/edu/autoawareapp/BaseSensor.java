@@ -1,4 +1,5 @@
 package cs307.purdue.edu.autoawareapp;
+import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -43,7 +44,6 @@ public abstract class BaseSensor{
 				break;
 			}
 		}
-		this.ip = BaseSensor.getIP();
 	}
 	
 	public void setConfig(BaseConfig config) {
@@ -95,10 +95,10 @@ public abstract class BaseSensor{
 		return "Sensor Type set to: " + this.sType;
 	}
 	
-	public abstract void sense();
+	public abstract BufferedImage sense();
 	//public abstract void streamData(boolean streaming);
 	public abstract boolean check_threshold();
-	public abstract Message form_message();
+	public abstract Message form_message(BufferedImage sensedObject);
 	public abstract void close();
 	
 	//use this to compress a byte array 

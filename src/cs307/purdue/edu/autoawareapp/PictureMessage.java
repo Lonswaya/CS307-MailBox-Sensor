@@ -24,18 +24,18 @@ public class PictureMessage extends Message implements Serializable {
 	}
 	public BufferedImage getImage() {
 		//byte->picture
-		int uncompressedLength = Integer.parseInt(this.message.substring(0, this.message.indexOf(',')));
+		//int uncompressedLength = Integer.parseInt(this.message.substring(0, this.message.indexOf(',')));
 		try {
 			
-			this.imager = BaseSensor.uncompressByteArray(this.imager, uncompressedLength);
+			//this.imager = BaseSensor.uncompressByteArray(this.imager, uncompressedLength);
 			
-			System.out.println("Debug: Starting convert to img: ");
-			long tempTime = System.currentTimeMillis();
+			//System.out.println("Debug: Starting convert to img: ");
+			//long tempTime = System.currentTimeMillis();
 			
 			BufferedImage image = new BufferedImage(this.width, this.height, this.imageType);
 			System.out.println(this.imager.length);
 			image.setData(Raster.createRaster(image.getSampleModel(), new DataBufferByte(this.imager, this.imager.length), new Point()));
-			System.out.println("Debug: End Converting to img: " + (int) (System.currentTimeMillis() - tempTime) + "\n");
+			//System.out.println("Debug: End Converting to img: " + (int) (System.currentTimeMillis() - tempTime) + "\n");
 			return image;
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -44,15 +44,15 @@ public class PictureMessage extends Message implements Serializable {
 	}
 	public void setImage(BufferedImage img, boolean already_compressed) {
 		//picture->byte
-		System.out.println("Debug: Starting convert to byte: ");
-		long tempTime = System.currentTimeMillis();
+		//System.out.println("Debug: Starting convert to byte: ");
+		//long tempTime = System.currentTimeMillis();
 			
 		this.imager = ((DataBufferByte) img.getData().getDataBuffer()).getData();
         this.width = img.getWidth();
         this.height = img.getHeight();
         this.imageType = img.getType();
        
-		System.out.println("Debug: End Converting to byte; " + (int) (System.currentTimeMillis() - tempTime) + "\n");
+		/*System.out.println("Debug: End Converting to byte; " + (int) (System.currentTimeMillis() - tempTime) + "\n");
 		try{
 			this.message = this.imager.length + ", Picture message";
 			if(!already_compressed) this.imager = BaseSensor.compressByteArray(this.imager);
@@ -60,7 +60,7 @@ public class PictureMessage extends Message implements Serializable {
 			// TODO Auto-generated catch block
 			//System.out.println("What the hell");
 			e.printStackTrace();
-		}
+		}*/
 		
 	}
 	

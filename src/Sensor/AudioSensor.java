@@ -1,5 +1,7 @@
 package Sensor;
 import cs307.purdue.edu.autoawareapp.*;
+
+import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
@@ -194,7 +196,7 @@ public class AudioSensor extends BaseSensor
 		return overThreshold;
 	}
 	
-	public Message form_message()
+	public Message form_message(BufferedImage b)
 	{
 		System.out.println("Forming Audio message");
 		
@@ -222,7 +224,7 @@ public class AudioSensor extends BaseSensor
 	//public AUDIO_CLIP_TYPE record_audio() {}
 
 	@Override
-	public void sense() {
+	public BufferedImage sense() {
 		// TODO Auto-generated method stub
 		//do nothing
 		//System.out.println("Sensing audio stuff");
@@ -231,7 +233,7 @@ public class AudioSensor extends BaseSensor
 			currentVolume = checkVolume();
 			doneVoluming = true;
 		}
-		
+		return null;
 		
 		
 	}
@@ -241,6 +243,7 @@ public class AudioSensor extends BaseSensor
 		// TODO Auto-generated method stub
 		
 	}
+
 
 	
 

@@ -62,7 +62,12 @@ public class SeparateServer {
 		ArrayList<ClientConfig> configs = new ArrayList<ClientConfig>();
 		for (String ip : sensorList.keySet()) {
 			SensorInfo info = sensorList.get(ip);
-			configs.add(info.sensorInfo);
+			//lostConnection is set when the socket is killed in the ServerListener
+			if (info.sock.lostConnection) { 
+				sensorList.remove(ip);
+			} else {
+				configs.add(info.sensorInfo);
+			}
 		}
 		for(String ip : uiList.keySet()) {
 			sendAllConfigs(ip, configs);
@@ -76,7 +81,12 @@ public class SeparateServer {
 			ArrayList<ClientConfig> configs = new ArrayList<ClientConfig>();
 			for (String key : sensorList.keySet()) {
 				SensorInfo sensorInfo = sensorList.get(key);
-				configs.add(sensorInfo.sensorInfo);
+				//lostConnection is set when the socket is killed in the ServerListener
+				if (sensorInfo.sock.lostConnection) { 
+					sensorList.remove(ip);
+				} else {
+					configs.add(sensorInfo.sensorInfo);
+				}
 			}
 			SensorsMessage sm = new SensorsMessage("Here is your configs!", configs);
 			Connections.send(ui.out, sm);
@@ -93,7 +103,12 @@ public class SeparateServer {
 		ArrayList<ClientConfig> configs = new ArrayList<ClientConfig>();
 		for (String key : sensorList.keySet()) {
 			SensorInfo info = sensorList.get(key);
-			configs.add(info.sensorInfo);
+			//lostConnection is set when the socket is killed in the ServerListener
+			if (info.sock.lostConnection) { 
+				sensorList.remove(key);
+			} else {
+				configs.add(info.sensorInfo);
+			}
 		}
 		Connections.send(wrapper.out, new SensorsMessage("Here is your configs!", configs));
 	}
@@ -162,8 +177,10 @@ public class SeparateServer {
 			}
 			if (cc.textNotification == true) {
 				try {
+					System.out.println("sending text to " + cc.phoneNumber);
 					TwilioSender.send(cc.phoneNumber, msg.getString());
 				} catch (TwilioRestException tre) {
+					tre.printStackTrace();
 				//handle it
 				}
 			}
@@ -174,6 +191,7 @@ public class SeparateServer {
 			}
 			tasks.remove(cc.ip);
 		}
+		System.out.println("Notifying client");
 		for (String key: uiList.keySet()) {
 			NotifyClient(msg,uiList.get(key));
 		}

@@ -42,7 +42,7 @@ public class LightSensor extends BaseSensor {
 	}
 	
 	@Override
-	public void sense() {
+	public synchronized BufferedImage sense() {
 		try {
 			take_picture();
 			if (this.image == null) {
@@ -55,22 +55,23 @@ public class LightSensor extends BaseSensor {
 			//uh oh, could not read
 			this.light_intensity = -1;
 		}
+		return null;
 	}
 	
-	public Message form_message(){		
-		System.out.println("forming light message");
+	public synchronized Message form_message(BufferedImage o){		
+		//System.out.println("forming light message");
 		if (this.light_intensity == -1) return null; //so we can continue, get the exception, and not worry about it
 		ReadingMessage msg = new ReadingMessage("Light reading message", null);
 		msg.setCurrentThreshold(this.light_intensity);
 		return msg;
 	}
 	
-	public void take_picture(){
+	public synchronized void take_picture(){
 		if(isSensorActive()) {
 			if(!webcam.isOpen())
 				webcam.open();
 			this.image = webcam.getImage();
-			System.out.println("picture taken");
+			//System.out.println("picture taken");
 
 		} else {
 			if(webcam.isOpen())
@@ -148,7 +149,7 @@ public class LightSensor extends BaseSensor {
 		return (!this.ready || this.webcam.getLock().isLocked());
 		
 	}
-	
+
 	/*public static void main (String[] args) throws Exception{
 		
 		LightSensor s = new LightSensor(new BaseConfig());

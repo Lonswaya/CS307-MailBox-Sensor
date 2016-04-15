@@ -1,12 +1,15 @@
 package Sensor;
+import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.sql.Time;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.Scanner;
 
 import javax.net.ssl.SSLServerSocket;
@@ -23,18 +26,21 @@ public class RaspberryPi {
 	public BaseSensor sensor;
 	private ServerSocket receiveServer;
 	public int sleepAmt;
+	private Date lastTimeSent;
 	//this is the port and IP for the separate server 
 
-	static public boolean streaming = false;
+	static public boolean streaming = false, dataReady;
 	
 	private SocketWrapper serverConnection;
 	
 	ServerSocket serverSock;
 	
+	public String assignedIPAddress;
+	
 	public RaspberryPi() throws IOException {
 		
 		streaming = false;
-
+		dataReady = false;
 		serverConnection = null;
 		BaseConfig config = new BaseConfig();
 		sensor = (!config.Load()) ? null : new WebcamSensorFactory().get_sensor(config);
@@ -79,18 +85,23 @@ public class RaspberryPi {
 		System.out.println("New message: " + msg.message);
 		switch(msg.type) {
 		case CONFIG:
-			serverConnection = connectionSocket; //update so we can send messages
 			ConfigMessage conf = (ConfigMessage)msg;
 			if(sensor == null || sensor.sType != conf.getConfig().sensor_type) {
+				assignedIPAddress = msg.config.ip;
+				serverConnection = connectionSocket; //update so we can send messages
+				System.out.println("Setting server to be " + connectionSocket);
 				//create sensor
 				System.out.println("sensor created");
 				if (sensor != null) sensor.close();
 				sensor = new WebcamSensorFactory().get_sensor(conf.getConfig());
 				if (!sensor.ready) {
+					//send the config back and delete it
 					System.out.println("Oh, we couldn't make that sensor work right. \nSorry.\nSend a better config next time");
 					sensor = null;
 					conf.delete = true;
+					conf.setFrom(assignedIPAddress);
 					send_message(conf); //send it back, delete us
+					
 				}
 				System.out.println("new sensor: " + sensor);
 				
@@ -105,18 +116,28 @@ public class RaspberryPi {
 				boolean run = true;
 				System.out.println("Hello user. We are going to start streaming now.");
 				while (run) {
+					//if (!dataReady) continue;
+					
 					//System.out.println("Streaming loop");
-					if (sensor.sType == SensorType.VIDEO && ((PictureSensor)sensor).IsLocked()) continue; //if we are occupied, continue
-					if (sensor.sType == SensorType.LIGHT && ((LightSensor)sensor).IsLocked()) continue; //if we are occupied, continue
-					System.out.println("Able to take picture, as no cameras are open");
-					//sensor.sense();
+					//if (sensor.sType == SensorType.VIDEO && ((PictureSensor)sensor).IsLocked()) continue; //if we are occupied, continue
+					//if (sensor.sType == SensorType.LIGHT && ((LightSensor)sensor).IsLocked()) continue; //if we are occupied, continue
+					//System.out.println("Able to take picture, as no cameras are open");
 					if (sensor.sType == SensorType.AUDIO && ((AudioSensor)sensor).doneStreaming) {
 						((AudioSensor)sensor).stream();
 					}
-					Message toSend = sensor.form_message();
+					BufferedImage bf = sensor.sense();
+					if (bf == null && sensor.sType == SensorType.VIDEO) continue;
+					Message toSend = sensor.form_message(bf);
+					
 					if (toSend != null) {
+						toSend.setFrom(assignedIPAddress); //we have to assign this, as getting the local IP is not working
 						if (Connections.send(connectionSocket.out, toSend)) {
-							System.out.println("Yay, we were able to send a message. Let's do this again.");
+							//System.out.println("Yay, we were able to send a message. Let's do this again.");
+							if (lastTimeSent != null && (new Date().getTime() - lastTimeSent.getTime()) > 100) System.out.println("Long time in between sending: " + (new Date().getTime() - lastTimeSent.getTime()));
+							lastTimeSent = new Date();
+							dataReady = false;
+							if (bf != null)
+								bf.flush();
 						} else {
 							System.out.println("Connection lost, stopping thread");
 							streaming = false;
