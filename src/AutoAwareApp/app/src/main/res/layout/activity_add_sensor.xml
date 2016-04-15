@@ -8,49 +8,74 @@
     android:paddingLeft="5dp"
     android:paddingRight="5dp"
     android:paddingTop="5dp"
-    android:id="@+id/activity_settings"
+    android:id="@+id/add_activity_settings"
     >
 
     <TextView
-        android:id="@+id/settings_name_tag"
+        android:id="@+id/add_settings_name_tag"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:padding="5dp"
         android:layout_marginTop="12dp"
-        android:layout_marginLeft="5dp"
         android:text="Name"
-        android:textSize="25dp"
+        android:textSize="22dp"
         android:textColor="#000000" />
 
     <EditText
-        android:id="@+id/set_name_text"
-        android:layout_width="250dp"
+        android:id="@+id/add_set_name_text"
+        android:layout_width="125dp"
         android:layout_height="35dp"
         android:padding="5dp"
-        android:layout_toRightOf="@id/settings_name_tag"
+        android:layout_toRightOf="@id/add_settings_name_tag"
         android:layout_marginTop="15dp"
-        android:layout_marginLeft="10dp"
+        android:layout_marginLeft="5dp"
         android:hint="@string/sensor_name_hint"
+        android:textSize="15dp"
         android:background="@drawable/edittext_bg"
         android:textColorHint="#7d7d7d"
         />
 
+    <TextView
+        android:id="@+id/add_ip_tag"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="18dp"
+        android:layout_marginLeft="10dp"
+        android:layout_toRightOf="@id/add_set_name_text"
+        android:text="IP"
+        android:textSize="22dp"
+        android:textColor="#000000" />
+
+    <EditText
+        android:id="@+id/add_set_ip_text"
+        android:layout_width="125dp"
+        android:layout_height="35dp"
+        android:padding="5dp"
+        android:layout_toRightOf="@id/add_ip_tag"
+        android:layout_marginTop="15dp"
+        android:layout_marginLeft="10dp"
+        android:hint="IP Address"
+        android:background="@drawable/edittext_bg"
+        android:textColorHint="#7d7d7d"
+        />
+
+
     <CheckBox
-        android:id="@+id/timer_check_box"
+        android:id="@+id/add_timer_check_box"
         android:padding="5dp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/settings_name_tag"
+        android:layout_below="@id/add_settings_name_tag"
         android:layout_marginTop="11dp"
         android:layout_marginLeft="7dp"
         />
 
     <TextView
-        android:id="@+id/checkbox_tag"
+        android:id="@+id/add_checkbox_tag"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/set_name_text"
-        android:layout_toRightOf="@id/timer_check_box"
+        android:layout_below="@id/add_set_name_text"
+        android:layout_toRightOf="@id/add_timer_check_box"
         android:layout_marginTop="15dp"
         android:text="Schedule Time"
         android:textSize="22dp"
@@ -60,22 +85,22 @@
     //Start time
 
     <TextView
-        android:id="@+id/start_time_tag"
+        android:id="@+id/add_start_time_tag"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/checkbox_tag"
+        android:layout_below="@id/add_checkbox_tag"
         android:layout_marginLeft="30dp"
         android:layout_marginTop="17dp"
         android:text="Turn on at"
         android:textSize="18dp" />
 
     <EditText
-        android:id="@+id/start_time_hour"
+        android:id="@+id/add_start_time_hour"
         android:layout_width="50dp"
         android:layout_height="40dp"
         android:padding="5dp"
-        android:layout_below="@id/checkbox_tag"
-        android:layout_toRightOf="@id/start_time_tag"
+        android:layout_below="@id/add_checkbox_tag"
+        android:layout_toRightOf="@id/add_start_time_tag"
         android:layout_marginTop="10dp"
         android:layout_marginLeft="13dp"
         android:hint="00"
@@ -86,11 +111,11 @@
         />
 
     <TextView
-        android:id="@+id/hour_minute_separator_tag"
+        android:id="@+id/add_hour_minute_separator_tag"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_toRightOf="@id/start_time_hour"
-        android:layout_below="@id/checkbox_tag"
+        android:layout_toRightOf="@id/add_start_time_hour"
+        android:layout_below="@id/add_checkbox_tag"
         android:padding="5dp"
         android:layout_marginTop="8dp"
         android:layout_marginLeft="5dp"
@@ -99,12 +124,12 @@
         />
 
     <EditText
-        android:id="@+id/start_time_minute"
+        android:id="@+id/add_start_time_minute"
         android:layout_width="50dp"
         android:layout_height="40dp"
         android:padding="5dp"
-        android:layout_below="@id/checkbox_tag"
-        android:layout_toRightOf="@id/hour_minute_separator_tag"
+        android:layout_below="@id/add_checkbox_tag"
+        android:layout_toRightOf="@id/add_hour_minute_separator_tag"
         android:layout_marginTop="10dp"
         android:layout_marginLeft="10dp"
         android:hint="00"
@@ -119,22 +144,22 @@
     //End time
 
     <TextView
-        android:id="@+id/end_time_tag"
+        android:id="@+id/add_end_time_tag"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/start_time_tag"
+        android:layout_below="@id/add_start_time_tag"
         android:layout_marginLeft="30dp"
         android:layout_marginTop="35dp"
         android:text="Turn off at"
         android:textSize="18dp" />
 
     <EditText
-        android:id="@+id/end_time_hour"
+        android:id="@+id/add_end_time_hour"
         android:layout_width="50dp"
         android:layout_height="40dp"
         android:padding="5dp"
-        android:layout_below="@id/start_time_hour"
-        android:layout_toRightOf="@id/end_time_tag"
+        android:layout_below="@id/add_start_time_hour"
+        android:layout_toRightOf="@id/add_end_time_tag"
         android:layout_marginTop="15dp"
         android:layout_marginLeft="10dp"
         android:hint="00"
@@ -145,11 +170,11 @@
         />
 
     <TextView
-        android:id="@+id/end_hour_minute_separator_tag"
+        android:id="@+id/add_end_hour_minute_separator_tag"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_toRightOf="@id/end_time_hour"
-        android:layout_below="@id/hour_minute_separator_tag"
+        android:layout_toRightOf="@id/add_end_time_hour"
+        android:layout_below="@id/add_hour_minute_separator_tag"
         android:padding="5dp"
         android:layout_marginTop="13dp"
         android:layout_marginLeft="5dp"
@@ -158,12 +183,12 @@
         />
 
     <EditText
-        android:id="@+id/end_time_minute"
+        android:id="@+id/add_end_time_minute"
         android:layout_width="50dp"
         android:layout_height="40dp"
         android:padding="5dp"
-        android:layout_below="@id/start_time_minute"
-        android:layout_toRightOf="@id/end_hour_minute_separator_tag"
+        android:layout_below="@id/add_start_time_minute"
+        android:layout_toRightOf="@id/add_end_hour_minute_separator_tag"
         android:layout_marginTop="15dp"
         android:layout_marginLeft="10dp"
         android:hint="00"
@@ -174,10 +199,10 @@
         />
 
     <TextView
-        android:id="@+id/sensor_type_tag"
+        android:id="@+id/add_sensor_type_tag"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/end_time_tag"
+        android:layout_below="@id/add_end_time_tag"
         android:padding="5dp"
         android:layout_marginTop="15dp"
         android:layout_marginLeft="7dp"
@@ -187,18 +212,18 @@
         />
 
     <RadioGroup
-        android:id="@+id/sensor_type_group"
+        android:id="@+id/add_sensor_type_group"
         android:padding="5dp"
         android:layout_marginLeft="10dp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/sensor_type_tag"
+        android:layout_below="@id/add_sensor_type_tag"
         android:orientation="horizontal"
         android:layout_centerHorizontal="true"
         >
 
         <RadioButton
-            android:id="@+id/light_sensor_button"
+            android:id="@+id/add_light_sensor_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Light"
@@ -208,7 +233,7 @@
             />
 
         <RadioButton
-            android:id="@+id/sound_sensor_button"
+            android:id="@+id/add_sound_sensor_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Sound"
@@ -218,7 +243,7 @@
             />
 
         <RadioButton
-            android:id="@+id/video_sensor_button"
+            android:id="@+id/add_video_sensor_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Video"
@@ -229,10 +254,10 @@
     </RadioGroup>
 
     <TextView
-        android:id="@+id/threshold_tag"
+        android:id="@+id/add_threshold_tag"
         android:padding="5dp"
         android:layout_marginLeft="7dp"
-        android:layout_below="@id/sensor_type_group"
+        android:layout_below="@id/add_sensor_type_group"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/threshold_tag"
@@ -241,21 +266,21 @@
         />
 
     <SeekBar
-        android:id="@+id/set_threshold_bar"
+        android:id="@+id/add_set_threshold_bar"
         android:layout_width="250dp"
         android:layout_height="wrap_content"
-        android:layout_toRightOf="@id/threshold_tag"
-        android:layout_below="@id/sensor_type_group"
+        android:layout_toRightOf="@id/add_threshold_tag"
+        android:layout_below="@id/add_sensor_type_group"
         android:layout_marginTop="7dp"
         style="@android:style/Widget.SeekBar"
         />
 
     <TextView
-        android:id="@+id/notifications_tag"
+        android:id="@+id/add_notifications_tag"
         android:padding="5dp"
         android:layout_marginLeft="7dp"
         android:layout_marginTop="5dp"
-        android:layout_below="@id/threshold_tag"
+        android:layout_below="@id/add_threshold_tag"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/notifications_tag"
@@ -264,10 +289,10 @@
         />
 
     <CheckBox
-        android:layout_below="@id/notifications_tag"
+        android:layout_below="@id/add_notifications_tag"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/desktop_box"
+        android:id="@+id/add_desktop_box"
         android:layout_marginLeft="7dp"
         android:text="@string/desktop_tag"
         android:textSize="18dp"
@@ -275,23 +300,23 @@
         />
 
     <CheckBox
-        android:layout_below="@id/notifications_tag"
+        android:layout_below="@id/add_notifications_tag"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/text_box"
+        android:id="@+id/add_text_box"
         android:layout_marginLeft="7dp"
-        android:layout_toRightOf="@id/desktop_box"
+        android:layout_toRightOf="@id/add_desktop_box"
         android:text="@string/text_tag"
         android:textSize="18dp"
         android:textColor="#7d7d7d"
         />
 
     <CheckBox
-        android:layout_toRightOf="@id/text_box"
-        android:layout_below="@id/notifications_tag"
+        android:layout_toRightOf="@id/add_text_box"
+        android:layout_below="@id/add_notifications_tag"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/email_box"
+        android:id="@+id/add_email_box"
         android:layout_marginLeft="7dp"
         android:text="@string/email_tag"
         android:textSize="18dp"
@@ -299,11 +324,11 @@
         />
 
     <CheckBox
-        android:layout_toRightOf="@id/email_box"
-        android:layout_below="@id/notifications_tag"
+        android:layout_toRightOf="@id/add_email_box"
+        android:layout_below="@id/add_notifications_tag"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/mobile_box"
+        android:id="@+id/add_mobile_box"
         android:layout_marginLeft="7dp"
         android:text="@string/mobile_tag"
         android:textSize="18dp"
@@ -311,11 +336,11 @@
         />
 
     <EditText
-        android:id="@+id/mobile_number"
+        android:id="@+id/add_mobile_number"
         android:layout_width="150dp"
         android:layout_height="wrap_content"
         android:padding="5dp"
-        android:layout_below="@id/desktop_box"
+        android:layout_below="@id/add_desktop_box"
         android:layout_marginTop="5dp"
         android:layout_marginLeft="22dp"
         android:hint="@string/mobile_hint"
@@ -327,12 +352,12 @@
         />
 
     <EditText
-        android:id="@+id/email_id"
+        android:id="@+id/add_email_id"
         android:layout_width="150dp"
         android:layout_height="wrap_content"
         android:padding="5dp"
-        android:layout_below="@id/email_box"
-        android:layout_toRightOf="@id/mobile_number"
+        android:layout_below="@id/add_email_box"
+        android:layout_toRightOf="@id/add_mobile_number"
         android:layout_marginTop="5dp"
         android:layout_marginLeft="10dp"
         android:hint="@string/email_hint"
@@ -343,13 +368,13 @@
         />
 
     <Button
-        android:id="@+id/confirm_add_button"
+        android:id="@+id/add_confirm_add_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="ADD SENSOR"
         android:textSize="18dp"
         android:layout_marginTop="10dp"
-        android:layout_below="@id/mobile_number"
+        android:layout_below="@id/add_mobile_number"
         android:layout_marginLeft="7dp"
         android:layout_centerHorizontal="true"
         />

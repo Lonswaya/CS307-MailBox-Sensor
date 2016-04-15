@@ -17,16 +17,17 @@ import android.widget.SeekBar;
  */
 public class AddSensorUI extends AppCompatActivity implements View.OnClickListener {
     EditText sensorName;
-    Button setTextButton;
+    EditText ip;
     CheckBox setTimeBox;
-    EditText startHour, startMinute;
+    EditText startHour;
+    EditText startMinute;
     EditText endHour, endMinute;
     RadioGroup sensorTypeGroup;
     RadioButton typeLight, typeAudio, typeVideo;
     SeekBar setThresholdBar;
     CheckBox desktopNotification, mobileNotification, emailNotification, appNotification;
     EditText emailId, phoneNumber;
-    Button addButton, defaultButton;
+    Button addButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,35 +37,38 @@ public class AddSensorUI extends AppCompatActivity implements View.OnClickListen
         String title = getIntent().getStringExtra("Title");
         this.setTitle("Add New Sensor");
 
-        sensorName = (EditText) findViewById(R.id.set_name_text);
+        sensorName = (EditText) findViewById(R.id.add_set_name_text);
+        ip =(EditText) findViewById(R.id.add_set_ip_text);
 
-        setTimeBox = (CheckBox) findViewById(R.id.timer_check_box);
+
+        setTimeBox = (CheckBox) findViewById(R.id.add_timer_check_box);
         setTimeBox.setOnClickListener(this);
 
-        startHour = (EditText) findViewById(R.id.start_time_hour);
-        startMinute = (EditText) findViewById(R.id.start_time_minute);
+        startHour = (EditText) findViewById(R.id.add_start_time_hour);
 
-        endHour = (EditText) findViewById(R.id.end_time_hour);
-        endMinute = (EditText) findViewById(R.id.end_time_minute);
+        startMinute = (EditText) findViewById(R.id.add_start_time_minute);
 
-        sensorTypeGroup = (RadioGroup) findViewById(R.id.sensor_type_group);
-        typeLight = (RadioButton) findViewById(R.id.light_sensor_button);
-        typeAudio = (RadioButton) findViewById(R.id.sound_sensor_button);
-        typeVideo = (RadioButton) findViewById(R.id.video_sensor_button);
+        endHour = (EditText) findViewById(R.id.add_end_time_hour);
+        endMinute = (EditText) findViewById(R.id.add_end_time_minute);
+
+        sensorTypeGroup = (RadioGroup) findViewById(R.id.add_sensor_type_group);
+        typeLight = (RadioButton) findViewById(R.id.add_light_sensor_button);
+        typeAudio = (RadioButton) findViewById(R.id.add_sound_sensor_button);
+        typeVideo = (RadioButton) findViewById(R.id.add_video_sensor_button);
 
 
-        setThresholdBar = (SeekBar) findViewById(R.id.set_threshold_bar);
+        setThresholdBar = (SeekBar) findViewById(R.id.add_set_threshold_bar);
         setThresholdBar.setMax(100);
 
-        desktopNotification = (CheckBox) findViewById(R.id.desktop_box);
-        mobileNotification = (CheckBox) findViewById(R.id.text_box);
-        emailNotification = (CheckBox) findViewById(R.id.email_box);
-        appNotification = (CheckBox) findViewById(R.id.mobile_box);
+        desktopNotification = (CheckBox) findViewById(R.id.add_desktop_box);
+        mobileNotification = (CheckBox) findViewById(R.id.add_text_box);
+        emailNotification = (CheckBox) findViewById(R.id.add_email_box);
+        appNotification = (CheckBox) findViewById(R.id.add_mobile_box);
 
-        emailId = (EditText) findViewById(R.id.email_id);
-        phoneNumber = (EditText) findViewById(R.id.mobile_number);
+        emailId = (EditText) findViewById(R.id.add_email_id);
+        phoneNumber = (EditText) findViewById(R.id.add_mobile_number);
 
-        addButton = (Button) findViewById(R.id.confirm_add_button);
+        addButton = (Button) findViewById(R.id.add_confirm_add_button);
         addButton.setOnClickListener(this);
     }
 
@@ -98,42 +102,103 @@ public class AddSensorUI extends AppCompatActivity implements View.OnClickListen
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
-            case R.id.confirm_add_button:
+            case R.id.add_confirm_add_button:
+                ClientConfig newSensor = getInfofromForm();
+                if (newSensor == null)
+                    clearForm();
+                //TODO: ADD sensor to the server
                 break;
             default:
                 break;
         }
     }
 
-    public void resetDefault() {
+    public void clearForm() {
         sensorName.setText("");
-        sensorName.setHint("Sensor Name");
+        ip.setText("");
+
+        if (setTimeBox.isChecked())
+            setTimeBox.toggle();
 
         startHour.setText("");
         startMinute.setText("");
-
         endHour.setText("");
         endMinute.setText("");
 
-        if(desktopNotification.isChecked() == false) {
-                desktopNotification.toggle();
-        }
-
-        if(mobileNotification.isChecked() == false) {
-                mobileNotification.toggle();
-        }
-
-        if(emailNotification.isChecked() == false) {
-            emailNotification.toggle();
-        }
-
-        if(appNotification.isChecked() == false) {
-            appNotification.toggle();
-        }
-
-        emailId.setText("");
-        phoneNumber.setText("");
-
         typeLight.toggle();
+
+        setThresholdBar.setProgress(0);
+
+        if (desktopNotification.isChecked())
+            desktopNotification.toggle();
+        if (emailNotification.isChecked())
+            emailNotification.toggle();
+        if (mobileNotification.isChecked())
+            mobileNotification.toggle();
+        if (appNotification.isChecked())
+            appNotification.toggle();
+
+        phoneNumber.setText("");
+        emailId.setText("");
+
+    }
+
+    public ClientConfig getInfofromForm() {
+        String name = sensorName.getText().toString();
+        String ipString = ip.getText().toString();
+
+        if (setTimeBox.isChecked()) {
+            String strtHour = startHour.getText().toString();
+            String strtMinute = startMinute.getText().toString();
+            String startTime = strtHour + ":" + strtMinute;
+
+            String edHour = endHour.getText().toString();
+            String edMinute = endMinute.getText().toString();
+            String endTime = edHour + ":" + edMinute;
+
+            boolean force_on = false;
+            boolean force_off = false;
+            if (startTime != null) {
+                force_on = true;
+            }
+            if (endTime != null) {
+                force_off = true;
+            }
+            if (startTime == null && endTime == null) {
+                return null;
+            }
+            else {
+                SensorType sensorType;
+                if (typeLight.isChecked())
+                    sensorType = SensorType.LIGHT;
+                else if (typeAudio.isChecked())
+                    sensorType = SensorType.AUDIO;
+                else if (typeVideo.isChecked())
+                    sensorType = SensorType.VIDEO;
+                else
+                    return null;
+
+                float threshold = setThresholdBar.getProgress();
+
+                boolean desktop = false;
+                boolean phone = false;
+                boolean email = false;
+                boolean magicMirror = false;
+                if (desktopNotification.isChecked())
+                    desktop = true;
+                if (mobileNotification.isChecked())
+                    phone = true;
+                if (emailNotification.isChecked())
+                    email = true;
+                if (appNotification.isChecked())
+                    magicMirror = true;
+
+                String phoneString = phoneNumber.getText().toString();
+                String emailString = emailId.getText().toString();
+
+                return new ClientConfig(ipString, startTime, endTime, force_on, force_off, sensorType, threshold, name, desktop, magicMirror, phone, email, phoneString, emailString, 10);
+            }
+        }
+        return null;
     }
 }
