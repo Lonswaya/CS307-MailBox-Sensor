@@ -343,7 +343,7 @@
         />
 
     <Button
-        android:id="@+id/apply_button"
+        android:id="@+id/confirm_add_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="ADD SENSOR"

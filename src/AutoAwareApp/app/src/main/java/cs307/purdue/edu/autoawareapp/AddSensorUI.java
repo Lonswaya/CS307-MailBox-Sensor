@@ -26,7 +26,7 @@ public class AddSensorUI extends AppCompatActivity implements View.OnClickListen
     SeekBar setThresholdBar;
     CheckBox desktopNotification, mobileNotification, emailNotification, appNotification;
     EditText emailId, phoneNumber;
-    Button applyButton, defaultButton;
+    Button addButton, defaultButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,7 +34,7 @@ public class AddSensorUI extends AppCompatActivity implements View.OnClickListen
         setContentView(R.layout.activity_add_sensor);
 
         String title = getIntent().getStringExtra("Title");
-        this.setTitle(title);
+        this.setTitle("Add New Sensor");
 
         sensorName = (EditText) findViewById(R.id.set_name_text);
 
@@ -64,12 +64,8 @@ public class AddSensorUI extends AppCompatActivity implements View.OnClickListen
         emailId = (EditText) findViewById(R.id.email_id);
         phoneNumber = (EditText) findViewById(R.id.mobile_number);
 
-        applyButton = (Button) findViewById(R.id.apply_button);
-        applyButton.setOnClickListener(this);
-
-        defaultButton = (Button) findViewById(R.id.defualt_button);
-        defaultButton.setOnClickListener(this);
-
+        addButton = (Button) findViewById(R.id.confirm_add_button);
+        addButton.setOnClickListener(this);
     }
 
     @Override
@@ -102,10 +98,7 @@ public class AddSensorUI extends AppCompatActivity implements View.OnClickListen
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
-            case R.id.apply_button:
-                break;
-            case R.id.defualt_button:
-                resetDefault();
+            case R.id.confirm_add_button:
                 break;
             default:
                 break;

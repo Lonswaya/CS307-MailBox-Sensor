@@ -14,7 +14,7 @@ public class ClientConfig extends BaseConfig implements Serializable {
 	
 	
 	public ClientConfig(String ip, String start, String stop, boolean force_on, boolean force_off, SensorType type, float threshold, String name, boolean desktopNotification, boolean magicMirrorNotification, boolean textNotification, boolean emailNotification, String phoneNumber, String emailAddress, int interval) {
-		super(start, stop, force_on, force_off , type, threshold);
+		//super(start, stop, force_on, force_off , type, threshold);
 		System.out.println("Debug Message: In clientConfig constructor");
         this.ip = ip;
 		//this.color = color;

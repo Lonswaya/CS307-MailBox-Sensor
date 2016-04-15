@@ -75,12 +75,12 @@ public class Server implements Runnable, MessageProcessor, Serializable {
     @Override
     public void run() {
         System.out.println("Debug message: In run() method");
-        if(centralServer == null){
+        /*if(centralServer == null){
             System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
             if(!serverInit()){
                 System.out.println("    BACKEND SREVER DEBUG: Can't get central server connection");
             }
-        }
+        }*/
 
         //addSensor(new ClientConfig("100.0.0.1", "0:00", "0:00", false, false, SensorType.LIGHT, 90, "Sensor 1", false, false, false, false, "123456789", "abcd@email.com", 10));
         //System.out.println(sensorList.get(0));
@@ -110,8 +110,10 @@ public class Server implements Runnable, MessageProcessor, Serializable {
 
         System.out.println("Debug Message: Going into running");
 
-        while(running) {
-            //shitty timer
+        int i = 1;
+
+        //while(running) {
+            /*//shitty timer
             if(!suspended) {
                 boolean check = addSensor(new ClientConfig("100.0.0.1", "0:00", "0:00", false, false, SensorType.LIGHT, 90, "Sensor 1", false, false, false, false, "123456789", "abcd@email.com", 10));
                 System.out.println("Debug Message: In Server call " + check);
@@ -121,8 +123,15 @@ public class Server implements Runnable, MessageProcessor, Serializable {
                     if ((int) (System.currentTimeMillis() - lastMilli) >= interval) break;
                 }
                 getSensorsFromServer();
-            }else System.out.println("    BACKEND SREVER DEBUG: Server thread suspended");
-        }
+            }else System.out.println("    BACKEND SREVER DEBUG: Server thread suspended");*/
+            sensorList.add(new ClientConfig("100.0.0." + i*5, "0:00", "0:00", false, false, SensorType.LIGHT, 90, "Sensor 1", false, false, false, false, "123456789", "abcd@email.com", 10));
+            i++;
+            /*try {
+                Thread.sleep(1000);
+            } catch (Exception e) {
+                Thread.dumpStack();
+            }*/
+        //}
     }
 
     /*

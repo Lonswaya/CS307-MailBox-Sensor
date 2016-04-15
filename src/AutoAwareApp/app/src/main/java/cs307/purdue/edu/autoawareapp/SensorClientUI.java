@@ -82,16 +82,36 @@ public class SensorClientUI extends AppCompatActivity implements View.OnClickLis
 
         //llm.setOrientation(LinearLayoutManager.VERTICAL);
 
-        /*//int ret = createSensors();
+        System.out.println("Adding 1 sensor");
+
+        long currTime = System.currentTimeMillis();
+
+        //TODO: Comment these lines out
+        //int ret = createSensors();
         sensors.add(new Sensor("Sensor 1", 0, "LIGHT", "100.0.0.1"));
         sensorInfoList.add(new ClientConfig("100.0.0.1", "0", "0", false, false, SensorType.LIGHT, 90, "Sensor 1", false, false, false, false, "123456789", "abcd@email.com", 10));
         //server.addClientConfigObject(sensorInfoList.get(0));
         recyclerView.scrollToPosition(sensors.size() - 1);
         //mAdapter.notifyItemInserted(sensors.size() - 1);
-        mAdapter.notifyDataSetChanged();*/
+        mAdapter.notifyDataSetChanged();
 
-        try {
-            server = new Server(ip);
+        sensors.add(new Sensor("Sensor 5", 0, "AUDIO", "10.182.1.29"));
+        sensorInfoList.add(new ClientConfig("10.182.1.29", "6:00", "18:00", true, false, SensorType.AUDIO, 40, "Sensor 5", false, false, true, true, "123456789", "abcd@email.com", 10));
+        //server.addClientConfigObject(sensorInfoList.get(0));
+        recyclerView.scrollToPosition(sensors.size() - 1);
+        //mAdapter.notifyItemInserted(sensors.size() - 1);
+        mAdapter.notifyDataSetChanged();
+
+        sensors.add(new Sensor("Spying on ma boy", 0, "VIDEO", "10.182.1.0"));
+        sensorInfoList.add(new ClientConfig("10.182.1.0", "6:00", "18:00", true, false, SensorType.VIDEO, 40, "Spying on ma boy", true, false, false, true, "123456789", "abcd@email.com", 10));
+        //server.addClientConfigObject(sensorInfoList.get(0));
+        recyclerView.scrollToPosition(sensors.size() - 1);
+        //mAdapter.notifyItemInserted(sensors.size() - 1);
+        mAdapter.notifyDataSetChanged();
+
+        /*try {
+            System.out.println("In try catch");
+            /*server = new Server(ip);
             //server.serverInit();
             //server.setUpConnector();
             System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
@@ -102,21 +122,25 @@ public class SensorClientUI extends AppCompatActivity implements View.OnClickLis
             System.out.println("GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG");
 
             //sensorInfoList = server.getSensorLists();
+            server = new Server(ip);
             while(sensorInfoList == null){
                 sensorInfoList = server.getSensorLists();
                 System.out.println("*****************************" + sensorInfoList + "***************************");
             }
             for (int i = 0; i < sensorInfoList.size(); i++) {
+                System.out.println("Debug message: In for loop");
                 Sensor sensor = convertClientConfigToSensor(sensorInfoList.get(i));
                 sensors.add(sensor);
                 System.out.println("????????????????????????" + sensor + "?????????????????????????");
                 recyclerView.scrollToPosition(sensors.size() - 1);
                 mAdapter.notifyDataSetChanged();
+                server.run();
+
             }
         } catch(NullPointerException e) {
             //TODO: Display a waiting screen
             System.out.println("NULL POINTER EXCEPTION");
-        }
+        }*/
     }
 
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -259,8 +283,10 @@ public class SensorClientUI extends AppCompatActivity implements View.OnClickLis
 
         switch (view.getId()) {
             case R.id.addButton:
+                System.out.println("Debug Messsage: Add sensor clicked");
                 Intent mIntent = new Intent(this, AddSensorUI.class);
-                mIntent.putExtra("Name", "Add Sensor");
+                System.out.println("Debug Messsage: Add sensor clicked 2");
+                //mIntent.putExtra("Name", "Add Sensor");
                 startActivity(mIntent);
                 break;
             case R.id.exitButton:
