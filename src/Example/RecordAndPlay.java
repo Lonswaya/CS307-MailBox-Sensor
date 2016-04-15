@@ -36,15 +36,16 @@ public class RecordAndPlay {
             speakers = (SourceDataLine) AudioSystem.getLine(dataLineInfo);
             speakers.open(format);
             speakers.start();
-            while (bytesRead < 100000) {
+            while (bytesRead < 1000000000) {
                 numBytesRead = microphone.read(data, 0, CHUNK_SIZE);
                 bytesRead += numBytesRead;
                 // write the mic data to a stream for use later
                 out.write(data, 0, numBytesRead); 
                 // write mic data to stream for immediate playback
-                //speakers.write(data, 0, numBytesRead);
+                speakers.write(data, 0, numBytesRead);
             }
-            //speakers.write(data, 0, numBytesRead);
+            
+           // speakers.write(data, 0, numBytesRead);
             speakers.drain();
             speakers.close();
             microphone.close();

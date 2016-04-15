@@ -31,9 +31,15 @@ public class SensorMain {
 						new Thread(new StreamThread(pi)).run();
 					}*/ //we are not going to be wanting to stream audio if this is only for connecting to the server
 						// time interval in between, currently one second
+					System.out.println(pi.sensor.check_threshold());
 					if (pi.sensor.check_threshold()) { //if the threshold is above, or if we are supposed to stream constantly
 						System.out.println("sending a message to a server, above notification");
-						new Thread(new SendThread(pi)).run();
+						
+						Message msg = pi.sensor.form_message(null);
+						msg.setFrom(pi.assignedIPAddress);
+						pi.send_message(msg);
+						
+						//new Thread(new SendThread(pi)).run();
 					} else {
 						//pi.sensor.close();
 					}

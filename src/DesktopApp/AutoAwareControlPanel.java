@@ -113,7 +113,7 @@ public class AutoAwareControlPanel extends JFrame implements MessageProcessor {/
 		controlIndex++;
     	JPanel myPanel;
 		myPanel = new JPanel(new GridLayout(2,2,10,10));
-		System.out.println(c.r + " " + c.g + " " + c.b);
+		//System.out.println(c.r + " " + c.g + " " + c.b);
 		myPanel.setBackground(new Color(c.r, c.g, c.b));
 		final String identifier = configs.get(i).ip;
 		JButton configure = new JButton("Configure");
@@ -496,7 +496,7 @@ public class AutoAwareControlPanel extends JFrame implements MessageProcessor {/
     		//JOptionPane.showMessageDialog(null, "Deleted sensor " + name, "Deleted sensor " + name, JOptionPane.INFORMATION_MESSAGE, null);
 	    	
     	}
-    	refreshSensorList();
+    	//refreshSensorList();
     }
     public void StopStream(String address) {
     	SocketWrapper sWrapper = streamersConnection.get(address);
@@ -669,7 +669,7 @@ public class AutoAwareControlPanel extends JFrame implements MessageProcessor {/
 			}
     	}
 //   	SaveSensors();
-    	refreshSensorList();
+    	//refreshSensorList();
     }
     public void SendConfigToSensor(ClientConfig cfg) {
     	//Send a message through the server to update a sensors config
@@ -853,7 +853,7 @@ public class AutoAwareControlPanel extends JFrame implements MessageProcessor {/
 				return;
 			} //if its a new sensor, we dont want this
 		}
-		System.out.println(gotMessage);
+		//System.out.println(gotMessage.message + " " + gotMessage.type);
 		//System.out.println("Message recieved, says to: " + gotMessage.message + " with the type of" + gotMessage.type);
 		
 		
@@ -867,7 +867,10 @@ public class AutoAwareControlPanel extends JFrame implements MessageProcessor {/
 				//grayscale image?
 				break;
 			case READING:
-				float f = ((ReadingMessage)gotMessage).getCurrentThreshold()/100; //hacky af
+				float f = ((ReadingMessage)gotMessage).getCurrentThreshold(); //hacky af
+				if (f > 100) f = 100;
+				if (f < 0) f = 0;
+				
 				System.out.println("reading message found with value " + f);
 
 				//if the streaming page exists, then update it
@@ -876,10 +879,10 @@ public class AutoAwareControlPanel extends JFrame implements MessageProcessor {/
 				if (cf != null) System.out.println(cf.address + " " + gotMessage.from);
 				
 				StreamBox temp = Streamers.get(gotMessage.from);
-				if (temp != null) ((ValueStreamBox)temp.myPanel).value = f;
+				if (temp != null) ((ValueStreamBox)temp.myPanel).SetSensorValue(f/100);
 				else if (cf != null && cf.address.equals(gotMessage.from)) {
 					System.out.println("Updating slider");
-					cf.currentThreshold.setValue(Math.round(f * 100));
+					cf.currentThreshold.setValue(Math.round(f));
 				}
 				else {
 					
@@ -895,11 +898,25 @@ public class AutoAwareControlPanel extends JFrame implements MessageProcessor {/
 				//System.out.println("Audio Clip got");
 				//audio clip in .wav format
 				byte[] recording = ((AudioMessage)gotMessage).recording;
+				/*if (recording != null) {
+					System.out.println("Recording: " + recording.length);
+					//JOptionPane.showInputDialog("Hi");
+				} else {
+					System.out.println("No recording");
+				}*/
 				float currentAmount = ((AudioMessage)gotMessage).currentThreshold;
-				ValueStreamBox audioBox = (ValueStreamBox)Streamers.get(gotMessage.from).myPanel;
+				
+				//System.out.println("reading message found with value " + currentAmount);
+
+				
+				StreamBox audioBox = Streamers.get(gotMessage.from);
 				if (audioBox != null) {
-					if (recording != null) audioBox.addClip(recording);
-					audioBox.value = currentAmount;
+					if (recording != null) ((ValueStreamBox)audioBox.myPanel).addClip(recording);
+					 ((ValueStreamBox)audioBox.myPanel).SetSensorValue(currentAmount/100);
+				}
+				else if (cf != null && cf.address.equals(gotMessage.from)) {
+					System.out.println("Updating slider");
+					cf.currentThreshold.setValue(Math.round(currentAmount));
 				}
 				else {
 					
@@ -923,7 +940,7 @@ public class AutoAwareControlPanel extends JFrame implements MessageProcessor {/
 				} else if (ConfigFind(gotMessage.config.ip) == null) {
 					//add new sensor
 					configs.add(gotMessage.config);
-			    	createNew(controlIndex, gotMessage.config);
+			    	New(controlIndex, gotMessage.config);
 				} else {
 					//otherewise update sensor
 					configs.set(configs.indexOf(ConfigFind((gotMessage.config.ip))), gotMessage.config);

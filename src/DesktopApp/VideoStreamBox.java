@@ -32,7 +32,7 @@ public class VideoStreamBox extends JPanel {
 		found = false;
 		this.address = address;
 		t  = new Timer(10, new repainter());
-		t.start();
+		//t.start();
 		try {
 		    image = ImageIO.read(new File("resources/none.png"));
 		} catch (IOException e) {
@@ -87,6 +87,7 @@ public class VideoStreamBox extends JPanel {
 		System.out.println("new image set");
 		this.image = image;
 		found = true;
+		repaint();
 	}
 	private void PromptPath() {
 		JFileChooser chooser = new JFileChooser(); 

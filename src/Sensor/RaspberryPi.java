@@ -88,8 +88,9 @@ public class RaspberryPi {
 			ConfigMessage conf = (ConfigMessage)msg;
 			if(sensor == null || sensor.sType != conf.getConfig().sensor_type) {
 				assignedIPAddress = msg.config.ip;
+				System.out.println("Got server ip of: " + assignedIPAddress);
 				serverConnection = connectionSocket; //update so we can send messages
-				System.out.println("Setting server to be " + connectionSocket);
+				System.out.println("Setting server to be " + connectionSocket.sock);
 				//create sensor
 				System.out.println("sensor created");
 				if (sensor != null) sensor.close();
@@ -122,9 +123,7 @@ public class RaspberryPi {
 					//if (sensor.sType == SensorType.VIDEO && ((PictureSensor)sensor).IsLocked()) continue; //if we are occupied, continue
 					//if (sensor.sType == SensorType.LIGHT && ((LightSensor)sensor).IsLocked()) continue; //if we are occupied, continue
 					//System.out.println("Able to take picture, as no cameras are open");
-					if (sensor.sType == SensorType.AUDIO && ((AudioSensor)sensor).doneStreaming) {
-						((AudioSensor)sensor).stream();
-					}
+					
 					BufferedImage bf = sensor.sense();
 					if (bf == null && sensor.sType == SensorType.VIDEO) continue;
 					Message toSend = sensor.form_message(bf);
@@ -163,11 +162,11 @@ public class RaspberryPi {
 		new Thread(new Runnable(){
 
 			public void run() {
-				if (serverConnection == null) {
+				if (serverConnection == null || serverConnection.out == null) {
 					System.err.println("we can't send a message bruh, no server");
 					return; 
 				}
-				Connections.send(serverConnection.out, msg);
+				System.out.println(Connections.send(serverConnection.out, msg));
 			}
     		
 		}).start();

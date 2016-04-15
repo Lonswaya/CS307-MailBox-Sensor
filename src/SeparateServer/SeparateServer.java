@@ -162,11 +162,12 @@ public class SeparateServer {
 		HashMap<String, Boolean> tasks = new HashMap<String, Boolean>();
 		
 		ReadingMessage rmsg = (ReadingMessage) msg;
-		float reading = rmsg.getCurrentThreshold()/100;
+		//float reading = rmsg.getCurrentThreshold()/100;
 		
 		ClientConfig cc = SeparateServer.sensorList.get(msg.from).sensorInfo;
 		//if threshold is exceeded and there is no notification yet, start one, else do nothing
-		if (cc.sensing_threshold >= reading && tasks.get(cc.ip) == null) {
+		System.out.println(cc.emailNotification + " " + cc.textNotification);
+		if (tasks.get(cc.ip) == null) {
 			tasks.put(cc.ip, true);
 			if (cc.emailNotification == true) {
 				try {
@@ -200,9 +201,11 @@ public class SeparateServer {
 	//wrote this part COMMIT
 	public static void HandleConfigMessage(ConfigMessage msg) {		
 		if (msg.delete) {
+			System.out.println("Deleting sensor " + msg.config.name);
 			SensorInfo info = sensorList.get(msg.config.ip);
 			if (info != null)
-				sensorList.remove(info);			
+				sensorList.remove(info);	
+			Connections.closeSocket(info.sock.sock);
 			SeparateServer.sendAllConfigsToAllUis();
 			return;
 		}
@@ -251,6 +254,7 @@ public class SeparateServer {
 		if (exists && !inList) {
 			info = new SensorInfo(msg.config, sock);
 			sensorList.put(msg.config.ip, info);
+			GetHandler(sock).start();
 			Connections.send(sock.out, msg);
 			System.out.println("Sending a new config message to a new sensor");
 		} else if (exists && inList) {

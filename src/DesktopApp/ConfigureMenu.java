@@ -414,6 +414,7 @@ public class ConfigureMenu extends JFrame {
 	private class CheckboxListener implements ActionListener {
 		@SuppressWarnings("unused")
 	    public void actionPerformed(ActionEvent e) {
+			System.out.println(e.getActionCommand());
 			if (e.getActionCommand().equals("text")) {
 				textBool = !textBool;
 				phoneNum.setEnabled(textBool);
@@ -471,7 +472,7 @@ public class ConfigureMenu extends JFrame {
 		);
 		this.setEnabled(false);
 		parent.configs.set(inputNum, toSubmit);
-		//System.out.println(toSubmit);
+		System.out.println(toSubmit);
 		//stop the stream to the pi
 		parent.StopStream(toSubmit.ip);
 		//stop the stream
@@ -485,8 +486,8 @@ public class ConfigureMenu extends JFrame {
 		//send a config to a sensor to update only the sensortype, since streaming
 		Thread thr = new Thread(new Runnable(){
 			public void run(){
-				ClientConfig cfg = new ClientConfig();
-				cfg.ip = parent.configs.get(inputNum).ip;
+				ClientConfig cfg = parent.ConfigFind(address);
+				//cfg.ip = parent.configs.get(inputNum).ip;
 				cfg.sensor_type = t;
 				parent.SendConfigToSensor(cfg);
 			}

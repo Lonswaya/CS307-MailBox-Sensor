@@ -35,6 +35,7 @@ public class ValueStreamBox extends JPanel {
 	public String address;
 	private boolean playingSound;
 	private Queue<byte[]> audioQueue;
+	
 	public float value;
 	private float threshold;
 	private SensorType sensorType;
@@ -51,7 +52,7 @@ public class ValueStreamBox extends JPanel {
 		//this.server = server;
 		this.address = address;
 		t  = new Timer(1000, new repainter());
-		t.start();
+		//t.start();
 		JButton exit = new JButton("Exit");
 		final JPanel tempThis = this;
 		exit.addActionListener(new ActionListener() {
@@ -66,16 +67,15 @@ public class ValueStreamBox extends JPanel {
 		title.setBounds(200, 30, 500, 300);
 		
 		if (sensorType == SensorType.AUDIO) {
-			audioToggle = new JButton(new ImageIcon("resources/soundOff.png"));
+			audioToggle = new JButton(new ImageIcon("resources/soundOn.png"));
 			audioToggle.setBounds(550,520,40,40);
-			playingSound = false;
+			playingSound = true;
 			audioToggle.addActionListener(new muter());
 			this.add(audioToggle);
 			audioQueue = new LinkedList<byte[]>();
-			playerThread = new Thread(new AudioPlayer());
-			playerThread.start();
+			new Thread(new AudioPlayer()).start();
 			//System.out.println("thread started");
-			AudioFormat format = new AudioFormat(AudioFormat.Encoding.PCM_SIGNED, 44100.0f, 16, 2, (2)*16, 44100.0f,true);
+	    	AudioFormat format = new AudioFormat(44100.0f, 16, 2, true, false);
 	    	try {
 	    		DataLine.Info dataLineInfo = new DataLine.Info(SourceDataLine.class, format);
 	            speakers = (SourceDataLine) AudioSystem.getLine(dataLineInfo);
@@ -83,6 +83,7 @@ public class ValueStreamBox extends JPanel {
 	            speakers.start();
 	    	} catch (Exception e) {
 	    		System.err.println("uh oh, sensor audio stuff");
+	    		e.printStackTrace();
 	    		
 	    	}
 		}
@@ -176,14 +177,13 @@ public class ValueStreamBox extends JPanel {
 		g.setColor(Color.black);
 		g.drawLine(getWidth() / 5, getHeight()/2, getWidth() * 4/5, getHeight()/2);
 	}
-	public void addClip(byte[] recording) {
-		
-		
-		//AudioClip clip = null;
-		
-		
+	public synchronized void addClip(byte[] recording) {
 		audioQueue.add(recording);
-		//System.out.println("Clip added, queue size is " + audioQueue.size());
+		System.out.println("Clip added, queue size is " + audioQueue.size());
+	}
+	public synchronized byte[] getRecording() {
+		//System.out.println("Getting one " + audioQueue.size());
+		return audioQueue.poll();
 	}
 	public float GetSensorValue() {
 		//Random r = new Random();
@@ -191,32 +191,28 @@ public class ValueStreamBox extends JPanel {
 		//return r.nextFloat();
 		return value;
 	}
-	class AudioPlayer implements Runnable {
+	public void SetSensorValue(float f) {
+		this.value = f;
+		repaint();
+	}
+	public class AudioPlayer implements Runnable {
 
-		@Override
 		public void run() {
 			while(true) {
-				//System.out.println("looping thread");
-				boolean played = false;
-				if (audioQueue.size() > 0) {
-					byte[] nextClip = audioQueue.poll();
-					played = true;
-					if (playingSound) {
+				//System.out.println("looping thread" + audioQueue.size());
+				
+					//System.out.println("playing clip");
+					byte[] nextClip = getRecording();
+					if (playingSound && nextClip != null) {
+						System.out.println(nextClip[0] + " " + nextClip[1] + " " + nextClip[2]);
+						System.out.println("Playing sound");
 						speakers.write(nextClip, 0, nextClip.length);
-						speakers.drain();
-			            speakers.close();
+						//speakers.drain();
+						
 					}
-					//long time = nextClip.
-					//assuming all clips are going to me 3000 ms
-					//System.out.println("played next clip, size is now " + audioQueue.size() + " and info is " + nextClip);
-
-				}
-				/*try {
-					//if played, pause the right amount of time, otherwise pause for 0 ms
-					Thread.sleep(played?3000:0);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}*/
+					
+				
+				
 			}
 			
 		}
