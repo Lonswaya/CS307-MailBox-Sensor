@@ -1,5 +1,6 @@
 package cs307.purdue.edu.autoawareapp;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
@@ -29,6 +30,8 @@ public class AddSensorUI extends AppCompatActivity implements View.OnClickListen
     EditText emailId, phoneNumber;
     Button addButton;
 
+    //Server server;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -36,6 +39,8 @@ public class AddSensorUI extends AppCompatActivity implements View.OnClickListen
 
         String title = getIntent().getStringExtra("Title");
         this.setTitle("Add New Sensor");
+
+        //server = (Server) getIntent().getSerializableExtra("Server");
 
         sensorName = (EditText) findViewById(R.id.add_set_name_text);
         ip =(EditText) findViewById(R.id.add_set_ip_text);
@@ -104,9 +109,18 @@ public class AddSensorUI extends AppCompatActivity implements View.OnClickListen
         switch (v.getId()) {
             case R.id.add_confirm_add_button:
                 ClientConfig newSensor = getInfofromForm();
-                if (newSensor == null)
+                System.out.println("Debug Message: Got add button");
+                if (newSensor == null) {
+                    System.out.println("Debug Message: Got null");
                     clearForm();
+                }
                 //TODO: ADD sensor to the server
+                //server.addSensor(newSensor);
+                Intent mIntent = new Intent(this, SensorClientUI.class);
+                mIntent.putExtra("New Sensor", newSensor);
+                setResult(RESULT_OK, mIntent);
+                System.out.println("Returning back to parent activity");
+                finish();
                 break;
             default:
                 break;
@@ -146,59 +160,57 @@ public class AddSensorUI extends AppCompatActivity implements View.OnClickListen
     public ClientConfig getInfofromForm() {
         String name = sensorName.getText().toString();
         String ipString = ip.getText().toString();
+        String strtHour, strtMinute, edHour, edMinute;
+        String endTime = null;
+        String startTime = null;
+        boolean force_on = false;
+        boolean force_off = false;
+        SensorType sensorType = SensorType.LIGHT;
 
         if (setTimeBox.isChecked()) {
-            String strtHour = startHour.getText().toString();
-            String strtMinute = startMinute.getText().toString();
-            String startTime = strtHour + ":" + strtMinute;
+            strtHour = startHour.getText().toString();
+            strtMinute = startMinute.getText().toString();
+            startTime = strtHour + ":" + strtMinute;
 
-            String edHour = endHour.getText().toString();
-            String edMinute = endMinute.getText().toString();
-            String endTime = edHour + ":" + edMinute;
+            edHour = endHour.getText().toString();
+            edMinute = endMinute.getText().toString();
+            endTime = edHour + ":" + edMinute;
 
-            boolean force_on = false;
-            boolean force_off = false;
+
             if (startTime != null) {
                 force_on = true;
             }
             if (endTime != null) {
                 force_off = true;
             }
-            if (startTime == null && endTime == null) {
-                return null;
-            }
-            else {
-                SensorType sensorType;
-                if (typeLight.isChecked())
-                    sensorType = SensorType.LIGHT;
-                else if (typeAudio.isChecked())
-                    sensorType = SensorType.AUDIO;
-                else if (typeVideo.isChecked())
-                    sensorType = SensorType.VIDEO;
-                else
-                    return null;
-
-                float threshold = setThresholdBar.getProgress();
-
-                boolean desktop = false;
-                boolean phone = false;
-                boolean email = false;
-                boolean magicMirror = false;
-                if (desktopNotification.isChecked())
-                    desktop = true;
-                if (mobileNotification.isChecked())
-                    phone = true;
-                if (emailNotification.isChecked())
-                    email = true;
-                if (appNotification.isChecked())
-                    magicMirror = true;
-
-                String phoneString = phoneNumber.getText().toString();
-                String emailString = emailId.getText().toString();
-
-                return new ClientConfig(ipString, startTime, endTime, force_on, force_off, sensorType, threshold, name, desktop, magicMirror, phone, email, phoneString, emailString, 10);
-            }
         }
-        return null;
+
+        if (typeLight.isChecked())
+            sensorType = SensorType.LIGHT;
+        else if (typeAudio.isChecked())
+            sensorType = SensorType.AUDIO;
+        else if (typeVideo.isChecked())
+            sensorType = SensorType.VIDEO;
+
+        float threshold = setThresholdBar.getProgress();
+
+        boolean desktop = false;
+        boolean phone = false;
+        boolean email = false;
+        boolean magicMirror = false;
+        if (desktopNotification.isChecked())
+            desktop = true;
+        if (mobileNotification.isChecked())
+            phone = true;
+        if (emailNotification.isChecked())
+            email = true;
+        if (appNotification.isChecked())
+            magicMirror = true;
+
+        String phoneString = phoneNumber.getText().toString();
+        String emailString = emailId.getText().toString();
+
+        return new ClientConfig(ipString, startTime, endTime, force_on, force_off, sensorType, threshold, name, desktop, magicMirror, phone, email, phoneString, emailString, 10);
+
     }
 }

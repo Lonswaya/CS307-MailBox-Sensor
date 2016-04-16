@@ -20,14 +20,17 @@ public class SensorClientUI extends AppCompatActivity implements View.OnClickLis
     private RecyclerView recyclerView;
     RecyclerView.Adapter mAdapter = null;
     RecyclerView.LayoutManager llm;
+
     private ArrayList<Sensor> sensors = new ArrayList<Sensor>();
+    ArrayList<ClientConfig> sensorInfoList;
     int in_index = 0;
     private int numOfSensors;
-    private ArrayList<ClientConfig> sensorInfoList = new ArrayList<ClientConfig>();
     private int noSensorFlag = 0;
     Server server;
     String ip;
     Button addSensorButton, exitButton;
+
+    Sensor newSensor;
 
     public SensorClientUI() {
     }
@@ -60,6 +63,11 @@ public class SensorClientUI extends AppCompatActivity implements View.OnClickLis
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        newSensor = (Sensor) getIntent().getSerializableExtra("New Sensor");
+        if (newSensor != null) {
+            System.out.println(newSensor);
+        }
+
         System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>TEST MESSAGE<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
 
         ip  = (String) getIntent().getStringExtra("Server IP");
@@ -88,7 +96,7 @@ public class SensorClientUI extends AppCompatActivity implements View.OnClickLis
 
         //TODO: Comment these lines out
         //int ret = createSensors();
-        sensors.add(new Sensor("Sensor 1", 0, "LIGHT", "100.0.0.1"));
+        /*sensors.add(new Sensor("Sensor 1", 0, "LIGHT", "100.0.0.1"));
         sensorInfoList.add(new ClientConfig("100.0.0.1", "0", "0", false, false, SensorType.LIGHT, 90, "Sensor 1", false, false, false, false, "123456789", "abcd@email.com", 10));
         //server.addClientConfigObject(sensorInfoList.get(0));
         recyclerView.scrollToPosition(sensors.size() - 1);
@@ -108,10 +116,11 @@ public class SensorClientUI extends AppCompatActivity implements View.OnClickLis
         recyclerView.scrollToPosition(sensors.size() - 1);
         //mAdapter.notifyItemInserted(sensors.size() - 1);
         mAdapter.notifyDataSetChanged();
+        */
 
-        /*try {
+        try {
             System.out.println("In try catch");
-            /*server = new Server(ip);
+            server = new Server(ip);
             //server.serverInit();
             //server.setUpConnector();
             System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
@@ -122,7 +131,7 @@ public class SensorClientUI extends AppCompatActivity implements View.OnClickLis
             System.out.println("GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG");
 
             //sensorInfoList = server.getSensorLists();
-            server = new Server(ip);
+            /*server = new Server(ip);
             while(sensorInfoList == null){
                 sensorInfoList = server.getSensorLists();
                 System.out.println("*****************************" + sensorInfoList + "***************************");
@@ -136,11 +145,11 @@ public class SensorClientUI extends AppCompatActivity implements View.OnClickLis
                 mAdapter.notifyDataSetChanged();
                 server.run();
 
-            }
+            }*/
         } catch(NullPointerException e) {
             //TODO: Display a waiting screen
             System.out.println("NULL POINTER EXCEPTION");
-        }*/
+        }
     }
 
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -153,7 +162,7 @@ public class SensorClientUI extends AppCompatActivity implements View.OnClickLis
         return this;
     }
 
-    public int createSensors() {
+    /*public int createSensors() {
         Server server = new Server(ip);
         sensorInfoList = server.getSensorLists();
         System.out.println(sensorInfoList);
@@ -179,90 +188,9 @@ public class SensorClientUI extends AppCompatActivity implements View.OnClickLis
             }
         }
         return 0;
-    }
+    }*/
 
-    public int updateSensors(Server server) {
-        sensorInfoList = server.getSensorLists();
-        if (sensorInfoList != null) {
-            setNumOfSensors(sensorInfoList.size());
-        }
-        else {
-            noSensorFlag = 1;
-            return 0;
-        }
-        if (numOfSensors == 0) {
-            noSensorFlag = 1;
-            return 0;
-        }
-        else {
-            noSensorFlag = 0;
-            try {
-                sensors.clear();
-                for (int i = 0; i < numOfSensors; i++) {
-                    Sensor sensor = convertClientConfigToSensor(sensorInfoList.get(i));
-                    int check = checkSensorMatch(sensor.getIp());
 
-                    if (check == -1) {
-                        sensors.add(sensor);
-                        recyclerView.scrollToPosition(sensors.size() - 1);
-                        mAdapter.notifyDataSetChanged();
-                    }
-                    else if (check != -1) {
-                        //TODO: Get value form the client
-                        float currentVal = sensorInfoList.get(i).sensing_threshold;
-                        sensors.get(check).setSeekCurrentValue((int) currentVal);
-                        int val = 0;
-                        if (currentVal % 1 < 0.5) {
-                            val = (int) currentVal;
-                        }
-                        else {
-                            val = (int) currentVal + 1;
-                        }
-                        sensors.get(check).getCurrentValBar().setProgress(val);
-                        mAdapter.notifyDataSetChanged();
-                    }
-                }
-            } catch (Exception e) {
-                return -1;
-            }
-        }
-        return 0;
-    }
-
-    public int checkSensorMatch(String ip) {
-        for (int i = 0; i < sensors.size(); i++) {
-            if (sensors.get(i).getIp() == ip) {
-                return i;
-            }
-        }
-        return -1;
-    }
-
-    public Sensor convertClientConfigToSensor(ClientConfig s) {
-        Sensor newSensor = new Sensor();
-        newSensor.setName(s.name);
-
-        switch (s.sensor_type) {
-            case VIDEO: newSensor.setType("VIDEO");
-                newSensor.setSensorTypeImage(R.mipmap.ic_video_icon);
-                break;
-            case AUDIO: newSensor.setType("AUDIO");
-                newSensor.setSensorTypeImage(R.mipmap.ic_sound_icon);
-                break;
-            case LIGHT: newSensor.setType("LIGHT");
-                newSensor.setSensorTypeImage(R.mipmap.ic_bulb);
-                break;
-            default: return null;
-        }
-
-        newSensor.setIp(s.ip);
-        newSensor.setSeekDefaultValue(0);
-        newSensor.setSeekCurrentValue((int) s.sensing_threshold);
-        newSensor.getPlayButton().setVisibility(View.INVISIBLE);
-
-        return newSensor;
-
-    }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -286,8 +214,8 @@ public class SensorClientUI extends AppCompatActivity implements View.OnClickLis
                 System.out.println("Debug Messsage: Add sensor clicked");
                 Intent mIntent = new Intent(this, AddSensorUI.class);
                 System.out.println("Debug Messsage: Add sensor clicked 2");
-                //mIntent.putExtra("Name", "Add Sensor");
-                startActivity(mIntent);
+                //mIntent.putExtra("Server", server);
+                startActivityForResult(mIntent, 1);
                 break;
             case R.id.exitButton:
                 System.exit(0);
@@ -295,6 +223,15 @@ public class SensorClientUI extends AppCompatActivity implements View.OnClickLis
             default:
                 break;
         }
+    }
+
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        System.out.println("In onActivityResult");
+        if(resultCode == RESULT_OK){
+                ClientConfig newSensorConfig = (ClientConfig) data.getSerializableExtra("New Sensor");
+                System.out.println(newSensor);
+            }
     }
 //
 //    private void sendMessage() {

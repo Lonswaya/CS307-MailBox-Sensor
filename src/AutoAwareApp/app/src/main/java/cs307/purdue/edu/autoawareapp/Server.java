@@ -3,6 +3,7 @@ package cs307.purdue.edu.autoawareapp;
 import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.support.annotation.RequiresPermission;
+import android.view.View;
 
 import org.apache.http.conn.util.InetAddressUtils;
 
@@ -19,6 +20,7 @@ import javax.net.ssl.SSLSocketFactory;
 public class Server implements Runnable, MessageProcessor, Serializable {
 
     public volatile ArrayList<ClientConfig> sensorList;
+    public ArrayList<Sensor> sensors;
 
     public String server_ip;
     public String my_ip;
@@ -69,18 +71,82 @@ public class Server implements Runnable, MessageProcessor, Serializable {
         return -1;
     }
 
+    public boolean updateSensors(ArrayList<ClientConfig> oldSensorList) {
+        boolean updateUI = false;
+        sensors.clear();
+        sensorList = this.getSensorLists();
+        if (sensorList == null) {
+            return true;
+        }
+        else {
+            try {
+                for (int i = 0; i < sensorList.size(); i++) {
+                    int check = checkSensorMatch(oldSensorList, sensorList.get(i));
+                    if (check == -1) {
+                        updateUI = true;
+                    }
+
+                    Sensor sensor = convertClientConfigToSensor(sensorList.get(i));
+                    sensors.add(sensor);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        return updateUI;
+    }
+
+    public int checkSensorMatch(ArrayList<ClientConfig> oldSensorList, ClientConfig currentSensor) {
+        for (int i = 0; i < oldSensorList.size(); i++) {
+            if (compareSensors(oldSensorList.get(i), currentSensor) == true)
+                return 0;
+        }
+        return -1;
+    }
+
+    public boolean compareSensors(ClientConfig sensor1, ClientConfig sensor2) {
+        //if ((sensor1.ip != sensor2.ip) || (sensor1.name != sensor2.name) || (sensor1.sensor_type != sensor2.sensor_type) || (sensor1.
+        return sensor1.equals(sensor2);
+    }
+
+    public Sensor convertClientConfigToSensor(ClientConfig s) {
+        Sensor newSensor = new Sensor();
+        newSensor.setName(s.name);
+
+        switch (s.sensor_type) {
+            case VIDEO: newSensor.setType("VIDEO");
+                newSensor.setSensorTypeImage(R.mipmap.ic_video_icon);
+                break;
+            case AUDIO: newSensor.setType("AUDIO");
+                newSensor.setSensorTypeImage(R.mipmap.ic_sound_icon);
+                break;
+            case LIGHT: newSensor.setType("LIGHT");
+                newSensor.setSensorTypeImage(R.mipmap.ic_bulb);
+                break;
+            default: return null;
+        }
+
+        newSensor.setIp(s.ip);
+        newSensor.setSeekDefaultValue(0);
+        newSensor.setSeekCurrentValue((int) s.sensing_threshold);
+        newSensor.getPlayButton().setVisibility(View.INVISIBLE);
+
+        return newSensor;
+
+    }
+
     /*
     Run of the thread
      */
     @Override
     public void run() {
         System.out.println("Debug message: In run() method");
-        /*if(centralServer == null){
+        if(centralServer == null){
             System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
             if(!serverInit()){
                 System.out.println("    BACKEND SREVER DEBUG: Can't get central server connection");
             }
-        }*/
+        }
 
         //addSensor(new ClientConfig("100.0.0.1", "0:00", "0:00", false, false, SensorType.LIGHT, 90, "Sensor 1", false, false, false, false, "123456789", "abcd@email.com", 10));
         //System.out.println(sensorList.get(0));
@@ -106,17 +172,17 @@ public class Server implements Runnable, MessageProcessor, Serializable {
 
         }catch(Exception e){
             e.printStackTrace();
-        }*/
-
+        }
+        */
         System.out.println("Debug Message: Going into running");
 
         int i = 1;
 
-        //while(running) {
-            /*//shitty timer
+        while(running) {
+           //shitty timer
             if(!suspended) {
-                boolean check = addSensor(new ClientConfig("100.0.0.1", "0:00", "0:00", false, false, SensorType.LIGHT, 90, "Sensor 1", false, false, false, false, "123456789", "abcd@email.com", 10));
-                System.out.println("Debug Message: In Server call " + check);
+                //boolean check = addSensor(new ClientConfig("100.0.0.1", "0:00", "0:00", false, false, SensorType.LIGHT, 90, "Sensor 1", false, false, false, false, "123456789", "abcd@email.com", 10));
+                //System.out.println("Debug Message: In Server call " + check);
                 int interval = 5000;
                 long lastMilli = System.currentTimeMillis();
                 while (true) {
@@ -130,14 +196,11 @@ public class Server implements Runnable, MessageProcessor, Serializable {
                 Thread.sleep(1000);
             } catch (Exception e) {
                 Thread.dumpStack();
-            }*/
-        //}
     }
 
     /*
     Used to handle messages catched from central server
      */
-    public void ProcessMessage(Message msg){
         System.out.println("    BACKEND SREVER DEBUG: Got message, type = " + msg.type);
         Thread msgHandler = new Thread(new Runnable() {
             Message msg;

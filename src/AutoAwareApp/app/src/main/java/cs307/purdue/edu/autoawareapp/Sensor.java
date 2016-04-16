@@ -46,37 +46,6 @@ public class Sensor extends AppCompatActivity  {
         this.ip = ip;
     }
 
-    /*@Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.sensor);
-
-        sensorLayout = (RelativeLayout) findViewById(R.id.sensor_info_form);
-
-        sensorName = (TextView) findViewById(R.id.sensor_name);
-
-        playButton = (ImageButton) findViewById(R.id.rec_button);
-
-        sensorTypeImage = (ImageView) findViewById(R.id.sensor_type_image);
-
-        currentValBar = (SeekBar) findViewById(R.id.current_val_bar);
-
-        configButton = (Button) findViewById(R.id.button1);
-        configButton.setOnClickListener(this);
-
-        enableDisableButton = (Button) findViewById(R.id.button2);
-        enableDisableButton.setOnClickListener(this);
-
-        System.out.println("SET UP LISTENERS******************************************************");
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
-    }*/
-
     public String getName() {
         return name;
     }
