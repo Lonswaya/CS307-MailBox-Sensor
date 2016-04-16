@@ -2,6 +2,8 @@ package cs307.purdue.edu.autoawareapp;
 
 import android.net.wifi.WifiManager;
 import android.os.Build;
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.support.annotation.RequiresPermission;
 import android.view.View;
 
@@ -17,7 +19,7 @@ import javax.net.ssl.SSLSocketFactory;
 /**
  * Used to bridge android to server
  */
-public class Server implements Runnable, MessageProcessor, Serializable {
+public class Server implements Runnable, MessageProcessor {
 
     public volatile ArrayList<ClientConfig> sensorList;
     public ArrayList<Sensor> sensors;
@@ -188,19 +190,40 @@ public class Server implements Runnable, MessageProcessor, Serializable {
                 while (true) {
                     if ((int) (System.currentTimeMillis() - lastMilli) >= interval) break;
                 }
+
+                ArrayList<ClientConfig> oldSensorList;
+                if (sensorList == null) {
+                    oldSensorList = null;
+                }
+                else {
+                    oldSensorList = (ArrayList<ClientConfig>) sensorList.clone();
+                }
+
                 getSensorsFromServer();
-            }else System.out.println("    BACKEND SREVER DEBUG: Server thread suspended");*/
-            sensorList.add(new ClientConfig("100.0.0." + i*5, "0:00", "0:00", false, false, SensorType.LIGHT, 90, "Sensor 1", false, false, false, false, "123456789", "abcd@email.com", 10));
-            i++;
-            /*try {
+                if (oldSensorList != null) {
+                    boolean updateUI = updateSensors(oldSensorList);
+
+                    System.out.println("Debug Message: updateUI = " + updateUI);
+
+                    if (updateUI == true) {
+                        //TODO: Call UI thread and send update sensors ArrayList
+                    }
+                }
+            }else System.out.println("    BACKEND SREVER DEBUG: Server thread suspended");
+            //sensorList.add(new ClientConfig("100.0.0." + i*5, "0:00", "0:00", false, false, SensorType.LIGHT, 90, "Sensor 1", false, false, false, false, "123456789", "abcd@email.com", 10));
+            //i++;
+            try {
                 Thread.sleep(1000);
             } catch (Exception e) {
                 Thread.dumpStack();
+            }
+        }
     }
 
     /*
     Used to handle messages catched from central server
      */
+    public void ProcessMessage (Message msg){
         System.out.println("    BACKEND SREVER DEBUG: Got message, type = " + msg.type);
         Thread msgHandler = new Thread(new Runnable() {
             Message msg;
