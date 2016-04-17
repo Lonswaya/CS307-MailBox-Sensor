@@ -1,5 +1,7 @@
 package cs307.purdue.edu.autoawareapp;
 
+import android.app.Activity;
+import android.content.Context;
 import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Parcel;
@@ -22,7 +24,6 @@ import javax.net.ssl.SSLSocketFactory;
 public class Server implements Runnable, MessageProcessor, Serializable {
 
     public volatile ArrayList<ClientConfig> sensorList;
-    public ArrayList<Sensor> sensors;
 
     public String server_ip;
     public String my_ip;
@@ -30,12 +31,15 @@ public class Server implements Runnable, MessageProcessor, Serializable {
     public SocketWrapper centralServer = null;
     public boolean running = true;
     public boolean suspended = false;
+    public boolean workingSensorList = false;
+    public ServerCallback UI;
 
-    public Server(String ip) {
+    public Server(String ip, Context UI) {
         this.server_ip = ip;
         //System.setProperty("javax.net.ssl.trustStore", "mySrvKeystore");  //get ssl working
         //System.setProperty("javax.net.ssl.trustStorePassword", "sensor"); //get ssl working
         my_ip = Server.getMyIP();
+        this.UI = (ServerCallback) UI;
     }
 
     /*
@@ -73,45 +77,68 @@ public class Server implements Runnable, MessageProcessor, Serializable {
         return -1;
     }
 
-    public boolean updateSensors(ArrayList<ClientConfig> oldSensorList) {
-        boolean updateUI = false;
-        if (sensors != null)
-            sensors.clear();
+    public boolean needUpdateSensors(ArrayList<ClientConfig> oldSensorList) {
+       if(this.sensorList == null) return true;
+        ArrayList<ClientConfig> list = (ArrayList<ClientConfig>) this.sensorList.clone();
 
-        sensorList = this.getSensorLists();
-        if (sensorList == null) {
-            return true;
-        }
-        else {
-            try {
-                for (int i = 0; i < sensorList.size(); i++) {
-                    int check = checkSensorMatch(oldSensorList, sensorList.get(i));
-                    if (check == -1) {
-                        updateUI = true;
-                    }
-
-                    Sensor sensor = convertClientConfigToSensor(sensorList.get(i));
-                    sensors.add(sensor);
+        if(list.size() != oldSensorList.size()) return true;
+        try {
+            for (int i = 0; i < oldSensorList.size(); i++) {
+                int idx = containSensor(list, oldSensorList.get(i));
+                if(idx != -1){
+                    if(!compareClientConfig(list.get(idx), oldSensorList.get(i))) return true;
                 }
-            } catch (Exception e) {
-                e.printStackTrace();
             }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-        return updateUI;
+        return false;
     }
 
-    public int checkSensorMatch(ArrayList<ClientConfig> oldSensorList, ClientConfig currentSensor) {
-        for (int i = 0; i < oldSensorList.size(); i++) {
-            if (compareSensors(oldSensorList.get(i), currentSensor) == true)
-                return 0;
+
+    public int containSensor(ArrayList<ClientConfig> s, ClientConfig c){
+        int idx = -1;
+        for(int i = 0; i < s.size(); i++){
+            if(s.get(i).ip.compareTo(c.ip) == 0) idx = i;
         }
-        return -1;
+        return idx;
+    }
+    /*
+    Compares if two configs are equal
+    Param: ClientConfig, ClientConfig
+    Return: true if same, false if different
+     */
+    public boolean compareClientConfig(ClientConfig s1, ClientConfig s2) {
+        if(s1 == null || s2 == null) return false;
+        if(s1.start_hours != s2.start_hours) return false;
+        if(s1.start_minutes != s2.start_minutes) return false;
+        if(s1.stop_hours != s2.stop_hours) return false;
+        if(s1.stop_minutes != s2.stop_minutes) return false;
+        if(s1.force_off != s2.force_off) return false;
+        if(s1.force_on != s2.force_on) return false;
+        if(s1.sensor_type != s2.sensor_type) return false;
+        if(s1.sensing_threshold != s2.sensing_threshold) return false;
+        if(s1.name.compareTo(s2.name) == 0) return false;
+        if(s1.desktopNotification != s2.desktopNotification) return false;
+        if(s1.emailNotification != s2.emailNotification) return false;
+        if(s1.magicMirrorNotification != s2.magicMirrorNotification) return false;
+        if(s1.textNotification != s2.textNotification) return false;
+        if(s1.phoneNumber.compareTo(s2.phoneNumber) == 0) return false;
+        if(s1.emailAddress.compareTo(s2.emailAddress) == 0) return false;
+        if(s1.interval != s2.interval) return false;
+        if(s1.ip.compareTo(s2.ip) == 0) return false;
+        return true;
     }
 
-    public boolean compareSensors(ClientConfig sensor1, ClientConfig sensor2) {
-        //if ((sensor1.ip != sensor2.ip) || (sensor1.name != sensor2.name) || (sensor1.sensor_type != sensor2.sensor_type) || (sensor1.
-        return sensor1.equals(sensor2);
+    public ArrayList<Sensor> generateUISensorsList(){
+        ArrayList<Sensor> list = new ArrayList<Sensor>();
+        for(ClientConfig config : this.sensorList){
+            Sensor s = convertClientConfigToSensor(config);
+            list.add(s);
+        }
+        return list;
     }
+
 
     public Sensor convertClientConfigToSensor(ClientConfig s) {
         Sensor newSensor = new Sensor();
@@ -179,9 +206,6 @@ public class Server implements Runnable, MessageProcessor, Serializable {
         }
         */
         System.out.println("Debug Message: Going into running");
-
-        int i = 1;
-
         while(running) {
            //shitty timer
             if(!suspended) {
@@ -193,6 +217,7 @@ public class Server implements Runnable, MessageProcessor, Serializable {
                     if ((int) (System.currentTimeMillis() - lastMilli) >= interval) break;
                 }
 
+                workingSensorList = true;
                 ArrayList<ClientConfig> oldSensorList;
                 if (sensorList == null) {
                     oldSensorList = null;
@@ -202,23 +227,22 @@ public class Server implements Runnable, MessageProcessor, Serializable {
                 }
 
                 getSensorsFromServer();
+
+                boolean updateUI = needUpdateSensors(oldSensorList);
                 if (oldSensorList != null) {
-                    boolean updateUI = updateSensors(oldSensorList);
+                    System.out.println("    BACKEND SREVER DEBUG: updateUI = " + updateUI);
 
-                    System.out.println("Debug Message: updateUI = " + updateUI);
-
-                    if (updateUI == true) {
+                    if (updateUI) {
+                        ArrayList<Sensor> sensors;
+                        sensors = generateUISensorsList();
+                        UI.handleMessage(sensors);
                         //TODO: Call UI thread and send update sensors ArrayList
                     }
                 }
             }else System.out.println("    BACKEND SREVER DEBUG: Server thread suspended");
             //sensorList.add(new ClientConfig("100.0.0." + i*5, "0:00", "0:00", false, false, SensorType.LIGHT, 90, "Sensor 1", false, false, false, false, "123456789", "abcd@email.com", 10));
             //i++;
-            try {
-                Thread.sleep(1000);
-            } catch (Exception e) {
-                Thread.dumpStack();
-            }
+            workingSensorList = false;
         }
     }
 
@@ -244,6 +268,12 @@ public class Server implements Runnable, MessageProcessor, Serializable {
 
                         case GET_SENSORS:
                             SensorsMessage sMsg = (SensorsMessage) msg;
+                            boolean stop;
+                            do {
+                                stop = ref.workingSensorList;
+                                System.out.println("    BACKEND SREVER DEBUG: SensorList update status: " + stop);
+                            }while(stop);
+
                             ref.sensorList = sMsg.ar;
                             break;
                         default:
@@ -347,5 +377,9 @@ public class Server implements Runnable, MessageProcessor, Serializable {
     public static boolean isValidIP(String ip){
         //implement this?
         return true;
+    }
+
+    public interface ServerCallback{
+        void  handleMessage(ArrayList<Sensor> newSensorList);
     }
 }

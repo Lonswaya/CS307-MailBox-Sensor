@@ -211,7 +211,7 @@ public class AddSensorUI extends AppCompatActivity implements View.OnClickListen
         String phoneString = phoneNumber.getText().toString();
         String emailString = emailId.getText().toString();
 
-        return new ClientConfig(ipString, startTime, endTime, force_on, force_off, sensorType, threshold, name, desktop, magicMirror, phone, email, phoneString, emailString, 10);
+        return new ClientConfig(ipString, startTime, endTime, force_on, force_off, sensorType, threshold, name, 0, 0, 0, desktop, magicMirror, phone, email, phoneString, emailString, 10);
 
     }
 }

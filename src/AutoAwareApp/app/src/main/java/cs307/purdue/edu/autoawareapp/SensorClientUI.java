@@ -4,6 +4,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -12,12 +14,13 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 
 /**
  * Created by Dhairya M. Doshi on 4/1/2016.
  */
-public class SensorClientUI extends AppCompatActivity implements View.OnClickListener {
+public class SensorClientUI extends AppCompatActivity implements View.OnClickListener, Server.ServerCallback {
     private RecyclerView recyclerView;
     RecyclerView.Adapter mAdapter = null;
     RecyclerView.LayoutManager llm;
@@ -121,7 +124,7 @@ public class SensorClientUI extends AppCompatActivity implements View.OnClickLis
 
         try {
             System.out.println("In try catch");
-            server = new Server(ip);
+            server = new Server(ip, this);
             //server.serverInit();
             //server.setUpConnector();
             System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
@@ -151,6 +154,12 @@ public class SensorClientUI extends AppCompatActivity implements View.OnClickLis
             //TODO: Display a waiting screen
             System.out.println("NULL POINTER EXCEPTION");
         }
+    }
+
+    public void handleMessage(ArrayList<Sensor> newSensorList){
+        sensors.clear();
+        sensors = (ArrayList<Sensor>) newSensorList.clone();
+        mAdapter.notifyDataSetChanged();
     }
 
     public boolean onCreateOptionsMenu(Menu menu) {

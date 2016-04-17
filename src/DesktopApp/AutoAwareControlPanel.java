@@ -389,7 +389,7 @@ public class AutoAwareControlPanel extends JFrame implements MessageProcessor {/
     	} else if (address != null) {
     		ClientConfig newSensor = new ClientConfig();
     		
-    		String[] values = {"Audio", "Picture", "Light"};
+    		String[] values = {"Audio", "Video", "Light"};
 
     		Object selected = JOptionPane.showInputDialog(null, "What type of sensor do you want?", "Selection", JOptionPane.DEFAULT_OPTION, null, values, "0");
     		if ( selected != null ){//null if the user cancels. 
@@ -398,7 +398,7 @@ public class AutoAwareControlPanel extends JFrame implements MessageProcessor {/
 	    		    case "Audio":
 	    		    	newSensor.sensor_type = SensorType.AUDIO;
 	    		    	break;
-	    		    case "Picture": //i know its not video/picture blah blah blah
+	    		    case "Video": //i know its not video/picture blah blah blah
 	    		    	newSensor.sensor_type = SensorType.VIDEO;
 	    		    	break;
 	    		    case "Light":
@@ -889,7 +889,7 @@ public class AutoAwareControlPanel extends JFrame implements MessageProcessor {/
 					
 				}
 				//if we have a higher threshold, and the item was not already added to the list
-				if (myClient.sensing_threshold <= f && notificationStack.search(myClient.name) == -1) {
+				if (myClient.sensing_threshold <= f && notificationStack.search(myClient.name) == -1 && myClient.isSensorActive()) {
 					//System.out.println(notificationStack.search(myClient.name));
 					notificationStack.add(myClient.name);
 				}
