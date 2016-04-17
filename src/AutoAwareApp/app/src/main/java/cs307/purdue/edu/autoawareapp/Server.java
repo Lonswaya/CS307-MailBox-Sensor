@@ -32,6 +32,7 @@ public class Server implements Runnable, MessageProcessor, Serializable {
     public boolean running = true;
     public boolean suspended = false;
     public boolean workingSensorList = false;
+    public boolean sensorListReady = false;
     public ServerCallback UI;
 
     public Server(String ip, Context UI) {
@@ -179,9 +180,6 @@ public class Server implements Runnable, MessageProcessor, Serializable {
             }
         }
 
-        //addSensor(new ClientConfig("100.0.0.1", "0:00", "0:00", false, false, SensorType.LIGHT, 90, "Sensor 1", false, false, false, false, "123456789", "abcd@email.com", 10));
-        //System.out.println(sensorList.get(0));
-        //sensorList.add(new ClientConfig("100.0.0.1", "0:00", "0:00", false, false, SensorType.LIGHT, 90, "Sensor 1", false, false, false, false, "123456789", "abcd@email.com", 10));
         /*try {
 
                 TESTING SHIT IF THIS BREAKS NOTHIGN WORKS
@@ -207,15 +205,7 @@ public class Server implements Runnable, MessageProcessor, Serializable {
         */
         System.out.println("Debug Message: Going into running");
         while(running) {
-           //shitty timer
             if(!suspended) {
-                //boolean check = addSensor(new ClientConfig("100.0.0.1", "0:00", "0:00", false, false, SensorType.LIGHT, 90, "Sensor 1", false, false, false, false, "123456789", "abcd@email.com", 10));
-                //System.out.println("Debug Message: In Server call " + check);
-                int interval = 5000;
-                long lastMilli = System.currentTimeMillis();
-                while (true) {
-                    if ((int) (System.currentTimeMillis() - lastMilli) >= interval) break;
-                }
 
                 workingSensorList = true;
                 ArrayList<ClientConfig> oldSensorList;
@@ -225,18 +215,18 @@ public class Server implements Runnable, MessageProcessor, Serializable {
                 else {
                     oldSensorList = (ArrayList<ClientConfig>) sensorList.clone();
                 }
-
+                workingSensorList = false;
                 getSensorsFromServer();
-
+                while(!sensorListReady);
+                sensorListReady = false;
+                workingSensorList = true;
                 boolean updateUI = needUpdateSensors(oldSensorList);
                 if (oldSensorList != null) {
                     System.out.println("    BACKEND SREVER DEBUG: updateUI = " + updateUI);
-
                     if (updateUI) {
                         ArrayList<Sensor> sensors;
                         sensors = generateUISensorsList();
                         UI.handleMessage(sensors);
-                        //TODO: Call UI thread and send update sensors ArrayList
                     }
                 }
             }else System.out.println("    BACKEND SREVER DEBUG: Server thread suspended");
@@ -251,6 +241,7 @@ public class Server implements Runnable, MessageProcessor, Serializable {
      */
     public void ProcessMessage (Message msg){
         System.out.println("    BACKEND SREVER DEBUG: Got message, type = " + msg.type);
+        sensorListReady = false;
         Thread msgHandler = new Thread(new Runnable() {
             Message msg;
             Server ref;
@@ -269,12 +260,11 @@ public class Server implements Runnable, MessageProcessor, Serializable {
                         case GET_SENSORS:
                             SensorsMessage sMsg = (SensorsMessage) msg;
                             boolean stop;
-                            do {
-                                stop = ref.workingSensorList;
-                                System.out.println("    BACKEND SREVER DEBUG: SensorList update status: " + stop);
-                            }while(stop);
 
-                            ref.sensorList = sMsg.ar;
+                            if(!ref.workingSensorList){
+                                ref.sensorList = sMsg.ar;
+                                ref.sensorListReady = true;
+                            }
                             break;
                         default:
                             System.out.println("    BACKEND SREVER DEBUG: Message type (" + msg.type + ") not supported");
