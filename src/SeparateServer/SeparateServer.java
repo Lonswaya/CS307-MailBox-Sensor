@@ -90,6 +90,7 @@ public class SeparateServer {
 			}
 			SensorsMessage sm = new SensorsMessage("Here is your configs!", configs);
 			Connections.send(ui.out, sm);
+			System.out.println("Sent message " + sm.message + " to " + ui.sock);
 		}
 	}
 	
@@ -167,13 +168,14 @@ public class SeparateServer {
 		ClientConfig cc = SeparateServer.sensorList.get(msg.from).sensorInfo;
 		//if threshold is exceeded and there is no notification yet, start one, else do nothing
 		System.out.println(cc.emailNotification + " " + cc.textNotification);
-		if (tasks.get(cc.ip) == null) {
+		if (tasks.get(cc.ip) == null && cc.isSensorActive()) {
 			tasks.put(cc.ip, true);
 			if (cc.emailNotification == true) {
 				try {
 					Sender.send(cc.emailAddress, msg.getString());
 				} catch (IOException e){
-				//handle the exception
+					e.printStackTrace();
+					//handle the exception
 				}
 			}
 			if (cc.textNotification == true) {
@@ -204,9 +206,10 @@ public class SeparateServer {
 			System.out.println("Deleting sensor " + msg.config.name);
 			SensorInfo info = sensorList.get(msg.config.ip);
 			if (info != null)
-				sensorList.remove(info);	
+				sensorList.remove(msg.config.ip);	
 			Connections.closeSocket(info.sock.sock);
 			SeparateServer.sendAllConfigsToAllUis();
+			System.out.println("Updated all users with the lack of sensor");
 			return;
 		}
 		

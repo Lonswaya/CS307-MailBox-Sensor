@@ -77,11 +77,13 @@ public class RaspberryPi {
 	 * Throws an exception if we fail to write another object. 
 	 */
 	
+	@SuppressWarnings("static-access")
 	public boolean ProcessMessage(Message msg, SocketWrapper connectionSocket) throws Exception {
 		if (msg.type == null) {
 			System.out.println("Debug message, " + msg.message);
 			return true;
 		}
+		
 		System.out.println("New message: " + msg.message);
 		switch(msg.type) {
 		case CONFIG:
@@ -110,7 +112,10 @@ public class RaspberryPi {
 			if (sensor != null) sensor.setConfig(conf.getConfig());
 			break;
 		case STREAMING:
-			
+			if (!sensor.ready) {
+				Thread.currentThread().sleep(5000);
+				//we want to wait 5 seconds, because we need that config to set up entirely
+			}
 			streaming = ((StreamingMessage)msg).streaming;
 			if (streaming && sensor != null && sensor.ready) {
 				//open a new connection, start streaming as fast as humanly possible until the connection quits
