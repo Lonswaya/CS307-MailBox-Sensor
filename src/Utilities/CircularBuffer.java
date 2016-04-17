@@ -1,4 +1,5 @@
 package Utilities;
+import java.util.Random;
 
 public class CircularBuffer {
 	private Float readings[];
@@ -60,6 +61,62 @@ public class CircularBuffer {
 		return (count == 0) 
 				? 0.0f 
 				: sum / count;
+	}
+	
+	public static void main(String[] args)
+	{
+		CircularBuffer cbuf = new CircularBuffer();
+		
+		cbuf.insert(85);
+		cbuf.insert(75);
+		cbuf.insert(65);
+		cbuf.insert(55);
+		cbuf.insert(45);
+		cbuf.insert(35);
+		cbuf.insert(25);
+		cbuf.insert(15);
+		cbuf.insert(10);
+		cbuf.insert(5);
+		
+		float avg = (5 + 10 + 15 + 25 + 35 + 45 + 55 + 65 + 75 + 85) / 10.0f;
+		System.out.println(avg);
+		System.out.println(cbuf.average());
+		
+		cbuf.insert(10);
+		cbuf.insert(0);
+		cbuf.insert(20);
+		cbuf.insert(30);
+		cbuf.insert(40);
+		cbuf.insert(50);
+		cbuf.insert(60);
+		cbuf.insert(70);
+		cbuf.insert(80);
+		cbuf.insert(90);
+		
+		avg *= 10;
+		avg += (0 + 10 + 20 + 30 + 40 + 50 + 60 + 70 + 80 + 90);
+		avg /= (20.0f);
+		System.out.println(avg);
+		System.out.println(cbuf.average());
+		
+		cbuf.insert(100);
+		cbuf.insert(110);
+		cbuf.insert(120);
+		cbuf.insert(130);
+		cbuf.insert(140);
+		cbuf.insert(150);
+		cbuf.insert(160);
+		cbuf.insert(170);
+		cbuf.insert(180);
+		cbuf.insert(190);
+		
+		avg *= 20;
+		avg -= (85 + 75 + 65 + 55 + 45);
+		avg += (100 + 110 + 120 + 130 + 140 + 150 + 160 + 170 + 180 + 190);
+		avg /= 25.0f;
+		
+		System.out.println(avg);
+		System.out.println(cbuf.average());
 	}
 	
 }

@@ -16,6 +16,7 @@ import javax.sound.sampled.SourceDataLine;
 import javax.sound.sampled.TargetDataLine;
 
 import Example.AudioCapture;
+import Utilities.CircularBuffer;
 
 public class AudioSensor extends BaseSensor
 {
@@ -28,6 +29,7 @@ public class AudioSensor extends BaseSensor
 	
 	protected boolean doneStreaming;
 	protected boolean doneVoluming;
+	static CircularBuffer cBuffer = new CircularBuffer();
 	//private Capture listen = new Capture();
 	
 	String path = System.getProperty("user.home");
@@ -190,7 +192,8 @@ public class AudioSensor extends BaseSensor
 	@Override
 	public boolean check_threshold()
 	{
-		if(currentVolume > threshold) 
+		float average = cBuffer.average();
+		if(average > threshold) 
 		{
 			overThreshold = true;
 		}
@@ -234,7 +237,10 @@ public class AudioSensor extends BaseSensor
 		//System.out.println("Sensing audio stuff");
 		if (doneVoluming) {
 			doneVoluming = false;
+			//Add to Circular buffer
 			currentVolume = checkVolume();
+			cBuffer.insert(currentVolume);
+			
 			doneVoluming = true;
 		}
 		return null;
