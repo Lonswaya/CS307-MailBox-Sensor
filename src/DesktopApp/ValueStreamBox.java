@@ -67,9 +67,9 @@ public class ValueStreamBox extends JPanel {
 		title.setBounds(200, 30, 500, 300);
 		
 		if (sensorType == SensorType.AUDIO) {
-			audioToggle = new JButton(new ImageIcon("resources/soundOn.png"));
+			audioToggle = new JButton(new ImageIcon("resources/soundOff.png"));
 			audioToggle.setBounds(550,520,40,40);
-			playingSound = true;
+			playingSound = false;
 			audioToggle.addActionListener(new muter());
 			this.add(audioToggle);
 			audioQueue = new LinkedList<byte[]>();
