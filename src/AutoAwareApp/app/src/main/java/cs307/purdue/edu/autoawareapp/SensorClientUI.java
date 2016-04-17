@@ -14,12 +14,13 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 
 /**
  * Created by Dhairya M. Doshi on 4/1/2016.
  */
-public class SensorClientUI extends AppCompatActivity implements View.OnClickListener {
+public class SensorClientUI extends AppCompatActivity implements View.OnClickListener, Server.ServerCallback {
     private RecyclerView recyclerView;
     RecyclerView.Adapter mAdapter = null;
     RecyclerView.LayoutManager llm;
@@ -123,7 +124,7 @@ public class SensorClientUI extends AppCompatActivity implements View.OnClickLis
 
         try {
             System.out.println("In try catch");
-            server = new Server(ip);
+            server = new Server(ip, this);
             //server.serverInit();
             //server.setUpConnector();
             System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
@@ -155,13 +156,11 @@ public class SensorClientUI extends AppCompatActivity implements View.OnClickLis
         }
     }
 
-    private final Handler myHandler = new Handler(Looper.getMainLooper()) {
-        public void handleMessage(ArrayList<Sensor> newSensorList) {
-            sensors.clear();
-            sensors = (ArrayList<Sensor>) newSensorList.clone();
-            mAdapter.notifyDataSetChanged();
-        }
-    };
+    public void handleMessage(ArrayList<Sensor> newSensorList){
+        sensors.clear();
+        sensors = (ArrayList<Sensor>) newSensorList.clone();
+        mAdapter.notifyDataSetChanged();
+    }
 
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.

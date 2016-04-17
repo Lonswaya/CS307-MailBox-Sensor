@@ -1,4 +1,6 @@
 package Sensor;
+import java.awt.image.BufferedImage;
+
 import cs307.purdue.edu.autoawareapp.*;
 public class VideoSensor extends BaseSensor {
 	
@@ -12,7 +14,8 @@ public class VideoSensor extends BaseSensor {
 	}
 
 	@Override
-	public void sense() {
+	public BufferedImage sense() {
+		return null;
 		// TODO Auto-generated method stub
 
 	}
@@ -31,6 +34,12 @@ public class VideoSensor extends BaseSensor {
 	public void close() {
 		// TODO Auto-generated method stub
 		
+	}
+
+	@Override
+	public Message form_message(BufferedImage sensedObject) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 	
 	//public VIDEO_CLIP_TYPE record_video(){}
