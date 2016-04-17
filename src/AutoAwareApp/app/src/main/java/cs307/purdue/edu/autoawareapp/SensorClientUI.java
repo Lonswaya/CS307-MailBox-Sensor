@@ -4,6 +4,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -152,6 +154,14 @@ public class SensorClientUI extends AppCompatActivity implements View.OnClickLis
             System.out.println("NULL POINTER EXCEPTION");
         }
     }
+
+    private final Handler myHandler = new Handler(Looper.getMainLooper()) {
+        public void handleMessage(ArrayList<Sensor> newSensorList) {
+            sensors.clear();
+            sensors = (ArrayList<Sensor>) newSensorList.clone();
+            mAdapter.notifyDataSetChanged();
+        }
+    };
 
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
