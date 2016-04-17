@@ -177,6 +177,8 @@ public class AutoAwareControlPanel extends JFrame implements MessageProcessor {/
         	icon = new JButton(new ImageIcon("resources/camera.png"));
         if (configs.get(i).sensor_type == SensorType.LIGHT)
         	icon = new JButton(new ImageIcon("resources/light.png"));
+        if (configs.get(i).sensor_type == SensorType.MOTION)
+        	icon = new JButton(new ImageIcon("resources/motion.png"));
 		icon.setVerticalTextPosition(AbstractButton.CENTER);
 		icon.setHorizontalTextPosition(AbstractButton.LEADING); //aka LEFT, for left-to-right locales
 		icon.addActionListener(new ActionListener() {
@@ -191,6 +193,8 @@ public class AutoAwareControlPanel extends JFrame implements MessageProcessor {/
                 	//System.out.println("Open video stream for sensor " + identifier);
                 if (ConfigFind(identifier).sensor_type == SensorType.LIGHT)
                 	OpenStream(SensorType.LIGHT, identifier);
+                /*if (ConfigFind(identifier).sensor_type == SensorType.MOTION)
+                	OpenStream(SensorType.MOTION, identifier);*/ //we dont want to open a stream here
                 	//System.out.println("Open light stream for sensor " + identifier);
 
             }
@@ -389,7 +393,7 @@ public class AutoAwareControlPanel extends JFrame implements MessageProcessor {/
     	} else if (address != null) {
     		ClientConfig newSensor = new ClientConfig();
     		
-    		String[] values = {"Audio", "Video", "Light"};
+    		String[] values = {"Audio", "Video", "Light", "Motion"};
 
     		Object selected = JOptionPane.showInputDialog(null, "What type of sensor do you want?", "Selection", JOptionPane.DEFAULT_OPTION, null, values, "0");
     		if ( selected != null ){//null if the user cancels. 
@@ -404,6 +408,8 @@ public class AutoAwareControlPanel extends JFrame implements MessageProcessor {/
 	    		    case "Light":
 	    		    	newSensor.sensor_type = SensorType.LIGHT;
 	    		    	break;
+	    		    case "Motion":
+	    		    	newSensor.sensor_type = SensorType.MOTION;
 	    		    default:
 	    		    	break;
     		    }
@@ -611,7 +617,7 @@ public class AutoAwareControlPanel extends JFrame implements MessageProcessor {/
 		    	
 		    	
 
-	    	} else {
+	    	} else if (s != SensorType.MOTION) { //no streambox for motion
 	    		ClientConfig c = ConfigFind(address);
 	    		
 	    		

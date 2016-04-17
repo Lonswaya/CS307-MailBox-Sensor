@@ -11,6 +11,9 @@ public class WebcamSensorFactory implements SensorFactory {
 		//currently set to picture for simplicity
 		else if(config.sensor_type == SensorType.VIDEO)
 			return new PictureSensor(config);
+		else if (config.sensor_type == SensorType.MOTION) {
+			//TODO return new MotionSensor(config);
+		}
 		return null;
 	}
 

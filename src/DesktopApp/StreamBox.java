@@ -45,7 +45,7 @@ public class StreamBox extends JFrame {
             }
             public void windowClosing(WindowEvent e) {
             	Close();
-            	System.out.println("STOP THE FUCK NOW");
+            	//System.out.println("STOP THE FUCK NOW");
             }
 		};
 		return exitListener;

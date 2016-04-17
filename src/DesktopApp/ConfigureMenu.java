@@ -28,7 +28,7 @@ public class ConfigureMenu extends JFrame {
 	private JCheckBox scheduledTimes;
 	private JTextField startH, startM, endH, endM;
 	private JLabel startTH, endTH, startTM, endTM;
-	private JRadioButton light, sound, motion;
+	private JRadioButton light, sound, motion, video;
 	private JLabel leftThreshold, rightThreshold;
 	private JSlider threshold;
 	public JSlider currentThreshold;
@@ -175,31 +175,47 @@ public class ConfigureMenu extends JFrame {
 		    sound = new JRadioButton("Sound Sensor");
 		    sound.setActionCommand("sound");
 		    if (input.sensor_type == SensorType.AUDIO) sound.setSelected(true);
-		    motion = new JRadioButton("Video/motion Sensor");
+		    
+		    video = new JRadioButton("Video Sensor");
+		    video.setActionCommand("video");
+		    if (input.sensor_type == SensorType.VIDEO) video.setSelected(true);
+
+		    //so we can get it good and ready
+		    threshold = new JSlider(JSlider.HORIZONTAL, 0, 100, Math.round(input.sensing_threshold * 100));		    
+		    
+		    
+		    motion = new JRadioButton("Motion Sensor");
 		    motion.setActionCommand("motion");
-		    if (input.sensor_type == SensorType.VIDEO) motion.setSelected(true);
+		    if (input.sensor_type == SensorType.MOTION) { 
+		    	motion.setSelected(true);
+		    	threshold.setEnabled(false);
+		    }
 
 		    
 		    light.addActionListener(new RadioListener());
 		    sound.addActionListener(new RadioListener());
 		    motion.addActionListener(new RadioListener());
+		    video.addActionListener(new RadioListener());
 		    
 		    ButtonGroup group = new ButtonGroup();
 		    group.add(light);
 		    group.add(sound);
 		    group.add(motion);
+		    group.add(video);
 		    
 		    JLabel radioName = new JLabel("Sensor Type");
+		    JLabel filler = new JLabel("   ");
 		    gridRadio.add(radioName);
+		    gridRadio.add(filler);
 		    gridRadio.add(light);
 		    gridRadio.add(sound);
 		    gridRadio.add(motion);
+		    gridRadio.add(video);
 		    
 		    
 	        sensorFields.add(gridRadio);
 	        
 	       // System.out.println((input.sensing_threshold));
-		    threshold = new JSlider(JSlider.HORIZONTAL, 0, 100, Math.round(input.sensing_threshold * 100));
 		    
 		    
 		    /*JTextPane currentLabel = new JTextPane();
@@ -210,7 +226,7 @@ public class ConfigureMenu extends JFrame {
 		    JLabel leftBuffer = new JLabel("Current: " + (input.isSensorActive()?"":"(Disabled)"));
 
 
-		    currentThreshold = new JSlider(JSlider.HORIZONTAL, 0, 100, 50); //the updating slider 
+		    currentThreshold = new JSlider(JSlider.HORIZONTAL, 0, 100, 0); //the updating slider 
 		    
 		    
 		    currentThreshold.setEnabled(false);
@@ -389,6 +405,8 @@ public class ConfigureMenu extends JFrame {
 	            	UpdateTypeOnly(SensorType.LIGHT);
 					//send cfg to change into light sensor
 				}
+				threshold.setEnabled(true);
+
 //				leftThreshold.setText(leftThresholdLight);
 //				rightThreshold.setText(rightThresholdLight);
 				type = SensorType.LIGHT;
@@ -397,17 +415,30 @@ public class ConfigureMenu extends JFrame {
 	            	UpdateTypeOnly(SensorType.AUDIO);
 					//send cfg to change into audio sensor
 				}
+				threshold.setEnabled(true);
+
 //				leftThreshold.setText(leftThresholdSound);
 //				rightThreshold.setText(rightThresholdSound);
 				type = SensorType.AUDIO;
-			} else if (e.getActionCommand().equals("motion")) {
+			} else if (e.getActionCommand().equals("video")) {
 				if (type != SensorType.VIDEO) {
 	            	UpdateTypeOnly(SensorType.VIDEO);
 	            	//send cfg to change into video sensor
 				}
+				threshold.setEnabled(true);
+
 //				leftThreshold.setText(leftThresholdMotion);
 //				rightThreshold.setText(rightThresholdMotion);
 				type = SensorType.VIDEO;
+			} else if (e.getActionCommand().equals("motion")) {
+				if (type != SensorType.MOTION) {
+	            	UpdateTypeOnly(SensorType.MOTION);
+	            	//send cfg to change into video sensor
+				}
+				threshold.setEnabled(false);
+//				leftThreshold.setText(leftThresholdMotion);
+//				rightThreshold.setText(rightThresholdMotion);
+				type = SensorType.MOTION;
 			}
 		}
 	}
