@@ -108,18 +108,19 @@ public class AddSensorUI extends AppCompatActivity implements View.OnClickListen
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.add_confirm_add_button:
-                ClientConfig newSensor = getInfofromForm();
+                ClientConfig newSensorConfig = getInfofromForm();
                 System.out.println("Debug Message: Got add button");
-                if (newSensor == null) {
+                if (newSensorConfig == null) {
                     System.out.println("Debug Message: Got null");
                     clearForm();
+                    break;
                 }
                 //TODO: ADD sensor to the server
                 //server.addSensor(newSensor);
                 Intent mIntent = new Intent(this, SensorClientUI.class);
-                mIntent.putExtra("New Sensor", newSensor);
+                mIntent.putExtra("New Sensor", newSensorConfig);
                 setResult(RESULT_OK, mIntent);
-                System.out.println("Returning back to parent activity");
+                System.out.println("Returning back to parent activity, sensor = "); // + newSensorConfig);
                 finish();
                 break;
             default:

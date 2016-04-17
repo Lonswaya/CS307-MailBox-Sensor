@@ -2,6 +2,7 @@ package cs307.purdue.edu.autoawareapp;
 
 import android.content.Context;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -229,9 +230,43 @@ public class SensorClientUI extends AppCompatActivity implements View.OnClickLis
         super.onActivityResult(requestCode, resultCode, data);
         System.out.println("In onActivityResult");
         if(resultCode == RESULT_OK){
+                System.out.println("Getting newSensor Config from " + data + "looking for new sensor = " + data.hasExtra("New Sensor"));
+                //System.out.println("Sensor = " + data.getSerializableExtra("New Sensor"));
                 ClientConfig newSensorConfig = (ClientConfig) data.getSerializableExtra("New Sensor");
-                System.out.println(newSensor);
+                System.out.println(newSensorConfig);
+                //TODO: Send new SensorCOnfig to the background Thread or AsyncTask and add it to the sensor
             }
+    }
+
+    private class AsyncTaskRunner extends AsyncTask<ClientConfig, Void, Integer> {
+        /**
+         * Override this method to perform a computation on a background thread. The
+         * specified parameters are the parameters passed to {@link #execute}
+         * by the caller of this task.
+         * <p/>
+         * This method can call {@link #publishProgress} to publish updates
+         * on the UI thread.
+         *
+         * @param params The parameters of the task.
+         * @return A result, defined by the subclass of this task.
+         * @see #onPreExecute()
+         * @see #onPostExecute
+         * @see #publishProgress
+         */
+        @Override
+        protected Integer doInBackground(ClientConfig... params) {
+            boolean check = server.addSensor(params[0]);
+            if (check == true)
+                return 1;
+            return 0;
+        }
+
+        @Override
+        protected void onPostExecute(Integer result) {
+            if (result == 1) {
+                //TODO: See if you need to get the sensor manually and call uodateUI or does the server do it
+            }
+        }
     }
 //
 //    private void sendMessage() {

@@ -19,7 +19,7 @@ import javax.net.ssl.SSLSocketFactory;
 /**
  * Used to bridge android to server
  */
-public class Server implements Runnable, MessageProcessor {
+public class Server implements Runnable, MessageProcessor, Serializable {
 
     public volatile ArrayList<ClientConfig> sensorList;
     public ArrayList<Sensor> sensors;
@@ -75,7 +75,9 @@ public class Server implements Runnable, MessageProcessor {
 
     public boolean updateSensors(ArrayList<ClientConfig> oldSensorList) {
         boolean updateUI = false;
-        sensors.clear();
+        if (sensors != null)
+            sensors.clear();
+
         sensorList = this.getSensorLists();
         if (sensorList == null) {
             return true;
