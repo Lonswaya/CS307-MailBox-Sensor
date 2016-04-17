@@ -173,7 +173,7 @@ public class SeparateServer {
 			if (cc.emailNotification == true) {
 				try {
 					Sender.send(cc.emailAddress, msg.getString());
-				} catch (IOException e){
+				} catch (Exception e){
 					e.printStackTrace();
 					//handle the exception
 				}
