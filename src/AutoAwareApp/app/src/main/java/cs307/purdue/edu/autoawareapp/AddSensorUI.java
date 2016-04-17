@@ -172,11 +172,16 @@ public class AddSensorUI extends AppCompatActivity implements View.OnClickListen
             strtHour = startHour.getText().toString();
             strtMinute = startMinute.getText().toString();
             startTime = strtHour + ":" + strtMinute;
+            if (startTime == null) {
+                startTime = "0:00";
+            }
 
             edHour = endHour.getText().toString();
             edMinute = endMinute.getText().toString();
             endTime = edHour + ":" + edMinute;
-
+            if (endTime == null) {
+                endTime = "0:00";
+            }
 
             if (startTime != null) {
                 force_on = true;

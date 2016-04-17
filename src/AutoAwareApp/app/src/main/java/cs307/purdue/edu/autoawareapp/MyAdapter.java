@@ -85,29 +85,29 @@ public class MyAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         TextView sensorIpView = (TextView) viewholder.sensorIpTextView;
         sensorIpView.setText(sensors.get(position).getIp());
 
-        ImageView sensorTypeImageView = (ImageView) viewholder.sensorTypeImage;
-        switch (sensors.get(position).getType()) {
-            case "VIDEO": sensorTypeImageView.setImageResource(R.mipmap.ic_video_icon);
-                break;
-            case "AUDIO": sensorTypeImageView.setImageResource(R.mipmap.ic_sound_icon);
-                break;
-            case "LIGHT": sensorTypeImageView.setImageResource(R.mipmap.ic_bulb);
-                break;
-            default:
-                break;
-        }
+//        ImageView sensorTypeImageView = (ImageView) viewholder.sensorTypeImage;
+//        switch (sensors.get(position).getType()) {
+//            case "VIDEO": sensorTypeImageView.setImageResource(R.mipmap.ic_video_icon);
+//                break;
+//            case "AUDIO": sensorTypeImageView.setImageResource(R.mipmap.ic_sound_icon);
+//                break;
+//            case "LIGHT": sensorTypeImageView.setImageResource(R.mipmap.ic_bulb);
+//                break;
+//            default:
+//                break;
+//        }
 
-        ImageButton streamButtonView = (ImageButton) viewholder.streamButton;
-        streamButtonView.setImageResource(R.mipmap.ic_rec);
-        streamButtonView.setVisibility(View.INVISIBLE);
+//        ImageButton streamButtonView = (ImageButton) viewholder.streamButton;
+//        streamButtonView.setImageResource(R.mipmap.ic_rec);
+//        streamButtonView.setVisibility(View.INVISIBLE);
 
         Button configButtonView = (Button) viewholder.configButton;
         configButtonView.setText("Configure");
-        configButtonView.setOnClickListener(new myOnClickListener(viewholder, context, R.id.button1, getClickedSensor(sensorIpView), server));
+        //configButtonView.setOnClickListener(new myOnClickListener(viewholder, context, R.id.button1, getClickedSensor(sensorIpView), server));
 
         Button enableDisableButtonView = (Button) viewholder.enableDisbaleButton;
         enableDisableButtonView.setText("Disable");
-        enableDisableButtonView.setOnClickListener(new myOnClickListener(viewholder,context, R.id.button2, getClickedSensor(sensorIpView), server));
+        //enableDisableButtonView.setOnClickListener(new myOnClickListener(viewholder,context, R.id.button2, getClickedSensor(sensorIpView), server));
 
         SeekBar seekBarView = (SeekBar) viewholder.seekBar;
         seekBarView.setProgress(sensors.get(position).getSeekCurrentValue());

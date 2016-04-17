@@ -36,6 +36,8 @@ public class SensorClientUI extends AppCompatActivity implements View.OnClickLis
 
     Sensor newSensor;
 
+    Context thisContext;
+
     public SensorClientUI() {
     }
 
@@ -86,6 +88,7 @@ public class SensorClientUI extends AppCompatActivity implements View.OnClickLis
         //server = new Server(ip);
         mAdapter = new MyAdapter(this, sensors, sensorInfoList, server);
         recyclerView.setAdapter(mAdapter);
+        thisContext = this;
 
         addSensorButton = (Button) findViewById(R.id.addButton);
         addSensorButton.setOnClickListener(this);
@@ -156,10 +159,21 @@ public class SensorClientUI extends AppCompatActivity implements View.OnClickLis
         }
     }
 
-    public void handleMessage(ArrayList<Sensor> newSensorList){
-        sensors.clear();
-        sensors = (ArrayList<Sensor>) newSensorList.clone();
-        mAdapter.notifyDataSetChanged();
+    public void handleMessage(final ArrayList<Sensor> newSensorList, final ArrayList<ClientConfig> newSensorInfoList){
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                sensors.clear();
+                sensorInfoList.clear();
+                System.out.println("*************************************************************************************************************");
+                sensors = (ArrayList<Sensor>) newSensorList.clone();
+                sensorInfoList = (ArrayList<ClientConfig>) newSensorInfoList.clone();
+                System.out.println("Sensor = " + sensors.get(0).getName());
+                mAdapter = new MyAdapter(thisContext, sensors, sensorInfoList, server);
+                recyclerView.setAdapter(mAdapter);
+                mAdapter.notifyDataSetChanged();
+            }
+        });
     }
 
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -244,6 +258,8 @@ public class SensorClientUI extends AppCompatActivity implements View.OnClickLis
                 ClientConfig newSensorConfig = (ClientConfig) data.getSerializableExtra("New Sensor");
                 System.out.println(newSensorConfig);
                 //TODO: Send new SensorCOnfig to the background Thread or AsyncTask and add it to the sensor
+                AsyncTaskRunner asyncTaskRunner = new AsyncTaskRunner();
+                asyncTaskRunner.execute(newSensorConfig);
             }
     }
 
@@ -264,6 +280,7 @@ public class SensorClientUI extends AppCompatActivity implements View.OnClickLis
          */
         @Override
         protected Integer doInBackground(ClientConfig... params) {
+            System.out.println("In Do in background");
             boolean check = server.addSensor(params[0]);
             if (check == true)
                 return 1;
@@ -274,6 +291,8 @@ public class SensorClientUI extends AppCompatActivity implements View.OnClickLis
         protected void onPostExecute(Integer result) {
             if (result == 1) {
                 //TODO: See if you need to get the sensor manually and call uodateUI or does the server do it
+                System.out.println("Debug Message: In Post execute");
+                //mAdapter.notifyDataSetChanged();
             }
         }
     }

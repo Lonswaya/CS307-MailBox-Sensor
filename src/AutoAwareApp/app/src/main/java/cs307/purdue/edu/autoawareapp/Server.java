@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.net.wifi.WifiManager;
 import android.os.Build;
+import android.os.Looper;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.support.annotation.RequiresPermission;
@@ -32,8 +33,8 @@ public class Server implements Runnable, MessageProcessor, Serializable {
     public boolean running = true;
     public boolean suspended = false;
     public boolean workingSensorList = false;
-    public boolean sensorListReady = false;
     public ServerCallback UI;
+    boolean looperPrepared = false;
 
     public Server(String ip, Context UI) {
         this.server_ip = ip;
@@ -89,6 +90,8 @@ public class Server implements Runnable, MessageProcessor, Serializable {
                 if(idx != -1){
                     if(!compareClientConfig(list.get(idx), oldSensorList.get(i))) return true;
                 }
+                else
+                    return true;
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -132,11 +135,16 @@ public class Server implements Runnable, MessageProcessor, Serializable {
     }
 
     public ArrayList<Sensor> generateUISensorsList(){
+        System.out.println("In UpdateUI if statement 2.1");
         ArrayList<Sensor> list = new ArrayList<Sensor>();
+        System.out.println("In UpdateUI if statement 2.2");
         for(ClientConfig config : this.sensorList){
+            System.out.println("In UpdateUI if statement 2.3");
             Sensor s = convertClientConfigToSensor(config);
+            System.out.println("In UpdateUI if statement 2.4");
             list.add(s);
         }
+        System.out.println("In UpdateUI if statement 2.5");
         return list;
     }
 
@@ -145,7 +153,7 @@ public class Server implements Runnable, MessageProcessor, Serializable {
         Sensor newSensor = new Sensor();
         newSensor.setName(s.name);
 
-        switch (s.sensor_type) {
+        /*switch (s.sensor_type) {
             case VIDEO: newSensor.setType("VIDEO");
                 newSensor.setSensorTypeImage(R.mipmap.ic_video_icon);
                 break;
@@ -156,12 +164,12 @@ public class Server implements Runnable, MessageProcessor, Serializable {
                 newSensor.setSensorTypeImage(R.mipmap.ic_bulb);
                 break;
             default: return null;
-        }
+        }*/
 
         newSensor.setIp(s.ip);
         newSensor.setSeekDefaultValue(0);
         newSensor.setSeekCurrentValue((int) s.sensing_threshold);
-        newSensor.getPlayButton().setVisibility(View.INVISIBLE);
+        //newSensor.getPlayButton().setVisibility(View.INVISIBLE);
 
         return newSensor;
 
@@ -180,6 +188,9 @@ public class Server implements Runnable, MessageProcessor, Serializable {
             }
         }
 
+        //addSensor(new ClientConfig("100.0.0.1", "0:00", "0:00", false, false, SensorType.LIGHT, 90, "Sensor 1", false, false, false, false, "123456789", "abcd@email.com", 10));
+        //System.out.println(sensorList.get(0));
+        //sensorList.add(new ClientConfig("100.0.0.1", "0:00", "0:00", false, false, SensorType.LIGHT, 90, "Sensor 1", false, false, false, false, "123456789", "abcd@email.com", 10));
         /*try {
 
                 TESTING SHIT IF THIS BREAKS NOTHIGN WORKS
@@ -205,34 +216,51 @@ public class Server implements Runnable, MessageProcessor, Serializable {
         */
         System.out.println("Debug Message: Going into running");
         while(running) {
-            if(!suspended) {
+            //shitty timer
+            if (!suspended) {
+                //boolean check = addSensor(new ClientConfig("100.0.0.1", "0:00", "0:00", false, false, SensorType.LIGHT, 90, "Sensor 1", false, false, false, false, "123456789", "abcd@email.com", 10));
+                //System.out.println("Debug Message: In Server call " + check);
 
                 workingSensorList = true;
                 ArrayList<ClientConfig> oldSensorList;
                 if (sensorList == null) {
                     oldSensorList = null;
-                }
-                else {
+                } else {
                     oldSensorList = (ArrayList<ClientConfig>) sensorList.clone();
                 }
-                workingSensorList = false;
+
                 getSensorsFromServer();
-                while(!sensorListReady);
-                sensorListReady = false;
-                workingSensorList = true;
+
                 boolean updateUI = needUpdateSensors(oldSensorList);
                 if (oldSensorList != null) {
                     System.out.println("    BACKEND SREVER DEBUG: updateUI = " + updateUI);
+
                     if (updateUI) {
+                        System.out.println("Doing Looper Prepare");
+                        if (looperPrepared == false) {
+                            Looper.prepare();
+                            looperPrepared = true;
+                        }
+                        System.out.println("In UpdateUI if statement " + oldSensorList);
                         ArrayList<Sensor> sensors;
+                        System.out.println("In UpdateUI if statement 2");
                         sensors = generateUISensorsList();
-                        UI.handleMessage(sensors);
+                        System.out.println("In UpdateUI if statement 3");
+                        UI.handleMessage(sensors, sensorList);
+                        System.out.println("In UpdateUI if statement 4");
+                        //TODO: Call UI thread and send update sensors ArrayList
                     }
+                } else System.out.println("    BACKEND SREVER DEBUG: Server thread suspended");
+                //sensorList.add(new ClientConfig("100.0.0." + i*5, "0:00", "0:00", false, false, SensorType.LIGHT, 90, "Sensor 1", false, false, false, false, "123456789", "abcd@email.com", 10));
+                //i++;
+                workingSensorList = false;
+
+                try {
+                    Thread.sleep(8000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
                 }
-            }else System.out.println("    BACKEND SREVER DEBUG: Server thread suspended");
-            //sensorList.add(new ClientConfig("100.0.0." + i*5, "0:00", "0:00", false, false, SensorType.LIGHT, 90, "Sensor 1", false, false, false, false, "123456789", "abcd@email.com", 10));
-            //i++;
-            workingSensorList = false;
+            }
         }
     }
 
@@ -241,7 +269,6 @@ public class Server implements Runnable, MessageProcessor, Serializable {
      */
     public void ProcessMessage (Message msg){
         System.out.println("    BACKEND SREVER DEBUG: Got message, type = " + msg.type);
-        sensorListReady = false;
         Thread msgHandler = new Thread(new Runnable() {
             Message msg;
             Server ref;
@@ -260,11 +287,13 @@ public class Server implements Runnable, MessageProcessor, Serializable {
                         case GET_SENSORS:
                             SensorsMessage sMsg = (SensorsMessage) msg;
                             boolean stop;
+                            //do {
+                              //  stop = ref.workingSensorList;
+                                //System.out.println("    BACKEND SREVER DEBUG: SensorList update status: " + stop);
+                            //}while(stop);
 
-                            if(!ref.workingSensorList){
-                                ref.sensorList = sMsg.ar;
-                                ref.sensorListReady = true;
-                            }
+                            System.out.println("    BACKEND SREVER DEBUG: SensorList update");
+                            ref.sensorList = sMsg.ar;
                             break;
                         default:
                             System.out.println("    BACKEND SREVER DEBUG: Message type (" + msg.type + ") not supported");
@@ -370,6 +399,6 @@ public class Server implements Runnable, MessageProcessor, Serializable {
     }
 
     public interface ServerCallback{
-        void  handleMessage(ArrayList<Sensor> newSensorList);
+        void  handleMessage(ArrayList<Sensor> newSensorList, ArrayList<ClientConfig> newSensorInfoList);
     }
 }

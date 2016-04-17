@@ -11,17 +11,21 @@ public class ClientConfig extends BaseConfig implements Serializable {
 	public boolean desktopNotification, magicMirrorNotification, textNotification, emailNotification;
 	public String phoneNumber, emailAddress, ip;
 	public int interval;
-	
-	
-	public ClientConfig(String ip, String start, String stop, boolean force_on, boolean force_off, SensorType type, float threshold, String name, boolean desktopNotification, boolean magicMirrorNotification, boolean textNotification, boolean emailNotification, String phoneNumber, String emailAddress, int interval) {
-		//super(start, stop, force_on, force_off , type, threshold);
+	public float r,g,b;
+
+
+	public ClientConfig(String ip, String start, String stop, boolean force_on, boolean force_off, SensorType type, float threshold, String name, float r, float g, float b, boolean desktopNotification, boolean magicMirrorNotification, boolean textNotification, boolean emailNotification, String phoneNumber, String emailAddress, int interval) {
+		super(start, stop, force_on, force_off , type, threshold);
 		System.out.println("Debug Message: In clientConfig constructor");
         this.ip = ip;
 		//this.color = color;
+		this.r = r;
+		this.g = g;
+		this.b = b;
 		this.name = name;
 		this.desktopNotification = desktopNotification;
 		this.magicMirrorNotification = magicMirrorNotification;
-		this.textNotification=textNotification; 
+		this.textNotification=textNotification;
 		this.emailNotification = emailNotification;
 		this.phoneNumber = phoneNumber;
 		this.emailAddress = emailAddress;
@@ -30,13 +34,14 @@ public class ClientConfig extends BaseConfig implements Serializable {
 	public ClientConfig() {
 		super();
 		//this.color = Color.white;
+		r = g = b = 1;
 		this.name = "";
 		this.phoneNumber = "";
 		this.emailAddress = "";
 		this.desktopNotification = magicMirrorNotification = textNotification = emailNotification = false;
 		this.interval = 1000;
 	}
-	@Override 
+	@Override
 	public String toString() {
 		return		"[TIME SETTINGS]\n"
 				+	"START TIME=" + start_hours + ":" + start_minutes + "\n"
@@ -48,7 +53,7 @@ public class ClientConfig extends BaseConfig implements Serializable {
 				+	"THRESHOLD=" + sensing_threshold + "%\n"
 				+   "[USER SETTINGS]\n"
 				+   "NAME=\"" + name + "\"\n"
-				//+   "COLOR=" + color + "\n"
+				+   "COLOR=" + r + " " + g + " " + b + "\n"
 				+   "DESKTOP NOTIFICATIONS=" + desktopNotification + "\n"
 				+   "MAGIC MIRROR NOTIFICATION=" + magicMirrorNotification + "\n"
 				+   "TEXT NOTIFICATION=" + textNotification + ", NUMBER=" + phoneNumber + "\n"
