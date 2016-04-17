@@ -1,15 +1,25 @@
 package SeparateServer;
-import java.io.IOException;
-import cs307.purdue.edu.autoawareapp.*;
+import java.util.*;
+import javax.mail.*;
+import javax.mail.internet.*;
+import javax.activation.*;
 
 public class Sender {
 	public static void send(String email, String message) {
-		message = "\"" + message + "\"";
-		ProcessBuilder pb = new ProcessBuilder("sendmail.sh", email, message);
+		Properties properties = System.getProperties();
+		properties.setProperty("mailsmtp.host", "localhost");
+		Session session = Session.getDefaultInstance(properties);
+		
 		try {
-			Process p = pb.start();	
-		} catch (IOException e) {
-			System.out.println(e.toString());
+			MimeMessage mm = new MimeMessage(session);
+			mm.setFrom(new InternetAddress("AutoAware@gmail.com"));
+			mm.addRecipient(Message.RecipientType.TO, new InternetAddress(email));
+			mm.setSubject("AutoAware Notification");
+			mm.setText(message);
+			Transport.send(mm);
+		} catch (MessagingException e) {
+			e.printStackTrace();
 		}
 	}
+	
 }
