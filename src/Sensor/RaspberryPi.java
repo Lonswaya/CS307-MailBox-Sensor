@@ -142,6 +142,8 @@ public class RaspberryPi {
 							dataReady = false;
 							if (bf != null)
 								bf.flush();
+							bf = null;
+							System.gc();
 						} else {
 							System.out.println("Connection lost, stopping thread");
 							streaming = false;

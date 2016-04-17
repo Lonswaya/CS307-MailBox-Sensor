@@ -28,7 +28,7 @@ public class MotionSensorExample implements WebcamMotionListener {
 
 	private static final long serialVersionUID = -585739158170333370L;
 
-	private static final int INTERVAL = 100; // ms
+	private static final int INTERVAL = 100; // Ms
 
 
 	public Webcam webcam;
