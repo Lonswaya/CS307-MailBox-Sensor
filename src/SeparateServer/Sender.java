@@ -11,7 +11,7 @@ import javax.mail.PasswordAuthentication;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
-
+ 
 
 public class Sender {
 	public static void send(String email, String message) {

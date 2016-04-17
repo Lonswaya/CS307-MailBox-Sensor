@@ -10,4 +10,4 @@ public class SendMailExample {
 		String message ="This is a test";
 		Sender.send(email, message);
 	}
-}
+} 
