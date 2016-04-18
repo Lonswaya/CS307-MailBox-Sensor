@@ -31,6 +31,8 @@ public class AudioSensor extends BaseSensor
 	protected boolean doneVoluming;
 	static CircularBuffer cBuffer = new CircularBuffer();
 	//private Capture listen = new Capture();
+	byte[] buf = new byte[2048];
+    float[] samples = new float[1024];
 	
 	String path = System.getProperty("user.home");
 	static AudioFormat format;
@@ -77,50 +79,39 @@ public class AudioSensor extends BaseSensor
 				e.printStackTrace();
 			}
 	
-			//DataLine.Info info = new DataLine.Info(TargetDataLine.class, format);
-			ByteArrayOutputStream out = new ByteArrayOutputStream();
-			int numBytesRead = 0;
-			int CHUNK_SIZE = 1024;
-			//byte[] data = new byte[line.getBufferSize() / 5];
 			
 			line.start();
-			
-			byte[] buf = new byte[2048];
-	        float [] samples = new float[1024];
+				
 	        
-	        float rms = 0f;
+	       
 	        
 	        int b = line.read(buf, 0, buf.length);
 	
-	        // convert bytes to samples here
-	        for(int i = 0, s = 0; i < b;) {
-	        	int sample = 0;
+	     // convert bytes to samples here
+            for(int i = 0, s = 0; i < b;) {
+                int sample = 0;
+
+                sample |= buf[i++] & 0xFF; // (reverse these two lines
+                sample |= buf[i++] << 8;   //  if the format is big endian)
+
+                // normalize to range of +/-1.0f
+                samples[s++] = sample / 32768f;
+            }
 	
-	            sample |= buf[i++] & 0xFF; // (reverse these two lines
-	            sample |= buf[i++] << 8;   //  if the format is big endian)
-	
-	            // normalize to range of +/-1.0f
-	            samples[s++] = sample / 32768f;
-	        }
-	
-	        //float rms = 0f;
-	        float peak = 0f;
-	        for(float sample : samples) {
-	
-	            float abs = Math.abs(sample);
-	            if(abs > peak) {
-	                 peak = abs;
-	            }
-	
-	            rms += sample * sample;
-	        }
+            float rms = 0f;
+            float peak = 0f;
+            for(float sample : samples) {
+
+                float abs = Math.abs(sample);
+                if(abs > peak) {
+                    peak = abs;
+                }
+
+                rms += sample * sample;
+            }
 	            
-	        double blah = (double)(rms / samples.length)*100; //percentage
-	        System.out.println(blah);
-	        rms = (float)blah;
-	        //rms = (float)Math.log((double)((blah/100)+1)); //voodo math shit
-	        //rms*=2;
-	        //System.out.println(rms);
+            rms = (float)Math.sqrt(rms / samples.length)*100; //percentage
+            System.out.println("Amp: " + rms);
 	        if (rms > 100) rms = 100;
 	        if (rms < 0) rms = 0;
 	        line.stop();

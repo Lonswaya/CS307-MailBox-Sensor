@@ -1,12 +1,15 @@
 package Example;
-
-//This program continuously reads audio and checks the volume. Returns a float
+import javax.sound.sampled.AudioFileFormat.Type;
 import javax.sound.sampled.AudioFormat;
+import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
+import javax.sound.sampled.DataLine;
+import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.TargetDataLine;
 
 public class AudioCapture {
-	public static float record(){
+	public static void record(){
 		
 		//AudioFormat format = new AudioFormat(AudioFormat.Encoding.PCM_SIGNED, 44100.0f, 16, );
 		AudioFormat format = new AudioFormat(44100.0f, 16, 2, true, false);
@@ -50,14 +53,13 @@ public class AudioCapture {
             }
 
             rms = (float)Math.sqrt(rms / samples.length)*100; //percentage
-            return rms;
-           // System.out.println("Amp: " + rms);
+            System.out.println("Amp: " + rms);
         }
-		return 0;
 	}
 	
 	public static void main(String[] args){
 		System.out.println("recording");
-		while(true) record(); //no exit
+		//while(true) record(); //no exit
+		record();
 	}
 }
