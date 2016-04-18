@@ -31,8 +31,7 @@ public class AudioSensor extends BaseSensor
 	protected boolean doneVoluming;
 	static CircularBuffer cBuffer = new CircularBuffer();
 	//private Capture listen = new Capture();
-	byte[] buf = new byte[2048];
-    float[] samples = new float[1024];
+	
 	
 	String path = System.getProperty("user.home");
 	static AudioFormat format;
@@ -45,7 +44,7 @@ public class AudioSensor extends BaseSensor
 		super(config);
 		doneStreaming = true;
 		doneVoluming = true;
-		format = new AudioFormat(44100.0f, 16, 2, true, true);
+		format = new AudioFormat(44100.0f, 16, 2, true, false);
 		threshold = config.sensing_threshold*100; //*100 because we convert decimal to percentage. FIX LATER
 		
 		//TODO if sensor cannot be made (lack of microphone) ready = false;
@@ -78,7 +77,9 @@ public class AudioSensor extends BaseSensor
 				System.out.println("Plug in the microphone you prick");
 				e.printStackTrace();
 			}
-	
+			
+			byte[] buf = new byte[2048];
+		    float[] samples = new float[1024];
 			
 			line.start();
 				
@@ -97,7 +98,7 @@ public class AudioSensor extends BaseSensor
                 // normalize to range of +/-1.0f
                 samples[s++] = sample / 32768f;
             }
-	
+            
             float rms = 0f;
             float peak = 0f;
             for(float sample : samples) {
@@ -183,15 +184,7 @@ public class AudioSensor extends BaseSensor
 	@Override
 	public boolean check_threshold()
 	{
-		float average = cBuffer.average();
-		if(average > threshold) 
-		{
-			overThreshold = true;
-		}
-		
-		overThreshold = false;
-		
-		return overThreshold;
+		return (overThreshold = (cBuffer.average() > threshold)); 
 	}
 	
 	public Message form_message(BufferedImage b)
@@ -201,7 +194,7 @@ public class AudioSensor extends BaseSensor
 		AudioMessage msg = new AudioMessage("Volume above threshold", null);
 		boolean messageHasValues = false;
 		if (this.currentVolume >= 0) {
-			msg.setCurrentThreshold(currentVolume);
+			msg.setCurrentThreshold(cBuffer.average());
 			messageHasValues = true;
 			currentVolume = -1;
 		}

@@ -6,6 +6,8 @@ import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 
+import Utilities.Connections;
+
 public class TestMiddleMan {
 
 	final static int DEFAULT_MIDDLEMAN_PORT = 6969;

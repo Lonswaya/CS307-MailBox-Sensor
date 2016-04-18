@@ -1,3 +1,5 @@
+package Example;
+
 import java.awt.Dimension;
 import java.awt.image.BufferedImage;
 import java.io.File;

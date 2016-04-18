@@ -53,7 +53,14 @@ public class AudioCapture {
             }
 
             rms = (float)Math.sqrt(rms / samples.length)*100; //percentage
+            if(rms > 40)
+            {
             System.out.println("Amp: " + rms);
+            }
+            else
+            {
+            	System.out.println("low sound");
+            }
         }
 	}
 	

@@ -4,6 +4,8 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 
+import Utilities.Connections;
+
 public class MiddleManHandler implements Runnable {
 	private Socket fromSock, toSock;
 	private ObjectInputStream fromIn, toIn;
