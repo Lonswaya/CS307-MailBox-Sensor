@@ -354,11 +354,12 @@ public class AutoAwareControlPanel extends JFrame implements MessageProcessor {/
     	//System.out.println(configs.get(0));
     	if (cf == null || !cf.isEnabled()) {
     		cf = new ConfigureMenu(sensorNumber, this, identifier);
-    		System.out.println("Starting stream now");
         	ClientConfig cfg = ConfigFind(identifier);
         	System.out.println(cfg.isSensorActive());
-    		if (cfg.isSensorActive())  {
+    		if (cfg.isSensorActive() && cfg.sensor_type != SensorType.VIDEO && cfg.sensor_type != SensorType.MOTION)  { //no reason to be streaming here
     			t2bool = true;
+    			System.out.println("Starting stream now");
+
     			//this will tell the sensor to start streaming, and handles the connections with the processMessage
     			SocketWrapper newSocketWrapper = UserBackend.SendStreaming(cfg.ip, this);
     			if (newSocketWrapper != null) {
