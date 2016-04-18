@@ -139,14 +139,6 @@ public class RaspberryPi {
 						toSend.setFrom(assignedIPAddress); //we have to assign this, as getting the local IP is not working
 						if (Connections.send(connectionSocket.out, toSend)) {
 							dataReady = false;
-							//System.out.println("Yay, we were able to send a message. Let's do this again.");
-							//if (lastTimeSent != null && (new Date().getTime() - lastTimeSent.getTime()) > 100) System.out.println("Long time in between sending: " + (new Date().getTime() - lastTimeSent.getTime()));
-							//lastTimeSent = new Date();
-							//if (bf != null) {
-								//bf.flush();
-								//bf = null;
-								//System.gc();
-							//}
 						} else {
 							System.out.println("Connection lost, stopping thread");
 							streaming = false;
