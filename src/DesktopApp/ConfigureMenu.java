@@ -176,14 +176,16 @@ public class ConfigureMenu extends JFrame {
 		    sound.setActionCommand("sound");
 		    if (input.sensor_type == SensorType.AUDIO) sound.setSelected(true);
 		    
+		     //so we can get it good and ready
+		    threshold = new JSlider(JSlider.HORIZONTAL, 0, 100, Math.round(input.sensing_threshold * 100));		    
+		 
 		    video = new JRadioButton("Video Sensor");
 		    video.setActionCommand("video");
-		    if (input.sensor_type == SensorType.VIDEO) video.setSelected(true);
-
-		    //so we can get it good and ready
-		    threshold = new JSlider(JSlider.HORIZONTAL, 0, 100, Math.round(input.sensing_threshold * 100));		    
-		    
-		    
+		    if (input.sensor_type == SensorType.VIDEO) {
+		    	threshold.setEnabled(false);
+		    	video.setSelected(true);
+		    }
+		   
 		    motion = new JRadioButton("Motion Sensor");
 		    motion.setActionCommand("motion");
 		    if (input.sensor_type == SensorType.MOTION) { 
@@ -425,7 +427,7 @@ public class ConfigureMenu extends JFrame {
 	            	UpdateTypeOnly(SensorType.VIDEO);
 	            	//send cfg to change into video sensor
 				}
-				threshold.setEnabled(true);
+				threshold.setEnabled(false);
 
 //				leftThreshold.setText(leftThresholdMotion);
 //				rightThreshold.setText(rightThresholdMotion);
