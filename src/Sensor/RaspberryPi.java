@@ -111,6 +111,12 @@ public class RaspberryPi {
 				
 			} 
 			if (sensor != null) sensor.setConfig(conf.getConfig());
+			if (conf.delete) {
+				//removed from the server
+				sensor = null;
+				serverConnection = null;
+				conf.config.force_off = true;
+			}
 			break;
 		case STREAMING:
 			if (!sensor.ready) {

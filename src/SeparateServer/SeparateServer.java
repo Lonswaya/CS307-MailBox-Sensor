@@ -210,6 +210,7 @@ public class SeparateServer {
 			SensorInfo info = sensorList.get(msg.config.ip);
 			if (info != null)
 				sensorList.remove(msg.config.ip);	
+			Connections.send(info.sock.out, msg); //tell the sensor to shut the fuck up
 			Connections.closeSocket(info.sock.sock);
 			SeparateServer.sendAllConfigsToAllUis();
 			System.out.println("Updated all users with the lack of sensor");
