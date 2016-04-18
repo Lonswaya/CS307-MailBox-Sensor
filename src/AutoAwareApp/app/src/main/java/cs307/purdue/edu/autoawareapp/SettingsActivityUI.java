@@ -40,8 +40,6 @@ public class SettingsActivityUI extends AppCompatActivity implements View.OnClic
         sensorInfo = (ClientConfig) getIntent().getSerializableExtra("ClientConfig");
         System.out.println("*********************" + sensorInfo);
 
-        server = (Server) getIntent().getSerializableExtra("Server");
-
         String title = sensorInfo.name + " Settings";
         this.setTitle(title);
 
@@ -153,6 +151,7 @@ public class SettingsActivityUI extends AppCompatActivity implements View.OnClic
                 this.setTitle(text + " Settings");
                 break;
             case R.id.apply_button:
+
                 break;
             case R.id.defualt_button:
                 resetDefault();

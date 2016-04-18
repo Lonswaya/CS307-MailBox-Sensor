@@ -84,7 +84,7 @@
             android:padding="5dp"
             android:layout_below="@id/current_val_bar"
             android:layout_marginTop="10dp"
-            android:layout_marginLeft="75dp"
+            android:layout_marginLeft="35dp"
             android:clickable="true"
             />
 
@@ -102,5 +102,18 @@
             android:clickable="true"
             />
 
+        <Button
+            android:id="@+id/removebutton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/remove"
+            android:textSize="16dp"
+            android:padding="5dp"
+            android:layout_below="@id/current_val_bar"
+            android:layout_toRightOf="@id/button2"
+            android:layout_marginTop="10dp"
+            android:layout_marginLeft="10dp"
+            android:clickable="true"
+            />
         </RelativeLayout>
  </RelativeLayout>

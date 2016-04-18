@@ -14,6 +14,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 
+import java.io.Serializable;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 
@@ -26,7 +27,7 @@ public class SensorClientUI extends AppCompatActivity implements View.OnClickLis
     RecyclerView.LayoutManager llm;
 
     private ArrayList<Sensor> sensors = new ArrayList<Sensor>();
-    ArrayList<ClientConfig> sensorInfoList;
+    ArrayList<ClientConfig> sensorInfoList = new ArrayList<ClientConfig>();
     int in_index = 0;
     private int numOfSensors;
     private int noSensorFlag = 0;
@@ -103,14 +104,15 @@ public class SensorClientUI extends AppCompatActivity implements View.OnClickLis
 
         //TODO: Comment these lines out
         //int ret = createSensors();
-        /*sensors.add(new Sensor("Sensor 1", 0, "LIGHT", "100.0.0.1"));
-        sensorInfoList.add(new ClientConfig("100.0.0.1", "0", "0", false, false, SensorType.LIGHT, 90, "Sensor 1", false, false, false, false, "123456789", "abcd@email.com", 10));
+        //sensors.add(new Sensor("Sensor 1", 0, "LIGHT", "100.0.0.1"));
+        //sensorInfoList.add(new ClientConfig("100.0.0.1", "0:00", "0:00", false, false, SensorType.LIGHT, 90, "Sensor 1", 0, 0, 0, false, false, false, false, "123456789", "abcd@email.com", 10));
         //server.addClientConfigObject(sensorInfoList.get(0));
-        recyclerView.scrollToPosition(sensors.size() - 1);
+        //recyclerView.scrollToPosition(sensors.size() - 1);
         //mAdapter.notifyItemInserted(sensors.size() - 1);
-        mAdapter.notifyDataSetChanged();
+        //mAdapter.notifyDataSetChanged();
 
-        sensors.add(new Sensor("Sensor 5", 0, "AUDIO", "10.182.1.29"));
+
+        /*sensors.add(new Sensor("Sensor 5", 0, "AUDIO", "10.182.1.29"));
         sensorInfoList.add(new ClientConfig("10.182.1.29", "6:00", "18:00", true, false, SensorType.AUDIO, 40, "Sensor 5", false, false, true, true, "123456789", "abcd@email.com", 10));
         //server.addClientConfigObject(sensorInfoList.get(0));
         recyclerView.scrollToPosition(sensors.size() - 1);
@@ -164,11 +166,12 @@ public class SensorClientUI extends AppCompatActivity implements View.OnClickLis
             @Override
             public void run() {
                 sensors.clear();
-                sensorInfoList.clear();
+                if (sensorInfoList != null)
+                    sensorInfoList.clear();
                 System.out.println("*************************************************************************************************************");
                 sensors = (ArrayList<Sensor>) newSensorList.clone();
                 sensorInfoList = (ArrayList<ClientConfig>) newSensorInfoList.clone();
-                System.out.println("Sensor = " + sensors.get(0).getName());
+                //System.out.println("Sensor = " + sensors.get(0).getName());
                 mAdapter = new MyAdapter(thisContext, sensors, sensorInfoList, server);
                 recyclerView.setAdapter(mAdapter);
                 mAdapter.notifyDataSetChanged();

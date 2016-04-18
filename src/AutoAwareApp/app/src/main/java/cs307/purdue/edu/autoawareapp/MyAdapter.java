@@ -32,7 +32,7 @@ public class MyAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         public ImageView sensorTypeImage;
         public ImageButton streamButton;
         public SeekBar seekBar;
-        public Button configButton, enableDisbaleButton;
+        public Button configButton, enableDisbaleButton, removeButton;
 
 
         public ViewHolder(View v) {
@@ -46,6 +46,7 @@ public class MyAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             this.seekBar = (SeekBar) v.findViewById(R.id.current_val_bar);
             this.configButton = (Button) v.findViewById(R.id.button1);
             this.enableDisbaleButton = (Button) v.findViewById(R.id.button2);
+            this.removeButton = (Button) v.findViewById(R.id.removebutton);
         }
     }
 
@@ -103,11 +104,15 @@ public class MyAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
         Button configButtonView = (Button) viewholder.configButton;
         configButtonView.setText("Configure");
-        //configButtonView.setOnClickListener(new myOnClickListener(viewholder, context, R.id.button1, getClickedSensor(sensorIpView), server));
+        configButtonView.setOnClickListener(new myOnClickListener(viewholder, context, R.id.button1, getClickedSensor(sensorIpView), server));
 
         Button enableDisableButtonView = (Button) viewholder.enableDisbaleButton;
         enableDisableButtonView.setText("Disable");
-        //enableDisableButtonView.setOnClickListener(new myOnClickListener(viewholder,context, R.id.button2, getClickedSensor(sensorIpView), server));
+        enableDisableButtonView.setOnClickListener(new myOnClickListener(viewholder,context, R.id.button2, getClickedSensor(sensorIpView), server));
+
+        Button removeButtonView = (Button) viewholder.removeButton;
+        removeButtonView.setText("Remove");
+        removeButtonView.setOnClickListener(new myOnClickListener(viewholder,context, R.id.removebutton, getClickedSensor(sensorIpView), server));
 
         SeekBar seekBarView = (SeekBar) viewholder.seekBar;
         seekBarView.setProgress(sensors.get(position).getSeekCurrentValue());

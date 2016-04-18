@@ -27,6 +27,7 @@ public class Sensor extends AppCompatActivity  {
     private SeekBar currentValBar;
     private Button configButton;
     private Button enableDisableButton;
+    private Button removeButton;
 
     public Sensor() {
     }
@@ -132,6 +133,10 @@ public class Sensor extends AppCompatActivity  {
 
     public void setEnableDisableButton(Button enableDisableButton) {
         this.enableDisableButton = enableDisableButton;
+    }
+
+    public void setRemoveButton(Button removeButton) {
+        this.removeButton = removeButton;
     }
 
     @Override

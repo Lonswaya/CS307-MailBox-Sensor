@@ -13,6 +13,7 @@ import android.view.View;
 import org.apache.http.conn.util.InetAddressUtils;
 
 import java.io.Serializable;
+import java.lang.reflect.Array;
 import java.net.*;
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -25,6 +26,7 @@ import javax.net.ssl.SSLSocketFactory;
 public class Server implements Runnable, MessageProcessor, Serializable {
 
     public volatile ArrayList<ClientConfig> sensorList;
+    public ArrayList<ClientConfig> oldSensorList = new ArrayList<ClientConfig>();
 
     public String server_ip;
     public String my_ip;
@@ -32,9 +34,10 @@ public class Server implements Runnable, MessageProcessor, Serializable {
     public SocketWrapper centralServer = null;
     public boolean running = true;
     public boolean suspended = false;
-    public boolean workingSensorList = false;
-    public ServerCallback UI;
+    public boolean updatedList = false;
     boolean looperPrepared = false;
+    public int sleep = 5000;
+    public ServerCallback UI;
 
     public Server(String ip, Context UI) {
         this.server_ip = ip;
@@ -42,6 +45,7 @@ public class Server implements Runnable, MessageProcessor, Serializable {
         //System.setProperty("javax.net.ssl.trustStorePassword", "sensor"); //get ssl working
         my_ip = Server.getMyIP();
         this.UI = (ServerCallback) UI;
+
     }
 
     /*
@@ -79,20 +83,22 @@ public class Server implements Runnable, MessageProcessor, Serializable {
         return -1;
     }
 
-    public boolean needUpdateSensors(ArrayList<ClientConfig> oldSensorList) {
-       if(this.sensorList == null) return true;
-        ArrayList<ClientConfig> list = (ArrayList<ClientConfig>) this.sensorList.clone();
-
+    public boolean needUpdateSensors(ArrayList<ClientConfig> list, ArrayList<ClientConfig> oldSensorList) {
+       if(list == null) return true;
         if(list.size() != oldSensorList.size()) return true;
+        if(list.size() == 0 && oldSensorList.size() == 0) return true;
         try {
-            for (int i = 0; i < oldSensorList.size(); i++) {
-                int idx = containSensor(list, oldSensorList.get(i));
-                if(idx != -1){
-                    if(!compareClientConfig(list.get(idx), oldSensorList.get(i))) return true;
+            if(list.size() != 0) {
+                for (int i = 0; i < oldSensorList.size(); i++) {
+                    int idx = containSensor(list, oldSensorList.get(i)); //if the sensor exist in list
+                    if (idx != -1) {//does contain
+                        if (!compareClientConfig(list.get(idx), oldSensorList.get(i))) return true;
+                    } else {
+                        return true;
+                    }
                 }
-                else
-                    return true;
-            }
+            }else return true;
+
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -103,7 +109,7 @@ public class Server implements Runnable, MessageProcessor, Serializable {
     public int containSensor(ArrayList<ClientConfig> s, ClientConfig c){
         int idx = -1;
         for(int i = 0; i < s.size(); i++){
-            if(s.get(i).ip.compareTo(c.ip) == 0) idx = i;
+            if(s.get(i).ip.compareTo(c.ip) == 0) {idx = i; break;}
         }
         return idx;
     }
@@ -134,17 +140,12 @@ public class Server implements Runnable, MessageProcessor, Serializable {
         return true;
     }
 
-    public ArrayList<Sensor> generateUISensorsList(){
-        System.out.println("In UpdateUI if statement 2.1");
+    public ArrayList<Sensor> generateUISensorsList(ArrayList<ClientConfig> sl){
         ArrayList<Sensor> list = new ArrayList<Sensor>();
-        System.out.println("In UpdateUI if statement 2.2");
-        for(ClientConfig config : this.sensorList){
-            System.out.println("In UpdateUI if statement 2.3");
+        for(ClientConfig config : sl){
             Sensor s = convertClientConfigToSensor(config);
-            System.out.println("In UpdateUI if statement 2.4");
             list.add(s);
         }
-        System.out.println("In UpdateUI if statement 2.5");
         return list;
     }
 
@@ -185,12 +186,9 @@ public class Server implements Runnable, MessageProcessor, Serializable {
             System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
             if(!serverInit()){
                 System.out.println("    BACKEND SREVER DEBUG: Can't get central server connection");
-            }
+            }else getSensorsFromServer();
         }
 
-        //addSensor(new ClientConfig("100.0.0.1", "0:00", "0:00", false, false, SensorType.LIGHT, 90, "Sensor 1", false, false, false, false, "123456789", "abcd@email.com", 10));
-        //System.out.println(sensorList.get(0));
-        //sensorList.add(new ClientConfig("100.0.0.1", "0:00", "0:00", false, false, SensorType.LIGHT, 90, "Sensor 1", false, false, false, false, "123456789", "abcd@email.com", 10));
         /*try {
 
                 TESTING SHIT IF THIS BREAKS NOTHIGN WORKS
@@ -216,51 +214,34 @@ public class Server implements Runnable, MessageProcessor, Serializable {
         */
         System.out.println("Debug Message: Going into running");
         while(running) {
-            //shitty timer
-            if (!suspended) {
-                //boolean check = addSensor(new ClientConfig("100.0.0.1", "0:00", "0:00", false, false, SensorType.LIGHT, 90, "Sensor 1", false, false, false, false, "123456789", "abcd@email.com", 10));
-                //System.out.println("Debug Message: In Server call " + check);
-
-                workingSensorList = true;
-                ArrayList<ClientConfig> oldSensorList;
-                if (sensorList == null) {
-                    oldSensorList = null;
-                } else {
-                    oldSensorList = (ArrayList<ClientConfig>) sensorList.clone();
-                }
-
+            if(!suspended) {
+                ArrayList<ClientConfig> temp = new ArrayList<ClientConfig>(); //setting up temp list to compare
+                if(this.sensorList != null) temp = (ArrayList<ClientConfig>) this.sensorList.clone();
+                // use this just to make sure we don't have a new sensorlist while processing
                 getSensorsFromServer();
-
-                boolean updateUI = needUpdateSensors(oldSensorList);
+                if (oldSensorList == null) oldSensorList = new ArrayList<ClientConfig>();
+                boolean updateUI = needUpdateSensors(temp, oldSensorList);
+                System.out.println("    BACKEND SREVER DEBUG: tempsize = " + temp.size() + " old size = " + oldSensorList.size());
                 if (oldSensorList != null) {
                     System.out.println("    BACKEND SREVER DEBUG: updateUI = " + updateUI);
-
                     if (updateUI) {
                         System.out.println("Doing Looper Prepare");
                         if (looperPrepared == false) {
                             Looper.prepare();
                             looperPrepared = true;
                         }
-                        System.out.println("In UpdateUI if statement " + oldSensorList);
                         ArrayList<Sensor> sensors;
-                        System.out.println("In UpdateUI if statement 2");
-                        sensors = generateUISensorsList();
-                        System.out.println("In UpdateUI if statement 3");
-                        UI.handleMessage(sensors, sensorList);
-                        System.out.println("In UpdateUI if statement 4");
-                        //TODO: Call UI thread and send update sensors ArrayList
+                        sensors = generateUISensorsList(temp);
+                        UI.handleMessage(sensors, temp);
                     }
-                } else System.out.println("    BACKEND SREVER DEBUG: Server thread suspended");
-                //sensorList.add(new ClientConfig("100.0.0." + i*5, "0:00", "0:00", false, false, SensorType.LIGHT, 90, "Sensor 1", false, false, false, false, "123456789", "abcd@email.com", 10));
-                //i++;
-                workingSensorList = false;
-
+                }
+                oldSensorList = (ArrayList<ClientConfig>) temp.clone();
                 try {
-                    Thread.sleep(8000);
-                } catch (InterruptedException e) {
+                    Thread.sleep(sleep);
+                }catch(Exception e){
                     e.printStackTrace();
                 }
-            }
+            }else System.out.println("    BACKEND SREVER DEBUG: Server thread suspended");
         }
     }
 
@@ -275,7 +256,6 @@ public class Server implements Runnable, MessageProcessor, Serializable {
 
             @Override
             public void run() {
-
                 try{
                     switch(msg.type){
                         case READING:
@@ -286,13 +266,6 @@ public class Server implements Runnable, MessageProcessor, Serializable {
 
                         case GET_SENSORS:
                             SensorsMessage sMsg = (SensorsMessage) msg;
-                            boolean stop;
-                            //do {
-                              //  stop = ref.workingSensorList;
-                                //System.out.println("    BACKEND SREVER DEBUG: SensorList update status: " + stop);
-                            //}while(stop);
-
-                            System.out.println("    BACKEND SREVER DEBUG: SensorList update");
                             ref.sensorList = sMsg.ar;
                             break;
                         default:
