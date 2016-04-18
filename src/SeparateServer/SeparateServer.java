@@ -194,9 +194,12 @@ public class SeparateServer {
 			}
 			tasks.remove(cc.ip);
 		}
-		System.out.println("Notifying client");
-		for (String key: uiList.keySet()) {
-			NotifyClient(msg,uiList.get(key));
+		if (cc.desktopNotification) {
+			//we should only notify if the config says to notify
+			System.out.println("Notifying client");
+			for (String key: uiList.keySet()) {
+				NotifyClient(msg,uiList.get(key));
+			}
 		}
 	}
 	
