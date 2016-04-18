@@ -6,7 +6,7 @@ public class CircularBuffer {
 	private int head;
 	private int tail;
 	
-	private final int size = 25;
+	private final int size = 10;
 	
 	public CircularBuffer() {
 		this.readings = new Float[size];
