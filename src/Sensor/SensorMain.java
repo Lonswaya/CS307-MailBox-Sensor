@@ -58,32 +58,4 @@ public class SensorMain {
 	
 	
 }
-class StreamThread implements Runnable {
-	RaspberryPi pi;
-	public StreamThread(RaspberryPi pi) {
-		this.pi = pi;
-	}
-	public void run() {
-		((AudioSensor)pi.sensor).stream();
-	}
-}
-class SendThread implements Runnable {
-	RaspberryPi pi;
-	public SendThread(RaspberryPi pi) {
-		this.pi = pi;
-	}
-	public void run() {
-		Message msg = pi.sensor.form_message(null);
-		msg.setFrom(pi.assignedIPAddress);
-		pi.send_message(msg);
-	}
-}
-class SenseThread implements Runnable {
-	RaspberryPi pi;
-	public SenseThread(RaspberryPi pi) {
-		this.pi = pi;
-	}
-	public void run() {
-		pi.sensor.sense();
-	}
-}
+

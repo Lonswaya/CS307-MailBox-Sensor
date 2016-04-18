@@ -43,7 +43,8 @@ public class RaspberryPi {
 		dataReady = false;
 		serverConnection = null;
 		BaseConfig config = new BaseConfig();
-		sensor = (!config.Load()) ? null : new WebcamSensorFactory().get_sensor(config);
+		//sensor = (!config.Load()) ? null : new WebcamSensorFactory().get_sensor(config, this);
+		sensor = null;
 		// makes the thread that constantly receive message
 		
 		//create new receiving thing
@@ -96,7 +97,7 @@ public class RaspberryPi {
 				//create sensor
 				System.out.println("sensor created");
 				if (sensor != null) sensor.close();
-				sensor = new WebcamSensorFactory().get_sensor(conf.getConfig());
+				sensor = new WebcamSensorFactory().get_sensor(conf.getConfig(), this);
 				if (!sensor.ready) {
 					//send the config back and delete it
 					System.out.println("Oh, we couldn't make that sensor work right. \nSorry.\nSend a better config next time");
@@ -130,18 +131,22 @@ public class RaspberryPi {
 					//System.out.println("Able to take picture, as no cameras are open");
 					
 					BufferedImage bf = sensor.sense();
+					connectionSocket.out.reset(); //try to stop the memory leak
 					if (bf == null && sensor.sType == SensorType.VIDEO) continue;
 					Message toSend = sensor.form_message(bf);
 					
 					if (toSend != null) {
 						toSend.setFrom(assignedIPAddress); //we have to assign this, as getting the local IP is not working
 						if (Connections.send(connectionSocket.out, toSend)) {
-							//System.out.println("Yay, we were able to send a message. Let's do this again.");
-							if (lastTimeSent != null && (new Date().getTime() - lastTimeSent.getTime()) > 100) System.out.println("Long time in between sending: " + (new Date().getTime() - lastTimeSent.getTime()));
-							lastTimeSent = new Date();
 							dataReady = false;
-							if (bf != null)
-								bf.flush();
+							//System.out.println("Yay, we were able to send a message. Let's do this again.");
+							//if (lastTimeSent != null && (new Date().getTime() - lastTimeSent.getTime()) > 100) System.out.println("Long time in between sending: " + (new Date().getTime() - lastTimeSent.getTime()));
+							//lastTimeSent = new Date();
+							//if (bf != null) {
+								//bf.flush();
+								//bf = null;
+								//System.gc();
+							//}
 						} else {
 							System.out.println("Connection lost, stopping thread");
 							streaming = false;
@@ -149,7 +154,8 @@ public class RaspberryPi {
 						}
 						
 					}
-				}				
+				}
+				break;
 			}
 		default:
 			break;

@@ -54,17 +54,27 @@ public class MotionSensor extends BaseSensor implements WebcamMotionListener {
 		if (detector == null)
 			ready = false;
 		detector.setInterval(MotionSensor.INTERVAL);
+		detector.addMotionListener(this);
+		detector.start();		//sets it to start detecting
+		System.out.println("Done building motion sensor");
 	}
 
 	@Override
 	public void motionDetected(WebcamMotionEvent arg0) {
+		System.out.println("Oh boy, motion detected");
+
 		// called when motion is detected
-		pi.send_message(form_message(null));
+		if (this.isSensorActive()) {
+			Message msg = form_message(null);
+			msg.setFrom(pi.assignedIPAddress);
+			pi.send_message(msg);
+		}
 	}
 
 	@Override
 	public BufferedImage sense() {
-		detector.start();		//sets it to start detecting
+		System.out.println("Motion sense");
+
 		return null;
 	}
 

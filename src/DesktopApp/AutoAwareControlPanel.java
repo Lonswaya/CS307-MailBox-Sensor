@@ -895,7 +895,7 @@ public class AutoAwareControlPanel extends JFrame implements MessageProcessor {/
 					
 				}
 				//if we have a higher threshold, and the item was not already added to the list
-				if (myClient.sensing_threshold <= f && notificationStack.search(myClient.name) == -1 && myClient.isSensorActive()) {
+				if ((myClient.sensing_threshold <= f || myClient.sensor_type == SensorType.MOTION) && notificationStack.search(myClient.name) == -1 && myClient.isSensorActive()) {
 					//System.out.println(notificationStack.search(myClient.name));
 					notificationStack.add(myClient.name);
 				}

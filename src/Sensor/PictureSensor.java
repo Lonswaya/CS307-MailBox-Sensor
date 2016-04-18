@@ -62,7 +62,7 @@ public class PictureSensor extends BaseSensor{
 	@Override
 	public Message form_message(BufferedImage o) {
 		PictureMessage msg = new PictureMessage("Picture Message", null); //message will be set from setImage()
-		msg.setImage((BufferedImage)o, false);
+		msg.setImage(o, false);
 		System.out.println("Debug: End taking a picture");
 		return msg;
 	}
