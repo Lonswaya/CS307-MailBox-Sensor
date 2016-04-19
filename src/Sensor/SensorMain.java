@@ -1,6 +1,8 @@
 package Sensor;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+
+import Utilities.Connections;
 import cs307.purdue.edu.autoawareapp.*;
 public class SensorMain {
 	
@@ -34,6 +36,13 @@ public class SensorMain {
 					System.out.println(pi.sensor.check_threshold());
 					if (pi.sensor.check_threshold()) { //if the threshold is above, or if we are supposed to stream constantly
 						System.out.println("sending a message to a server, above notification");
+						
+						if (pi.sensor.sType == SensorType.AUDIO) {
+							ReadingMessage rm = new ReadingMessage("above", null);
+							rm.setCurrentThreshold(999);
+							Connections.send(pi.serverConnection.out, rm);
+						}
+						
 						
 						Message msg = pi.sensor.form_message(null);
 						msg.setFrom(pi.assignedIPAddress);
