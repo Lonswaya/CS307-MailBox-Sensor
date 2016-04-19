@@ -1,4 +1,5 @@
 package DesktopApp;
+import java.awt.Component;
 import java.awt.Graphics;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
@@ -41,9 +42,17 @@ public class StreamBox extends JFrame {
             @Override
             public void windowClosed(WindowEvent e) {
             	//System.out.println("STOP THE FUCK NOW");
+            	Component comp = getComponent(0);
+            	if (comp instanceof ValueStreamBox && ((ValueStreamBox)comp).speakers != null) {
+            		((ValueStreamBox)comp).speakers.close();
+            	}
             	Close();
             }
             public void windowClosing(WindowEvent e) {
+            	Component comp = getComponent(0);
+            	if (comp instanceof ValueStreamBox && ((ValueStreamBox)comp).speakers != null) {
+            		((ValueStreamBox)comp).speakers.close();
+            	}
             	Close();
             	//System.out.println("STOP THE FUCK NOW");
             }

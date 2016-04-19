@@ -36,7 +36,7 @@ public class MotionSensor extends BaseSensor implements WebcamMotionListener {
 	private static final long serialVersionUID = -585739158170333370L;
 
 	private static final int INTERVAL = 200; // ms
-	static int threshold = 35;
+	static int threshold = 60;
 	public Webcam webcam;
 	WebcamMotionDetector detector;
 	private RaspberryPi pi;

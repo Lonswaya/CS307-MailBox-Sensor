@@ -47,6 +47,8 @@ public class LightSensor extends BaseSensor {
 			take_picture();
 			if (this.image == null) {
 				System.out.println("Oh hey, the image was null. Not good.");
+				webcam.close();
+				webcam.open();
 				this.light_intensity = -1;
 			} else {
 				this.light_intensity = get_reading(this.image);

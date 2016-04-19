@@ -43,7 +43,10 @@ public class PictureSensor extends BaseSensor{
 			}*/
 			
 			BufferedImage bf = webcam.getImage();
-			
+			if (bf == null) { //for when problems happen sometimes
+				webcam.close();
+				webcam.open();
+			}
 			return bf;
 			//System.out.println("Debug: End taking a picture, Time:" + (int) (System.currentTimeMillis() - tempTime) + "\n");
 			//webcam.close();
