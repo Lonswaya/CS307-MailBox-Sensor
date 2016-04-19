@@ -31,7 +31,7 @@ public class RaspberryPi {
 
 	static public boolean streaming = false, dataReady;
 	
-	private SocketWrapper serverConnection;
+	public SocketWrapper serverConnection;
 	
 	ServerSocket serverSock;
 	
