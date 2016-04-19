@@ -118,8 +118,20 @@ public class ValueStreamBox extends JPanel {
         	if (playingSound) {
         		//audioToggle.set
         		audioToggle.setIcon(new ImageIcon("resources/soundOn.png"));
-        	} else {
+        		try {
+        	    	AudioFormat format = new AudioFormat(44100.0f, 16, 2, true, false);
+    	    		DataLine.Info dataLineInfo = new DataLine.Info(SourceDataLine.class, format);
+    	            speakers = (SourceDataLine) AudioSystem.getLine(dataLineInfo);
+    	            speakers.open(format);
+    	            speakers.start();
+    	    	} catch (Exception e1) {
+    	    		System.err.println("uh oh, sensor audio stuff");
+    	    		e1.printStackTrace();
+    	    		
+    	    	}        	
+        		} else {
         		audioToggle.setIcon(new ImageIcon("resources/soundOff.png"));
+        		speakers.close();
         	}
         	//
         	

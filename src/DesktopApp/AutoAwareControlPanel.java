@@ -802,7 +802,7 @@ public class AutoAwareControlPanel extends JFrame implements MessageProcessor {/
     		number++;
     	}
     	if (number > 0)
-    		JOptionPane.showMessageDialog(null, "Sensor" + (number>1?"s ":" ") + names + " ha" + (number>1?"ve":"s") + " reached threshold!");
+    		JOptionPane.showMessageDialog(null, "Sensor" + (number>1?"s ":" ") + names + " ha" + (number>1?"ve":"s") + " an alert!");
     	//ClientConfig c = ConfigFind(ip);
     	//UIManager UI=new UIManager();
     	//Color oldColor = UI.getColor("OptionPane.background");
@@ -891,12 +891,9 @@ public class AutoAwareControlPanel extends JFrame implements MessageProcessor {/
 					System.out.println("Updating slider");
 					cf.currentThreshold.setValue(Math.round(f));
 				}
-				else {
-					
-					
-				}
+				
 				//if we have a higher threshold, and the item was not already added to the list
-				if ((myClient.sensing_threshold <= f || myClient.sensor_type == SensorType.MOTION) && notificationStack.search(myClient.name) == -1 && myClient.isSensorActive()) {
+				if ((myClient.sensing_threshold * 100 <= f || myClient.sensor_type == SensorType.MOTION) && notificationStack.search(myClient.name) == -1 && myClient.isSensorActive()) {
 					//System.out.println(notificationStack.search(myClient.name));
 					notificationStack.add(myClient.name);
 				}
