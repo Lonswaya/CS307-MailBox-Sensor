@@ -39,6 +39,7 @@ public class SensorMain {
 						
 						if (pi.sensor.sType == SensorType.AUDIO) {
 							ReadingMessage rm = new ReadingMessage("above", null);
+							rm.setFrom(pi.assignedIPAddress);
 							rm.setCurrentThreshold(999);
 							Connections.send(pi.serverConnection.out, rm);
 						}

@@ -45,7 +45,7 @@ public class AudioSensor extends BaseSensor
 		doneStreaming = true;
 		doneVoluming = true;
 		format = new AudioFormat(44100.0f, 16, 2, true, false);
-		threshold = config.sensing_threshold*100; //*100 because we convert decimal to percentage. FIX LATER
+		//threshold = config.sensing_threshold; //*100 because we convert decimal to percentage. FIX LATER
 		
 		//TODO if sensor cannot be made (lack of microphone) ready = false;
 	}
@@ -184,7 +184,8 @@ public class AudioSensor extends BaseSensor
 	@Override
 	public boolean check_threshold()
 	{
-		return (overThreshold = (cBuffer.average() > threshold)); 
+		System.out.println("Current threshold: " + cBuffer.average() + " max threshold: " + (100*this.config.sensing_threshold));
+		return ((cBuffer.average() > (100*this.config.sensing_threshold))); 
 	}
 	
 	public Message form_message(BufferedImage b)
