@@ -1,5 +1,6 @@
 package cs307.purdue.edu.autoawareapp;
 
+import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.Menu;
@@ -30,6 +31,7 @@ public class SettingsActivityUI extends AppCompatActivity implements View.OnClic
 
     ClientConfig sensorInfo;
     Server server;
+    String ip;
 
 
     @Override
@@ -42,6 +44,8 @@ public class SettingsActivityUI extends AppCompatActivity implements View.OnClic
 
         String title = sensorInfo.name + " Settings";
         this.setTitle(title);
+
+        ip = sensorInfo.ip;
 
         sensorName = (EditText) findViewById(R.id.set_name_text);
         sensorName.setHint(sensorInfo.name);
@@ -151,7 +155,13 @@ public class SettingsActivityUI extends AppCompatActivity implements View.OnClic
                 this.setTitle(text + " Settings");
                 break;
             case R.id.apply_button:
-
+                ClientConfig clientConfig = getInfofromForm();
+                Intent mIntent = new Intent(this, SensorClientUI.class);
+                mIntent.putExtra("New Sensor", clientConfig);
+                setResult(RESULT_OK, mIntent);
+                System.out.println("********************************Returning back to parent activity, sensor = " + clientConfig);
+                server.updateSensor(clientConfig);
+                finish();
                 break;
             case R.id.defualt_button:
                 resetDefault();
@@ -182,6 +192,67 @@ public class SettingsActivityUI extends AppCompatActivity implements View.OnClic
                     }
                 }
         }
+    }
+
+    public ClientConfig getInfofromForm() {
+        String name = sensorName.getText().toString();
+        String strtHour, strtMinute, edHour, edMinute;
+        String endTime = null;
+        String startTime = null;
+        boolean force_on = false;
+        boolean force_off = false;
+        SensorType sensorType = SensorType.LIGHT;
+
+        if (setTimeBox.isChecked()) {
+            strtHour = startHour.getText().toString();
+            strtMinute = startMinute.getText().toString();
+            startTime = strtHour + ":" + strtMinute;
+            if (startTime == null) {
+                startTime = "0:00";
+            }
+
+            edHour = endHour.getText().toString();
+            edMinute = endMinute.getText().toString();
+            endTime = edHour + ":" + edMinute;
+            if (endTime == null) {
+                endTime = "0:00";
+            }
+
+            if (startTime != null) {
+                force_on = true;
+            }
+            if (endTime != null) {
+                force_off = true;
+            }
+        }
+
+        if (typeLight.isChecked())
+            sensorType = SensorType.LIGHT;
+        else if (typeAudio.isChecked())
+            sensorType = SensorType.AUDIO;
+        else if (typeVideo.isChecked())
+            sensorType = SensorType.VIDEO;
+
+        float threshold = setThresholdBar.getProgress();
+
+        boolean desktop = false;
+        boolean phone = false;
+        boolean email = false;
+        boolean magicMirror = false;
+        if (desktopNotification.isChecked())
+            desktop = true;
+        if (mobileNotification.isChecked())
+            phone = true;
+        if (emailNotification.isChecked())
+            email = true;
+        if (appNotification.isChecked())
+            magicMirror = true;
+
+        String phoneString = phoneNumber.getText().toString();
+        String emailString = emailId.getText().toString();
+
+        return new ClientConfig(ip, startTime, endTime, force_on, force_off, sensorType, threshold, name, 0, 0, 0, desktop, magicMirror, phone, email, phoneString, emailString, 10);
+
     }
 
     public void resetDefault() {

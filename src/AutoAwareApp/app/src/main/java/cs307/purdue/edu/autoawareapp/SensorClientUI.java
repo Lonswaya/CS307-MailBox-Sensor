@@ -31,7 +31,7 @@ public class SensorClientUI extends AppCompatActivity implements View.OnClickLis
     int in_index = 0;
     private int numOfSensors;
     private int noSensorFlag = 0;
-    Server server;
+    static Server server;
     String ip;
     Button addSensorButton, exitButton;
 
@@ -253,6 +253,7 @@ public class SensorClientUI extends AppCompatActivity implements View.OnClickLis
     }
 
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        System.out.println("Debug Message: In OnActivityResult********************");
         super.onActivityResult(requestCode, resultCode, data);
         System.out.println("In onActivityResult");
         if(resultCode == RESULT_OK){

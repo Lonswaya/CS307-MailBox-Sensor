@@ -37,6 +37,9 @@
             android:name=".SensorClientUI"
             android:label="@string/app_name">
         </activity>
+        <activity android:name=".myOnClickListener"
+            android:label="AutoAware App">
+        </activity>
         <activity
             android:name=".AddSensorUI"
             android:label="Add New Sensor">
