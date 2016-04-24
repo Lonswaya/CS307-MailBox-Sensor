@@ -8,15 +8,28 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 
+import java.util.ArrayList;
+
 /**
  * Created by Dhairya on 4/6/2016.
  */
-public class myOnClickListener implements View.OnClickListener {
+public class myOnClickListener extends AppCompatActivity implements View.OnClickListener {
     MyAdapter.ViewHolder viewHolder;
     private final Context context;
     int id;
     ClientConfig sensorInfo;
     Server server;
+
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        System.out.println("Debug Message: In On Create");
+
+        Intent myIntent = new Intent(context, SettingsActivityUI.class);
+        myIntent.putExtra("ClientConfig", sensorInfo);
+        startActivityForResult(myIntent, 1);
+    }
 
     public myOnClickListener() {
         context = null;
@@ -41,11 +54,10 @@ public class myOnClickListener implements View.OnClickListener {
         switch(view.getId()) {
             case R.id.button1:
                 System.out.println("*****************************BUTTON 1. Context = " + this + "    " + SettingsActivityUI.class);
-                Intent myIntent = new Intent(context, SettingsActivityUI.class);
-                myIntent.putExtra("ClientConfig", sensorInfo);
+                Intent n = new Intent(this, myOnClickListener.class);
+                startActivity(n);
                 //myIntent.putExtra("Server", server);
                 System.out.println("Added server in. Context = " + context);
-                context.startService(myIntent);
                 System.out.println("sdjsadkshdsakdhaskjdhasjkdhasjdhasjdhasjdhasdasjdhaskjdhasdhasjkdhaskdha");
                 break;
             case R.id.button2:
@@ -69,7 +81,8 @@ public class myOnClickListener implements View.OnClickListener {
         }
     }
 
-    /*public void onActivityResult(int requestCode, int resultCode, Intent data) {
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        System.out.println("Debug Message: In OnActivityResult********************");
         super.onActivityResult(requestCode, resultCode, data);
         System.out.println("In onActivityResult");
         if(resultCode == RESULT_OK){
@@ -81,7 +94,7 @@ public class myOnClickListener implements View.OnClickListener {
             AsyncTaskRunnerUpdate asyncTaskRunnerUpdate = new AsyncTaskRunnerUpdate();
             asyncTaskRunnerUpdate.execute(newSensorConfig);
         }
-    }*/
+    }
 
     private class AsyncTaskRunner extends AsyncTask<ClientConfig, Void, Integer> {
         /**
@@ -167,7 +180,7 @@ public class myOnClickListener implements View.OnClickListener {
         @Override
         protected Integer doInBackground(ClientConfig... params) {
             System.out.println("In Remove Do in background");
-            boolean check = server.updateSensor(sensorInfo);
+            boolean check = server.updateSensor(params[0]);
             if (check == true)
                 return 1;
             return 0;
@@ -178,6 +191,7 @@ public class myOnClickListener implements View.OnClickListener {
             if (result == 1) {
                 //TODO: See if you need to get the sensor manually and call uodateUI or does the server do it
                 System.out.println("Debug Message: In Post execute");
+                finish();
             }
         }
     }
