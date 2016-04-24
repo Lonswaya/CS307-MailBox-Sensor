@@ -1,6 +1,9 @@
 package Example;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -22,74 +25,79 @@ import javax.sound.sampled.TargetDataLine;
 
 public class RecordChunks
 {
+	static InputStream in = null;
+	static AudioInputStream stream = null;
+	
 
 	public static void recordChunks()
 	{
 		AudioFormat format = new AudioFormat(44100.0f, 16, 2, true, false);
 		
-		TargetDataLine microphone = null;	//Read sound into this
-		byte[] out = new byte[1024];
+		TargetDataLine microphone;	//Read sound into this
 		
-		//Bunch of buffers and stuff copied from audiorecorder
-		ByteArrayOutputStream outstream = new ByteArrayOutputStream();
-	    int frameSizeInBytes = format.getFrameSize();
-	    int bufferLengthInFrames = microphone.getBufferSize() / 8;
-	    int bufferLengthInBytes = bufferLengthInFrames * frameSizeInBytes;
-	    byte[] data = new byte[bufferLengthInBytes];
-	    int numBytesRead;
-		
-		List<Byte> massive = new ArrayList<Byte>(99999999);
-		
-		DataLine.Info info = new DataLine.Info(TargetDataLine.class, format);
-	    
-	    //Check to see if the format is supported
-	    if(!AudioSystem.isLineSupported(info))
-	    {
-	        System.out.println("I'm sorry but " + info + " isn't supported. Bitch.");
-	        System.exit(-1);
-	    }
-	    System.out.println(info + " is in fact supported.");
-		
-	    //Try to open the microphone line
-		try
-		{
+		try{
+			microphone = AudioSystem.getTargetDataLine(format);
+			
+			DataLine.Info info = new DataLine.Info(TargetDataLine.class, format);
 			microphone = (TargetDataLine) AudioSystem.getLine(info);
-		}
-		catch(LineUnavailableException ex)
-		{
-			System.out.println(ex +"Couldn't open the Target data line");
-			System.exit(-1);
+			microphone.open(format);
+			
+			ByteArrayOutputStream out = new ByteArrayOutputStream();
+			int numBytesRead = 0;
+			int CHUNK_SIZE = 1024;
+			byte[] data = new byte[microphone.getBufferSize()/5];
+			microphone.start();
+			
+			int bytesRead = 0;
+			
+			while(bytesRead < 10000)
+			{	
+				System.out.println("Going to start reading bytes");
+				numBytesRead = microphone.read(data,  0,  CHUNK_SIZE);
+				bytesRead += numBytesRead;
+				//write the microphone data to a stream for use later
+				System.out.println("writing outputstream");
+				out.write(data, 0, numBytesRead);
+				
+				byte[] audioBytes = out.toByteArray();
+				 in = new ByteArrayInputStream(audioBytes);
+			     stream = new AudioInputStream(in, format, audioBytes.length);
+				
+			}
+			microphone.close();
+			
+			//Convert the output stream to a byte array and make audiostream
+			/*byte[] audioBytes = out.toByteArray();
+			InputStream in = new ByteArrayInputStream(audioBytes);
+		    AudioInputStream stream = new AudioInputStream(in, format, audioBytes.length);
+		    */
+		    //Save to a wav file here
+		    String path = System.getProperty("user.home");
+		    System.out.println(path);
+		    try{
+		    	File file = new File (path + File.separator + "ChunkRecording.wav");
+		    	AudioSystem.write(stream,  Type.WAVE, file);
+		    }
+		    catch (Exception e)
+		    {
+		    	e.printStackTrace();
+		    }
+			
 		}
 		catch(Exception e)
 		{
-			System.out.println(e + "happened for some reason");
-			System.exit(-1);
+			e.printStackTrace();
 		}
-		
-		long begin = System.currentTimeMillis();
-		
-		 while(true) {
-		        
-		        long current = System.currentTimeMillis();
-		        long difference = (current - begin) / 1000;
-		        
-		        microphone.read(out, 0, 1024);
-		        double duration = 10;
-		        
-		        if(difference > duration)
-		        {
-		            break;
-		        }
-		       Collections.addAll(massive,  out);
-		        
-		    }
-		
 		
 		
 		
 	}
 	
-	
+	public static void main(String [] args)
+	{
+		while(true) 
+			recordChunks();
+	}
 	
 	
 	

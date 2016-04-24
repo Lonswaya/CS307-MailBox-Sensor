@@ -1,3 +1,4 @@
+//REturns volume
 package Example;
 import javax.sound.sampled.AudioFileFormat.Type;
 import javax.sound.sampled.AudioFormat;
