@@ -1,6 +1,7 @@
 package cs307.purdue.edu.autoawareapp;
 import java.awt.Color;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Calendar;
 
 
@@ -12,6 +13,7 @@ public class ClientConfig extends BaseConfig implements Serializable {
 	public boolean desktopNotification, magicMirrorNotification, textNotification, emailNotification;
 	public String phoneNumber, emailAddress, ip;
 	public int interval;
+	public ArrayList<String> users; //for all the users that are able to view this sensor
 	
 	
 	public ClientConfig(String ip, String start, String stop, boolean force_on, boolean force_off, SensorType type, float threshold, String name, float r, float g, float b, boolean desktopNotification, boolean magicMirrorNotification, boolean textNotification, boolean emailNotification, String phoneNumber, String emailAddress, int interval) {
@@ -65,5 +67,7 @@ public class ClientConfig extends BaseConfig implements Serializable {
 	public void SetName(String s) {
 		name = s;
 	}
-
+	public void AddUser(String s) {
+		users.add(s);
+	}
 }
