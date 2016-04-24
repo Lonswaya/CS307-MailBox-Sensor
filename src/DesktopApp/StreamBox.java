@@ -44,6 +44,7 @@ public class StreamBox extends JFrame {
             	//System.out.println("STOP THE FUCK NOW");
             	Component comp = getComponent(0);
             	if (comp instanceof ValueStreamBox && ((ValueStreamBox)comp).speakers != null) {
+            		System.out.println("closing speakers");
             		((ValueStreamBox)comp).speakers.close();
             	}
             	Close();

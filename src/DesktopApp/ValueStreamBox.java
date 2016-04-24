@@ -7,6 +7,10 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
+import java.text.SimpleDateFormat;
+import java.util.Arrays;
+import java.util.Calendar;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Random;
@@ -18,9 +22,16 @@ import javax.sound.sampled.SourceDataLine;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
+import javax.swing.filechooser.FileNameExtensionFilter;
+
+import org.apache.commons.lang3.ArrayUtils;
+
+import Utilities.WriteToWav;
+
 import javax.swing.JPanel;
 import cs307.purdue.edu.autoawareapp.*;
 
@@ -40,8 +51,10 @@ public class ValueStreamBox extends JPanel {
 	private float threshold;
 	private SensorType sensorType;
 	private Thread playerThread;
-	private JButton audioToggle;
+	private JButton audioToggle, recordToggle;
 	private Timer t;
+	private boolean recordToFile;
+	private byte[] toFile;
 	//private CentralServer server;
 	
 	SourceDataLine speakers;	//Play sound out of here
@@ -57,6 +70,7 @@ public class ValueStreamBox extends JPanel {
 		final JPanel tempThis = this;
 		exit.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent event) {
+            	speakers.close();
             	SwingUtilities.getWindowAncestor(tempThis).dispose();
             }
         });
@@ -67,11 +81,38 @@ public class ValueStreamBox extends JPanel {
 		title.setBounds(200, 30, 500, 300);
 		
 		if (sensorType == SensorType.AUDIO) {
+			recordToFile = false;
 			audioToggle = new JButton(new ImageIcon("resources/soundOff.png"));
 			audioToggle.setBounds(550,520,40,40);
 			playingSound = false;
 			audioToggle.addActionListener(new muter());
+			recordToggle = new JButton("Record");
+			recordToggle.setBounds(550,480,40,40);
+			recordToggle.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent arg0) {
+					if (recordToFile) {
+						//prompt to path
+						String path = PromptPath();
+						if (!path.endsWith(".wav")) {
+							path += ".wav";
+						}
+						//save to file
+						WriteToWav.writeToWav(path, toFile);
+						//set text to Record
+						recordToggle.setText("Record");
+
+					} else {
+						//set text to "Click to stop"
+						recordToFile = true;
+						recordToggle.setText("<html>Click to<br />stop</html>");
+					}
+				}
+				
+			});
+			
 			this.add(audioToggle);
+			this.add(recordToggle);
 			audioQueue = new LinkedList<byte[]>();
 			new Thread(new AudioPlayer()).start();
 			//System.out.println("thread started");
@@ -190,6 +231,9 @@ public class ValueStreamBox extends JPanel {
 		g.drawLine(getWidth() / 5, getHeight()/2, getWidth() * 4/5, getHeight()/2);
 	}
 	public synchronized void addClip(byte[] recording) {
+		
+		toFile = (byte[])ArrayUtils.addAll(toFile, recording);
+		
 		audioQueue.add(recording);
 		System.out.println("Clip added, queue size is " + audioQueue.size());
 	}
@@ -206,6 +250,26 @@ public class ValueStreamBox extends JPanel {
 	public void SetSensorValue(float f) {
 		this.value = f;
 		repaint();
+	}
+	private String PromptPath() {
+		JFileChooser chooser = new JFileChooser(); 
+		String path = "";
+	    chooser.setCurrentDirectory(new File("."));
+	    chooser.setDialogTitle("Open location");
+	    FileNameExtensionFilter filter = new FileNameExtensionFilter("mp3 & wav Images", "wav", "mp3");
+	    chooser.setFileFilter(filter);
+	    //chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+	   
+	    chooser.setAcceptAllFileFilterUsed(false);
+	    
+	    if (chooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) { 
+	    	path = chooser.getSelectedFile().toString();	
+	    	System.out.println(path);
+	    }
+	    else {
+	    	System.out.println("No Selection ");
+	    }
+	    return path;
 	}
 	public class AudioPlayer implements Runnable {
 
