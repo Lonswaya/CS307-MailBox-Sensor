@@ -6,6 +6,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 
 import javax.imageio.ImageIO;
@@ -14,6 +15,8 @@ import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
+
+import Utilities.SaveVideo;
 import cs307.purdue.edu.autoawareapp.*;
 
 
@@ -24,10 +27,14 @@ public class VideoStreamBox extends JPanel {
 	private String address;
 	private BufferedImage image;
 	private Timer t;
-	private boolean found;
+	private boolean found, saveVideos;
 	private String path;
+	private ArrayList<BufferedImage> toVideo;
+	
 
 	public VideoStreamBox(String address) {
+		saveVideos = false;
+		toVideo = new ArrayList<BufferedImage>();
 		this.setLayout(null);
 		found = false;
 		this.address = address;
@@ -56,9 +63,21 @@ public class VideoStreamBox extends JPanel {
 		});
 		pathFinder.setBounds(250,0,60,50);
 		
-		JButton saveButton = new JButton("<html>Save<br />Image</html>");
+		JButton saveButton = new JButton("<html>Record<br />Video</html>");
 		saveButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent event) {
+				if (saveVideos) {
+					if (path == null) {
+						PromptPath();
+					}
+					Calendar cal = Calendar.getInstance();
+			        SimpleDateFormat sdf = new SimpleDateFormat("HH-mm-ss");
+					SaveVideo.convert(path +  "/AutoAware-" + sdf.format(cal.getTime()) + ".mp4", toVideo);
+				} else {
+					saveVideos = true;
+				}
+				
+				/*
 				if (path == null) {
 					PromptPath();
 				}
@@ -70,7 +89,7 @@ public class VideoStreamBox extends JPanel {
 
 				} catch (Exception e) {
 					System.err.print("Unable to save image.... fuck");
-				}
+				}*/
 			}
 			
 		});
@@ -84,6 +103,9 @@ public class VideoStreamBox extends JPanel {
 		repaint();
 	}
 	public void SetImage(BufferedImage image) {
+		if (saveVideos) {
+			toVideo.add(image);
+		}
 		System.out.println("new image set");
 		this.image = image;
 		found = true;

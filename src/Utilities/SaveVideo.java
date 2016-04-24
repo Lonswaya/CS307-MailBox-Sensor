@@ -1,4 +1,4 @@
-package Example;
+package Utilities;
 
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;

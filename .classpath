@@ -10,5 +10,7 @@
 	<classpathentry kind="lib" path="C:/Users/Lonswaya/workspace/CS307-MailBox-Sensor/lib/h2-1.4.191.jar"/>
 	<classpathentry kind="lib" path="C:/Users/Lonswaya/workspace/CS307-MailBox-Sensor/lib/bridj-0.6.3-20130316.190111-13.jar"/>
 	<classpathentry kind="lib" path="C:/Users/Lonswaya/workspace/CS307-MailBox-Sensor/lib/javax.mail.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Lonswaya/workspace/CS307-MailBox-Sensor/lib/xuggle-xuggler-5.4.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Lonswaya/workspace/CS307-MailBox-Sensor/lib/slf4j-simple-1.7.21.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
