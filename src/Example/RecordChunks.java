@@ -36,28 +36,24 @@ public class RecordChunks
 	static ByteArrayOutputStream out = new ByteArrayOutputStream();
 	static AudioFormat format = new AudioFormat(44100.0f, 16, 2, true, false);
 	
+	static ArrayList<Byte> total_bytes = new ArrayList<Byte>();
+
+	static TargetDataLine microphone;
+	
 	//Method that record chunks of audio and saves it to a wav file
 	public static void recordChunks()
 	{
-		TargetDataLine microphone;	//Read sound into this
-		
+		//TargetDataLine microphone;	//Read sound into this
+
 		try{
-			microphone = AudioSystem.getTargetDataLine(format);
-			
-			DataLine.Info info = new DataLine.Info(TargetDataLine.class, format);
-			microphone = (TargetDataLine) AudioSystem.getLine(info);
-			microphone.open(format);
-			
-			
+		
 			int numBytesRead = 0;
 			int CHUNK_SIZE = 1024;
 			byte[] data = new byte[microphone.getBufferSize()/5];
-			microphone.start();
 			
 			int bytesRead = 0;
 			
-			while(bytesRead < 10000)
-			{	
+				
 				System.out.println("Going to start reading bytes");
 				numBytesRead = microphone.read(data,  0,  CHUNK_SIZE);
 				bytesRead += numBytesRead;
@@ -66,9 +62,11 @@ public class RecordChunks
 				out.write(data, 0, numBytesRead);
 				//Add the bytes that were read to the massive byte array
 				//massive = (byte[])ArrayUtils.addAll(massive, data);
-			}
-			microphone.close();
+			
+			//microphone.close();
 		    
+			for (byte b : data)
+				total_bytes.add(b);
 		}
 		catch(Exception e)
 		{
@@ -81,8 +79,13 @@ public class RecordChunks
 	//The method that will write the massive byte array to a wav file.
 	public static void writeToWAV()
 	{
+		
+		
 		//Convert the output stream to a byte array and make audiostream
 		byte[] audioBytes = out.toByteArray();
+		//byte[] audioBytes = new byte[total_bytes.size()];
+		//for (int i = 0; i < total_bytes.size(); i++)
+		//	audioBytes[i] = total_bytes.get(i).byteValue();
 		InputStream in = new ByteArrayInputStream(audioBytes);
 	    AudioInputStream stream = new AudioInputStream(in, format, audioBytes.length);
 	    
@@ -101,17 +104,27 @@ public class RecordChunks
 	    
 	}
 	
-	public static void main(String [] args)
+	public static void main(String [] args) throws LineUnavailableException
 	{
+		double duration = 6.0;
 		long begin = System.currentTimeMillis();
 		
+		total_bytes.clear();
+		
+		microphone = AudioSystem.getTargetDataLine(format);
+		
+		DataLine.Info info = new DataLine.Info(TargetDataLine.class, format);
+		microphone = (TargetDataLine) AudioSystem.getLine(info);
+		microphone.open(format);
+		
+		microphone.start();
 		
 		while(true)
 		{
 			long current = System.currentTimeMillis();
-			long difference = (current-begin)/100;
+			long difference = (current-begin)/1000;
 			
-			double duration = 6;
+			
 			
 			if(difference > duration)
 			{
@@ -124,10 +137,10 @@ public class RecordChunks
 			}
 		}
 		
+		microphone.stop();
+		
 		System.out.println("done recording, write to wav");
 		writeToWAV();
-		
-		
 	}
 	
 	

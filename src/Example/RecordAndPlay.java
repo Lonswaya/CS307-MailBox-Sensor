@@ -1,6 +1,7 @@
 package Example;
 
 import java.io.ByteArrayOutputStream;
+import java.util.ArrayList;
 
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioSystem;
@@ -14,6 +15,7 @@ public class RecordAndPlay {
     
     public static void recordAndPlay()    
     {
+    	
     	AudioFormat format = new AudioFormat(44100.0f, 16, 2, true, false);
     	
         TargetDataLine microphone;	//Read sound into this
