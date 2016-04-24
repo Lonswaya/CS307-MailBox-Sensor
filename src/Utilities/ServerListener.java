@@ -17,6 +17,8 @@ public abstract class ServerListener implements Runnable {
 	
 	public boolean run;
 	
+	protected String username = ""; //does not have to be used
+	
 	
 	
 	public ServerListener(SocketWrapper sock) {

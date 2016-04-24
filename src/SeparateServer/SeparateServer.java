@@ -18,12 +18,13 @@ import Utilities.SensorInfo;
 import Utilities.ServerListener;
 import Utilities.SocketWrapper;
 import Utilities.StaticPorts;
+import Utilities.UIInfo;
 import cs307.purdue.edu.autoawareapp.*;
 public class SeparateServer {
 	
 	//TODO: polling shit
 	
-	static Hashtable<String, SocketWrapper> uiList = new Hashtable<String, SocketWrapper>();
+	static Hashtable<String, UIInfo> uiList = new Hashtable<String, UIInfo>();
 	static Hashtable<String, SensorInfo> sensorList = new Hashtable<String, SensorInfo>();
 	//SensorInfo contains a SocketWrapper for communicating with that Sensor.
 	
@@ -75,7 +76,7 @@ public class SeparateServer {
 	}
 	
 	public static void sendAllConfigs(String ip) {
-		SocketWrapper ui = uiList.get(ip);
+		SocketWrapper ui = uiList.get(ip).sock;
 		if (ui != null) {
 			//get arraylist of all clientConfigs in SensorList
 			ArrayList<ClientConfig> configs = new ArrayList<ClientConfig>();
@@ -95,7 +96,7 @@ public class SeparateServer {
 	}
 	
 	public static void sendAllConfigs(String ip, ArrayList<ClientConfig> configs) {
-		SocketWrapper ui = uiList.get(ip);
+		SocketWrapper ui = uiList.get(ip).sock;
 		if (ui != null)
 			Connections.send(ui.out, new SensorsMessage("Here is your configs!", configs));
 	}
@@ -138,7 +139,9 @@ public class SeparateServer {
 					case INIT:
 						//reset the SocketWrapper related to this UI in HashMap.
 						//have UI re-send a GET_SENSORS message if they ever send this
-						HandleInitMessage(msg, socket);
+						String result = HandleInitMessage(msg, socket, username);
+						if (result != null)
+							username = result;//new user
 						break;
 					case READING:
 						//Notify users about the sensor going off.
@@ -147,11 +150,15 @@ public class SeparateServer {
 					case CONFIG:
 						//Check that the sensor exists. If it does, reset the config in sensorList Hashtable, else remove it from Hashtable.
 						//then re-send all configs to all UIs
-						HandleConfigMessage((ConfigMessage)msg);
+						HandleConfigMessage((ConfigMessage)msg, username);
 						break;
 					case GET_SENSORS:
 						//just send them all of the sensors configs in an arraylist.
 						HandleGetSensors(msg, socket);
+						break;
+					case GET_USERS:
+						//just send them all of the users in an arraylist.
+						HandleGetUsers(msg, socket);
 						break;
 					default:
 						break;
@@ -198,13 +205,13 @@ public class SeparateServer {
 			//we should only notify if the config says to notify
 			System.out.println("Notifying client");
 			for (String key: uiList.keySet()) {
-				NotifyClient(msg,uiList.get(key));
+				NotifyClient(msg,uiList.get(key).sock);
 			}
 		}
 	}
 	
 	//wrote this part COMMIT
-	public static void HandleConfigMessage(ConfigMessage msg) {		
+	public static void HandleConfigMessage(ConfigMessage msg, String username) {		
 		if (msg.delete) {
 			System.out.println("Deleting sensor " + msg.config.name);
 			SensorInfo info = sensorList.get(msg.config.ip);
@@ -266,6 +273,12 @@ public class SeparateServer {
 			System.out.println("Sending a new config message to a new sensor");
 		} else if (exists && inList) {
 			info.sensorInfo = msg.config;
+			boolean found = false;
+			for (String user : info.sensorInfo.users) {
+				//see if the user exists in here, if not, add them
+				if (user.equals(username)) found = true;
+			}
+			if (!found) info.sensorInfo.users.add(username);
 			sensorList.put(msg.config.ip, info);
 			System.out.println("Sending a new config message to an existing sensor");
 			Connections.send(info.sock.out, msg);
@@ -277,12 +290,47 @@ public class SeparateServer {
 	}
 	
 	//wrote this part COMMIT
-	public static void HandleInitMessage(Message msg, SocketWrapper sock) {
-		uiList.put(msg.from, sock);
+	public static String HandleInitMessage(Message msg, SocketWrapper sock, String username) {
+		InitMessage inmsg = (InitMessage)msg;
+		String newUsername = inmsg.username;
+		String newPassword = inmsg.password;
+		UIInfo currentUser = null;
+		if ((currentUser = uiList.get(msg.from)) != null) {
+			//check password, close the socket if incorrect
+			if (!currentUser.password.equals(newPassword)) {
+				try {
+					Connections.send(sock.out, new Message("Incorrect password", null, null));
+					sock.sock.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			} else {
+				
+			}
+			
+		} else {
+			//new user
+			uiList.put(msg.from, new UIInfo(sock, newUsername, newPassword));
+			return newUsername;
+		}
+		return null;
 	}
 	
 	public static void HandleGetSensors(Message msg, SocketWrapper sock) {
 		sendAllConfigs(sock);
+	}
+	public static void HandleGetUsers(Message msg, SocketWrapper sock) {
+		//when the user wants all the users in an array, it wants to get an entire arraylist of users
+		ArrayList<String> ar = new ArrayList<String>();
+		for (String user : uiList.keySet()) {
+			UIInfo curUser = uiList.get(user);
+			if (curUser.sock.lostConnection) { 
+				sensorList.remove(user);
+			} else {
+				ar.add(curUser.username);
+			}
+		}
+		Connections.send(sock.out, new UsersMessage("Here's yo users", ar));
 	}
 	
 	public static void NotifyClient(Message msg, SocketWrapper sock) {
