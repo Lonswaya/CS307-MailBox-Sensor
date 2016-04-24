@@ -3,7 +3,9 @@ import java.io.IOException;
 import java.net.Socket;
 import java.util.ArrayList;
 
-/*
+
+import cs307.purdue.edu.autoawareapp.*;
+/* 
  * Purpose: Static methods and a static string that are used by both the AutoAwareControlPanel
  * 		and phone app to communicate and respond to a server.
  * 
@@ -42,10 +44,11 @@ public class UserBackend {
 	}
 	/*
 	 * Stops the current streaming method for the connection
-	 * 
+	 * It just directly kills the current thread in the socketwrapper
 	 */
 	public static void StopStreaming(SocketWrapper sWrapper) {
-		Connections.send(sWrapper.out, new StreamingMessage("Setting Streaming to False", null, false));
+		Connections.closeSocket(sWrapper.sock);
+		//Connections.send(sWrapper.out, new StreamingMessage("Setting Streaming to False", null, false));
 	}
 	/*
 	 * Creates a socketwrapper that will connect to the server
@@ -54,7 +57,7 @@ public class UserBackend {
 	 * Returns null if the connection can not be made
 	 * 
 	 */
-	public static SocketWrapper SetServerConnection(String ip, final MessageProcessor msgProcessor) {
+	public static SocketWrapper SetServerConnection(String ip, final MessageProcessor msgProcessor, String username, String password) {
 		SocketWrapper sWrapper = new SocketWrapper(Connections.getSocket(ip, StaticPorts.serverPort));
 		if (sWrapper.sock == null) {
 			System.out.println("Server not found");
@@ -68,7 +71,8 @@ public class UserBackend {
 			}
 		}).start();
 		
-		Connections.send(sWrapper.out, new Message("Hi there I am a new dude", null, MessageType.INIT));
+		
+		Connections.send(sWrapper.out, new InitMessage(username, password));
 		return sWrapper;
 	}
 	/* Sends a config to a server connection
@@ -83,16 +87,13 @@ public class UserBackend {
 	 * if true, sends a new sensor info to the server
 	 */
 	public static boolean AddSensor(ClientConfig cfg, SocketWrapper serverConnection) {
-		System.out.println("In Add Sensor Backend");
-        //Socket newSensorSocket = Connections.getSocket(cfg.ip, StaticPorts.piPort);
-        //System.out.println("Socket = " + newSensorSocket);
-		// TODO: Uncomment next two lines
-		//if (newSensorSocket != null && Connections.send(newSensorSocket, new Message("Hi do you exist plz respond", null, null))) {
-            //Connections.closeSocket(newSensorSocket);
+		Socket newSensorSocket = Connections.getSocket(cfg.ip, StaticPorts.piPort);
+		if (newSensorSocket != null && Connections.send(newSensorSocket, new Message("Hi do you exist plz respond", null, null))) {
+			Connections.closeSocket(newSensorSocket);
 			ConfigMessage confM = new ConfigMessage("To add", cfg);
 			return Connections.send(serverConnection.out, confM);		
-		//} else {
-		//	return false;
-		//}
+		} else {
+			return false;
+		}
 	}
 }

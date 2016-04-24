@@ -60,8 +60,12 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
         // Set up the login form.
         mEmailView = (AutoCompleteTextView) findViewById(R.id.username);
         populateAutoComplete();
+        mEmailView.setText("");
+        mEmailView.setHint("Username");
 
         mPasswordView = (EditText) findViewById(R.id.password);
+        mPasswordView.setText("");
+        mPasswordView.setHint("Password");
         mPasswordView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent) {
@@ -78,6 +82,16 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
             @Override
             public void onClick(View view) {
                 attemptLogin();
+            }
+        });
+
+        Button register_button = (Button) findViewById(R.id.register_button);
+        register_button.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //TODO: start Activity
+                Intent mIntent = new Intent();
+
             }
         });
 
@@ -141,6 +155,8 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
             mAuthTask.execute((Void) null);
 
             Intent mIntent = new Intent(this, SetServerIPUI.class);
+            mIntent.putExtra("Username", mEmailView.getText());
+            mIntent.putExtra("Password", mPasswordView.getText());
             startActivity(mIntent);
         }
     }

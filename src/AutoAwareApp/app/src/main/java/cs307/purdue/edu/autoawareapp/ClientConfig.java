@@ -1,6 +1,6 @@
 package cs307.purdue.edu.autoawareapp;
-//import java.awt.Color;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Calendar;
 
 
@@ -8,16 +8,16 @@ public class ClientConfig extends BaseConfig implements Serializable {
 	private static final long serialVersionUID = 1L;
 	public String name;
 	//public Color color;
+	public float r,g,b;
 	public boolean desktopNotification, magicMirrorNotification, textNotification, emailNotification;
 	public String phoneNumber, emailAddress, ip;
 	public int interval;
-	public float r,g,b;
-
-
+	public ArrayList<String> users; //for all the users that are able to view this sensor
+	
+	
 	public ClientConfig(String ip, String start, String stop, boolean force_on, boolean force_off, SensorType type, float threshold, String name, float r, float g, float b, boolean desktopNotification, boolean magicMirrorNotification, boolean textNotification, boolean emailNotification, String phoneNumber, String emailAddress, int interval) {
 		super(start, stop, force_on, force_off , type, threshold);
-		System.out.println("Debug Message: In clientConfig constructor");
-        this.ip = ip;
+		this.ip = ip;
 		//this.color = color;
 		this.r = r;
 		this.g = g;
@@ -25,7 +25,7 @@ public class ClientConfig extends BaseConfig implements Serializable {
 		this.name = name;
 		this.desktopNotification = desktopNotification;
 		this.magicMirrorNotification = magicMirrorNotification;
-		this.textNotification=textNotification;
+		this.textNotification=textNotification; 
 		this.emailNotification = emailNotification;
 		this.phoneNumber = phoneNumber;
 		this.emailAddress = emailAddress;
@@ -33,7 +33,6 @@ public class ClientConfig extends BaseConfig implements Serializable {
 	}
 	public ClientConfig() {
 		super();
-		//this.color = Color.white;
 		r = g = b = 1;
 		this.name = "";
 		this.phoneNumber = "";
@@ -41,7 +40,7 @@ public class ClientConfig extends BaseConfig implements Serializable {
 		this.desktopNotification = magicMirrorNotification = textNotification = emailNotification = false;
 		this.interval = 1000;
 	}
-	@Override
+	@Override 
 	public String toString() {
 		return		"[TIME SETTINGS]\n"
 				+	"START TIME=" + start_hours + ":" + start_minutes + "\n"
@@ -63,11 +62,11 @@ public class ClientConfig extends BaseConfig implements Serializable {
 	public void SetIP(String s) {
 		ip = s;
 	}
-	/*public void SetColor(Color c) {
-		color = c;
-	}*/
+	
 	public void SetName(String s) {
 		name = s;
 	}
-
+	public void AddUser(String s) {
+		users.add(s);
+	}
 }

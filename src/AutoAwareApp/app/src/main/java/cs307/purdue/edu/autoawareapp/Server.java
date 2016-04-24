@@ -54,7 +54,8 @@ public class Server implements Runnable, MessageProcessor, Serializable {
      */
     private boolean serverInit(){
         System.out.println("!!!!!!!!!!!!!!!!!!!!!In Server Init()!!!!!!!!!!!!!!!!!!!!!!");
-        this.centralServer = UserBackend.SetServerConnection(server_ip, this);
+        //TODO: insert username and password in place of null, null
+        this.centralServer = UserBackend.SetServerConnection(server_ip, this, "", "");
         System.out.println("!!!!!!!!!!!!!!!!!!!!!Returning!!!!!!!!!!!!!!!!!!!!!!");
         if(this.centralServer == null)
             return false;

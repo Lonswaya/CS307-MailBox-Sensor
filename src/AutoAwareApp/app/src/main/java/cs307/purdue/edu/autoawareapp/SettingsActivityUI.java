@@ -30,7 +30,6 @@ public class SettingsActivityUI extends AppCompatActivity implements View.OnClic
     Button applyButton, defaultButton;
 
     ClientConfig sensorInfo;
-    Server server;
     String ip;
 
 
@@ -160,7 +159,6 @@ public class SettingsActivityUI extends AppCompatActivity implements View.OnClic
                 mIntent.putExtra("New Sensor", clientConfig);
                 setResult(RESULT_OK, mIntent);
                 System.out.println("********************************Returning back to parent activity, sensor = " + clientConfig);
-                server.updateSensor(clientConfig);
                 finish();
                 break;
             case R.id.defualt_button:

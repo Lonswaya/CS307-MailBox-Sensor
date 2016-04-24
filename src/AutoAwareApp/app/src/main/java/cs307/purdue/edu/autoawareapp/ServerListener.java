@@ -16,6 +16,10 @@ public abstract class ServerListener implements Runnable {
 	
 	public boolean run;
 	
+	protected String username = ""; //does not have to be used
+	
+	
+	
 	public ServerListener(SocketWrapper sock) {
 		this.sock = sock;
 	}
@@ -32,22 +36,27 @@ public abstract class ServerListener implements Runnable {
 			try {
 				if (sock == null) {
 					System.err.println("ServerListener: Ending connection because the socket was null");
-					run = false;
+					StopThread();
 					break;
 				}
 				if (sock.in == null) continue; //continue because it isnt ready yet
 				Message msg = Connections.readObject(sock.in);
 				if (msg == null) {
 					System.err.println("ServerListener: Ending connection because the message returned null");
-					run = false;
+					StopThread();
 				} else
 					HandleMessage(msg);
 			} catch (Exception e) {
 				System.err.println("ServerListener: Connection lost due to exception " + e.toString());
 				e.printStackTrace();
-				run = false;
+				StopThread();
 			}
 		}
+	}
+	private void StopThread() {
+		/*RaspberryPi.streaming = false;
+		run = false;
+		sock.lostConnection = true;*/
 	}
 	
 	

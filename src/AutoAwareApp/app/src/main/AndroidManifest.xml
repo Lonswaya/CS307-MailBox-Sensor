@@ -43,6 +43,10 @@
         <activity
             android:name=".AddSensorUI"
             android:label="Add New Sensor">
-    </activity>
+        </activity>
+        <activity
+            android:name=".RegisterUI"
+            android:label="Sign Up">
+        </activity>
     </application>
 </manifest>
