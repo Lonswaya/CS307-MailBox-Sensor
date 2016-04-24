@@ -967,8 +967,16 @@ public class AutoAwareControlPanel extends JFrame implements MessageProcessor {/
 				
 				break;
 			case GET_SENSORS:
-				
-				configs = ((SensorsMessage)gotMessage).ar;
+				configs = new ArrayList<ClientConfig>();
+				for (ClientConfig cfg : ((SensorsMessage)gotMessage).ar) {
+					for (String user : cfg.users) {
+						if (user.equals(username)) {
+							configs.add(cfg);
+							break;
+						}
+					}
+				}
+				//configs = ((SensorsMessage)gotMessage).ar;
 				refreshSensorList();
 				break;
 			default:
