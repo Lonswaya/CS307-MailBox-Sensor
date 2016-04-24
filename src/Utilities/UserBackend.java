@@ -3,6 +3,8 @@ import java.io.IOException;
 import java.net.Socket;
 import java.util.ArrayList;
 
+import javax.swing.JOptionPane;
+
 import cs307.purdue.edu.autoawareapp.*;
 /* 
  * Purpose: Static methods and a static string that are used by both the AutoAwareControlPanel
@@ -56,7 +58,7 @@ public class UserBackend {
 	 * Returns null if the connection can not be made
 	 * 
 	 */
-	public static SocketWrapper SetServerConnection(String ip, MessageProcessor msgProcessor) {
+	public static SocketWrapper SetServerConnection(String ip, MessageProcessor msgProcessor, String username, String password) {
 		SocketWrapper sWrapper = new SocketWrapper(Connections.getSocket(ip, StaticPorts.serverPort));
 		if (sWrapper.sock == null) {
 			System.out.println("Server not found");
@@ -70,7 +72,8 @@ public class UserBackend {
 			}
 		}).start();
 		
-		Connections.send(sWrapper.out, new Message("Hi there I am a new dude", null, MessageType.INIT));
+		
+		Connections.send(sWrapper.out, new InitMessage(username, password));
 		return sWrapper;
 	}
 	/* Sends a config to a server connection

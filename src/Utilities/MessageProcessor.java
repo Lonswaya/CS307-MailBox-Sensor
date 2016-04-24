@@ -4,5 +4,7 @@ package Utilities;
  */
 import cs307.purdue.edu.autoawareapp.*;
 public interface MessageProcessor {
+	public String username = "";
+
 	public abstract void ProcessMessage(Message msg);
 }

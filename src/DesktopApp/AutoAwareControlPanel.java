@@ -59,6 +59,7 @@ public class AutoAwareControlPanel extends JFrame implements MessageProcessor {/
     private boolean notificationDialog;
 	private static boolean t2bool;
 	protected SocketWrapper serverConnection;
+	private String username;
 	
 	//true: GUI test to build things 
 	//false: full on, real connection
@@ -67,7 +68,9 @@ public class AutoAwareControlPanel extends JFrame implements MessageProcessor {/
 	
 	public AutoAwareControlPanel() {
 		 //this will create a new connection, and will call processMessage() on whatever has to be done
-      	serverConnection = UserBackend.SetServerConnection("localhost", this);      
+		username = JOptionPane.showInputDialog("Enter username", ""); 
+		String password =  JOptionPane.showInputDialog("Enter password", ""); 
+      	serverConnection = UserBackend.SetServerConnection("localhost", this, username, password);      
       	
         initUI();
         
@@ -353,7 +356,7 @@ public class AutoAwareControlPanel extends JFrame implements MessageProcessor {/
     	int sensorNumber = configs.indexOf(ConfigFind(identifier));
     	//System.out.println(configs.get(0));
     	if (cf == null || !cf.isEnabled()) {
-    		cf = new ConfigureMenu(sensorNumber, this, identifier);
+    		cf = new ConfigureMenu(sensorNumber, this, identifier, username);
         	ClientConfig cfg = ConfigFind(identifier);
         	System.out.println(cfg.isSensorActive());
     		if (cfg.isSensorActive() && cfg.sensor_type != SensorType.VIDEO && cfg.sensor_type != SensorType.MOTION)  { //no reason to be streaming here
@@ -429,6 +432,8 @@ public class AutoAwareControlPanel extends JFrame implements MessageProcessor {/
 	    	newSensor.g = r.nextFloat();
 	    	newSensor.b = r.nextFloat();
 	    	newSensor.SetName("New Sensor");
+	    	newSensor.users = new ArrayList<String>();
+	    	newSensor.users.add(username);
 	    	
 	    	
 	    	if (debug) {
@@ -832,13 +837,15 @@ public class AutoAwareControlPanel extends JFrame implements MessageProcessor {/
     	if(address != null && !address.isEmpty())
     	{
     		//String lastIP = UserBackend.serverIP;
-    		serverConnection = UserBackend.SetServerConnection(address, this);
+    		username = JOptionPane.showInputDialog("Enter username", ""); 
+    		String password =  JOptionPane.showInputDialog("Enter password", ""); 
+          	serverConnection = UserBackend.SetServerConnection(address, this, username, password);
     		if (serverConnection == null) {
     			//System.out.println("server not found");
         		JOptionPane.showMessageDialog(null,"Server not found", "error", JOptionPane.ERROR_MESSAGE, null);
         		return false;
     		} else {
-        		JOptionPane.showMessageDialog(null,"Server found, sensors updated", "success", JOptionPane.INFORMATION_MESSAGE, null);
+        		JOptionPane.showMessageDialog(null,"Server found", "Success", JOptionPane.INFORMATION_MESSAGE, null);
         		UserBackend.GetSensors(serverConnection);
         		return true;
     		}
@@ -965,7 +972,8 @@ public class AutoAwareControlPanel extends JFrame implements MessageProcessor {/
 				refreshSensorList();
 				break;
 			default:
-			
+        		JOptionPane.showMessageDialog(null,gotMessage.message, "Error", JOptionPane.ERROR_MESSAGE, null);
+
 				//null, error message
 				System.out.println(gotMessage.message);
 				break;

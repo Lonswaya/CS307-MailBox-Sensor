@@ -310,6 +310,7 @@ public class SeparateServer {
 			
 		} else {
 			//new user
+			System.out.println("Adding new user: welcome " + newUsername + "!");
 			uiList.put(msg.from, new UIInfo(sock, newUsername, newPassword));
 			return newUsername;
 		}

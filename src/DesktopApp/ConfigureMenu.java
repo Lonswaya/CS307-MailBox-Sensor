@@ -58,8 +58,10 @@ public class ConfigureMenu extends JFrame {
 	private AutoAwareControlPanel parent;
 	public String address; //address is used to verify to update the configure menu, in case you get a streaming message for it
 	public int inputNum;
+	private String username;
 	
-	public ConfigureMenu(int inputNum, AutoAwareControlPanel parent, String address) {
+	public ConfigureMenu(int inputNum, AutoAwareControlPanel parent, String address, String username) {
+		this.username = username;
 		this.address = address;
 		//I just pass the whole damn parent through the constructor, saves any back-references we need. Unless java already has that built in. 
 		this.inputNum = inputNum;
@@ -503,6 +505,7 @@ public class ConfigureMenu extends JFrame {
 				phoneNum.getText(), emailAddress.getText(),
 				10000 //TODO get, in ms
 		);
+		toSubmit.users = parent.configs.get(inputNum).users;
 		this.setEnabled(false);
 		parent.configs.set(inputNum, toSubmit);
 		System.out.println(toSubmit);
