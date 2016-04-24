@@ -5,19 +5,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-
-import javax.sound.sampled.AudioFormat;
-import javax.sound.sampled.AudioSystem;
-import javax.sound.sampled.DataLine;
-import javax.sound.sampled.TargetDataLine;
 
 import javax.sound.sampled.AudioFileFormat.Type;
-
-import org.apache.commons.lang3.ArrayUtils;
-
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
@@ -51,12 +40,12 @@ public class RecordChunks
 			int CHUNK_SIZE = 1024;
 			byte[] data = new byte[microphone.getBufferSize()/5];
 			
-			int bytesRead = 0;
+			//int bytesRead = 0;
 			
 				
 				System.out.println("Going to start reading bytes");
 				numBytesRead = microphone.read(data,  0,  CHUNK_SIZE);
-				bytesRead += numBytesRead;
+				//bytesRead += numBytesRead;
 				//write the microphone data to a stream for use later
 				System.out.println("writing outputstream");
 				out.write(data, 0, numBytesRead);
