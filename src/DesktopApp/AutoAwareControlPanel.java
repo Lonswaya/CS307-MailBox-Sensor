@@ -50,7 +50,7 @@ import cs307.purdue.edu.autoawareapp.*;
 public class AutoAwareControlPanel extends JFrame implements MessageProcessor {//implements Observer {
 	private static final long serialVersionUID = 1L;
 	private JPanel panelHolder;
-	public ArrayList<ClientConfig> configs;
+	public ArrayList<ClientConfig> configs, fullConfigsList;
 	public Hashtable<String, StreamBox> Streamers;
 	public Hashtable<String, SocketWrapper> streamersConnection;
 	private ConfigureMenu cf;
@@ -389,12 +389,24 @@ public class AutoAwareControlPanel extends JFrame implements MessageProcessor {/
     	while(!checkIPFormat(address));
 
     	//System.out.println(ConfigFind(address));
+    	
     	ClientConfig finder = ConfigFind(address);
     	if (finder != null) {
     		//System.out.println("error");
     		JOptionPane.showMessageDialog(null,"Sensor already added, named \"" + finder.name + "\"", "error", JOptionPane.ERROR_MESSAGE, null);
 
+    	} else if ((finder = FullConfigFind(address)) != null) {
+    		//just use the config, add the user in the list, send
+    		finder.users.add(username);
+    		if (UserBackend.AddSensor(finder, serverConnection)) {
+	    		//configs.add(newSensor);
+		    	//createNew(controlIndex, newSensor);
+		    	refreshSensorList();
+	    	} else {
+	    		JOptionPane.showMessageDialog(null,"Sensor not found", "error", JOptionPane.ERROR_MESSAGE, null);
+	    	}
     	} else if (address != null) {
+    	
     		ClientConfig newSensor = new ClientConfig();
     		
     		String[] values = {"Audio", "Video", "Light", "Motion"};
@@ -534,6 +546,21 @@ public class AutoAwareControlPanel extends JFrame implements MessageProcessor {/
 	    		if (configs.get(i) != null) {
 		    		if ((configs.get(i).ip).equals(identifier)) {
 		    			return configs.get(i);
+		    		}
+	    		}
+	    	}
+	    	//was not found
+    	}
+    	return null;
+    }
+    public ClientConfig FullConfigFind(String identifier) {
+    	//System.out.println(configs);
+    	if (this.fullConfigsList != null) {
+	    	for (int i = 0; i < fullConfigsList.size(); i++) {
+	    		//System.out.println(configs.get(i).ip);
+	    		if (fullConfigsList.get(i) != null) {
+		    		if ((fullConfigsList.get(i).ip).equals(identifier)) {
+		    			return fullConfigsList.get(i);
 		    		}
 	    		}
 	    	}
@@ -967,12 +994,15 @@ public class AutoAwareControlPanel extends JFrame implements MessageProcessor {/
 				
 				break;
 			case GET_SENSORS:
+				fullConfigsList = ((SensorsMessage)gotMessage).ar;
 				configs = new ArrayList<ClientConfig>();
 				for (ClientConfig cfg : ((SensorsMessage)gotMessage).ar) {
+					System.out.println("Config");
 					for (String user : cfg.users) {
+						System.out.println(user);
 						if (user.equals(username)) {
 							configs.add(cfg);
-							break;
+							//break;
 						}
 					}
 				}

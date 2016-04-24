@@ -64,7 +64,7 @@ public class SeparateServer {
 		for (String ip : sensorList.keySet()) {
 			SensorInfo info = sensorList.get(ip);
 			//lostConnection is set when the socket is killed in the ServerListener
-			if (info.sock.lostConnection) { 
+			if (info.sock.lostConnection) {
 				sensorList.remove(ip);
 			} else {
 				configs.add(info.sensorInfo);
@@ -272,14 +272,19 @@ public class SeparateServer {
 			Connections.send(sock.out, msg);
 			System.out.println("Sending a new config message to a new sensor");
 		} else if (exists && inList) {
+			/*if (!info.sensorInfo.users.contains(username)) {
+				System.out.println("Adding user " + username);
+				info.sensorInfo.users.add(username);
+				msg.config = info.sensorInfo; //update with users
+			} else {
+			}*/
 			info.sensorInfo = msg.config;
-			boolean found = false;
-			for (String user : info.sensorInfo.users) {
-				//see if the user exists in here, if not, add them
-				if (user.equals(username)) found = true;
-			}
-			if (!found) info.sensorInfo.users.add(username);
+
+			//ArrayList<String> tempArr = info.sensorInfo.users;
+			//info.sensorInfo.users = tempArr;
+			for (String s : info.sensorInfo.users) System.out.println("user allowed: " + s);
 			sensorList.put(msg.config.ip, info);
+			System.out.println(sensorList.get(msg.config.ip).sensorInfo.users);
 			System.out.println("Sending a new config message to an existing sensor");
 			Connections.send(info.sock.out, msg);
 		} else {
