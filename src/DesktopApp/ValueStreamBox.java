@@ -87,7 +87,7 @@ public class ValueStreamBox extends JPanel {
 			playingSound = false;
 			audioToggle.addActionListener(new muter());
 			recordToggle = new JButton("Record");
-			recordToggle.setBounds(550,480,40,40);
+			recordToggle.setBounds(520,470,70,40);
 			recordToggle.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent arg0) {
@@ -105,7 +105,7 @@ public class ValueStreamBox extends JPanel {
 					} else {
 						//set text to "Click to stop"
 						recordToFile = true;
-						recordToggle.setText("<html>Click to<br />stop</html>");
+						recordToggle.setText("Stop");
 					}
 				}
 				
