@@ -1,5 +1,6 @@
 package DesktopApp;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
@@ -34,6 +35,7 @@ public class ConfigureMenu extends JFrame {
 	public JSlider currentThreshold;
 	private JCheckBox desktop, magicMirror, text, email;
 	private JTextField phoneNum, emailAddress;
+	private JSpinner intervalSpinner;
 	
 
 	
@@ -59,6 +61,13 @@ public class ConfigureMenu extends JFrame {
 	public String address; //address is used to verify to update the configure menu, in case you get a streaming message for it
 	public int inputNum;
 	private String username;
+	private boolean debug = false;
+	
+	private ConfigureMenu() {
+		//FOR DEBUGGING ONLY
+		debug = true;
+		InitUI();
+	}
 	
 	public ConfigureMenu(int inputNum, AutoAwareControlPanel parent, String address, String username) {
 		this.username = username;
@@ -83,7 +92,7 @@ public class ConfigureMenu extends JFrame {
 		    nameText.setBackground(nameAndSchedule.getBackground());
 	        nameText.setEditable(false);
 	        
-	        ClientConfig input = parent.configs.get(inputNum);
+	        ClientConfig input = debug?new ClientConfig():parent.configs.get(inputNum);
 	        name = new JTextField(input.name);
 		    name.setPreferredSize(new Dimension(100, 25));
 		    c = new Color(input.r, input.g, input.b);
@@ -279,22 +288,30 @@ public class ConfigureMenu extends JFrame {
 		    JPanel notificationLevel = new JPanel(new GridBagLayout());
 	        GridBagConstraints gbcNotification = new GridBagConstraints();
 		    
-		    JPanel notificationMethod = new JPanel(new GridLayout(3,2,5,5));
-		    JLabel notificationLabel = new JLabel("Notification Method");
+		    JPanel notificationMethod = new JPanel(new GridLayout(2,3,5,5));
+		    JLabel notificationLabel = new JLabel("Notification Settings");
 		    
-		    desktop = new JCheckBox("Desktop notification");
+		    desktop = new JCheckBox("Notify Control Panel");
 		    desktop.addActionListener(new CheckboxListener());
 		    desktop.setActionCommand("desktop");
 		    desktop.setSelected(input.desktopNotification);
-		    magicMirror = new JCheckBox("Magic Mirror");
+		    JPanel intervalHolder = new JPanel();
+		    int currentInterval = (debug?5000/1000:parent.configs.get(inputNum).interval/1000); //it comes in miliseconds, we want seconds
+		    intervalSpinner = new JSpinner();
+		    intervalSpinner.setModel(new SpinnerNumberModel(currentInterval, 1, 300, 1));
+		    intervalHolder.add(intervalSpinner);
+		    intervalHolder.add(new JLabel("Interval (Seconds)"));
+		    
+		   /* magicMirror = new JCheckBox("Magic Mirror");
 		    magicMirror.addActionListener(new CheckboxListener());
 		    magicMirror.setActionCommand("magicMirror");
-		    magicMirror.setSelected(input.magicMirrorNotification);
-		    text = new JCheckBox("Text");
+		    magicMirror.setSelected(input.magicMirrorNotification);*/
+		    
+		    text = new JCheckBox("Send Text Messages");
 		    text.addActionListener(new CheckboxListener());
 		    text.setActionCommand("text");
 		    text.setSelected(input.textNotification);
-		    email = new JCheckBox("Email");
+		    email = new JCheckBox("Send Email Messages");
 		    email.addActionListener(new CheckboxListener());
 		    email.setActionCommand("email");
 		    email.setSelected(input.emailNotification);
@@ -312,15 +329,24 @@ public class ConfigureMenu extends JFrame {
 			phoneNum.setEnabled(textBool);
 			emailAddress.setEnabled(emailBool);
 			
-			notificationMethod.add(notificationLabel);
-			notificationMethod.add(new JPanel());
-			notificationMethod.add(new JPanel());
-			notificationMethod.add(desktop);
+			//notificationMethod.add(notificationLabel);
+			//notificationMethod.add(new JPanel());
+			//notificationMethod.add(new JPanel());
 			notificationMethod.add(text);
-			notificationMethod.add(phoneNum);
-			notificationMethod.add(magicMirror);
 			notificationMethod.add(email);
+			notificationMethod.add(desktop);
+
+
+			notificationMethod.add(phoneNum);
 			notificationMethod.add(emailAddress);
+			notificationMethod.add(intervalHolder);
+
+
+			
+			//notificationMethod.add(new JPanel());
+			//notificationMethod.add(magicMirror);
+			
+			
 			
 		   
 		    notificationLevel.add(notificationMethod, gbcNotification);
@@ -359,7 +385,7 @@ public class ConfigureMenu extends JFrame {
                 	//close menu, do not close application
             	   setEnabled(false);
             	   UpdateTypeOnly(firstType);
-           		   parent.StopStream(parent.configs.get(inputNum)); //stop the stream, pointless
+           		   if (!debug) parent.StopStream(parent.configs.get(inputNum)); //stop the stream, pointless
                    dispose();
                 } else {
                 	setVisible(true);
@@ -475,7 +501,7 @@ public class ConfigureMenu extends JFrame {
 			endM.setText("-1");
 		}
 		//ClientConfig toSubmit = parent.configs.get(inputNum);
-		ClientConfig lastCfg = parent.configs.get(inputNum);
+		ClientConfig lastCfg = debug?new ClientConfig():parent.configs.get(inputNum);
 		boolean fOff, fOn;
 		if (this.usesScheduledTimes) {
 			fOff = false;
@@ -499,22 +525,27 @@ public class ConfigureMenu extends JFrame {
 				nameString,
 				(float)c.getRed()/255, (float)c.getGreen()/255, (float)c.getBlue()/255, 
 				desktopBool,
-				magicMirrorBool,
+				false, //magic mirror
 				textBool,
 				emailBool, 
 				phoneNum.getText(), emailAddress.getText(),
-				10000 //TODO get, in ms
+				(int)this.intervalSpinner.getModel().getValue() * 1000
 		);
-		toSubmit.users = parent.configs.get(inputNum).users;
-		this.setEnabled(false);
-		parent.configs.set(inputNum, toSubmit);
-		System.out.println(toSubmit);
-		//stop the stream to the pi
-		parent.StopStream(toSubmit.ip);
-		//stop the stream
-		//UserBackend.SendStreaming(toSubmit.ip, parent);
+		//System.out.println((int)this.intervalSpinner.getModel().getValue());
+		//System.out.println(toSubmit);
 
-		parent.SendConfigToSensor(toSubmit);
+		if (!debug) {
+			toSubmit.users = parent.configs.get(inputNum).users;
+			this.setEnabled(false);
+			parent.configs.set(inputNum, toSubmit);
+			//stop the stream to the pi
+			parent.StopStream(toSubmit.ip);
+			//stop the stream
+			//UserBackend.SendStreaming(toSubmit.ip, parent);
+
+			parent.SendConfigToSensor(toSubmit);
+		}
+		
 		//parent.refreshSensorList();
     	dispose();
     }
@@ -522,15 +553,18 @@ public class ConfigureMenu extends JFrame {
 		//send a config to a sensor to update only the sensortype, since streaming
 		Thread thr = new Thread(new Runnable(){
 			public void run(){
-				ClientConfig cfg = parent.ConfigFind(address);
+				ClientConfig cfg = debug?new ClientConfig():parent.ConfigFind(address);
 				//cfg.ip = parent.configs.get(inputNum).ip;
 				cfg.sensor_type = t;
-				parent.SendConfigToSensor(cfg);
+				if (!debug) parent.SendConfigToSensor(cfg);
 			}
 		});
 		thr.start();
 		
 		
+	}
+	public static void main(String[] args) {
+		ConfigureMenu cf = new ConfigureMenu();
 	}
 	
 }
