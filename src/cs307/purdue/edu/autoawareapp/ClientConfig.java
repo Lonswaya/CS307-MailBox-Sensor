@@ -13,11 +13,12 @@ public class ClientConfig extends BaseConfig implements Serializable {
 	public boolean desktopNotification, magicMirrorNotification, textNotification, emailNotification;
 	public String phoneNumber, emailAddress, ip;
 	public int interval;
+	public int sensorInterval;
 	public ArrayList<String> users; //for all the users that are able to view this sensor
 	
 	
-	public ClientConfig(String ip, String start, String stop, boolean force_on, boolean force_off, SensorType type, float threshold, String name, float r, float g, float b, boolean desktopNotification, boolean magicMirrorNotification, boolean textNotification, boolean emailNotification, String phoneNumber, String emailAddress, int interval) {
-		super(start, stop, force_on, force_off , type, threshold);
+	public ClientConfig(String ip, String start, String stop, boolean force_on, boolean force_off, SensorType type, float threshold, String name, float r, float g, float b, boolean desktopNotification, boolean magicMirrorNotification, boolean textNotification, boolean emailNotification, String phoneNumber, String emailAddress, int interval, int sensorInterval) {
+		super(start, stop, force_on, force_off , type, threshold, sensorInterval);
 		this.ip = ip;
 		//this.color = color;
 		this.r = r;

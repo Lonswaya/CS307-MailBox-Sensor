@@ -17,7 +17,7 @@ public class SensorMain {
 		// main loop, this loop only connects to the server and notifies if the threshold is above.
 		while (true) {
 			//System.out.println("from sense thread");
-			pi.sleepAmt = 3000;
+			pi.sleepAmt = pi.sensor.config.sensorInterval * 1000;
 			if (pi.sensor == null) { // if pi doesnt have a sensor
 				System.out.println("no sensor found");
 				pi.sleepAmt = 10000;

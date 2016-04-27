@@ -18,6 +18,7 @@ public class BaseConfig implements Serializable {
 	public int stop_minutes;
 	public boolean force_on;
 	public boolean force_off;
+	public int sensorInterval;
 	
 	public SensorType sensor_type;
 	public float sensing_threshold; //percentage?
@@ -26,7 +27,7 @@ public class BaseConfig implements Serializable {
 	public int serverPort;
 	
 	//creates a new config based on the parameters. Start and stop are the times to start and stop sensing in 24H format "HH:MM"
-	public BaseConfig(String start, String stop, boolean force_on, boolean force_off, SensorType type, float threshold) {
+	public BaseConfig(String start, String stop, boolean force_on, boolean force_off, SensorType type, float threshold, int sensorInterval) {
 		
 		String[] starting = start.split(":");
 		if(starting.length < 2) {
@@ -47,6 +48,7 @@ public class BaseConfig implements Serializable {
 		
 		this.sensor_type = type;
 		this.sensing_threshold = threshold;
+		this.sensorInterval = sensorInterval;
 		
 		/*String address;
 		try {
@@ -73,6 +75,7 @@ public class BaseConfig implements Serializable {
 		this.force_off = false;
 		this.sensor_type = SensorType.LIGHT;
 		this.sensing_threshold = .5f;
+		this.sensorInterval = 3000;
 		/*String address;
 		try {
 			address = InetAddress.getLocalHost().toString();
