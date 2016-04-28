@@ -5,6 +5,7 @@ import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.LoaderManager.LoaderCallbacks;
+import android.content.Context;
 import android.content.CursorLoader;
 import android.content.Intent;
 import android.content.Loader;
@@ -34,6 +35,7 @@ import java.util.List;
  */
 public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
 
+    Context context;
     /**
      * A dummy authentication store containing known user names and passwords.
      * TODO: remove after connecting to a real authentication system.
@@ -56,6 +58,8 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
+
+        context = this;
 
         // Set up the login form.
         mEmailView = (AutoCompleteTextView) findViewById(R.id.username);
@@ -90,13 +94,35 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
             @Override
             public void onClick(View v) {
                 //TODO: start Activity
-                Intent mIntent = new Intent();
+                Intent mIntent = new Intent(context, RegisterUI.class);
+                startActivityForResult(mIntent, 1);
 
             }
         });
 
         mLoginFormView = findViewById(R.id.login_form);
         mProgressView = findViewById(R.id.login_progress);
+    }
+
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        System.out.println("Debug Message: In OnActivityResult********************");
+        super.onActivityResult(requestCode, resultCode, data);
+        System.out.println("In onActivityResult");
+        if(resultCode == RESULT_OK){
+            //System.out.println("Getting newSensor Config from " + data + "looking for new sensor = " + data.hasExtra("New Sensor"));
+            //System.out.println("Sensor = " + data.getSerializableExtra("New Sensor"));
+            //ClientConfig newSensorConfig = (ClientConfig) data.getSerializableExtra("New Sensor");
+            String username = data.getStringExtra("Username");
+            String passwd = data.getStringExtra("Password");
+            System.out.println(username + "   " + passwd);
+            Intent mIntent = new Intent(this, SetServerIPUI.class);
+            mIntent.putExtra("Username", username);
+            mIntent.putExtra("Password", passwd);
+            startActivity(mIntent);
+            //TODO: Send new SensorCOnfig to the background Thread or AsyncTask and add it to the sensor
+//            AsyncTaskRunner asyncTaskRunner = new AsyncTaskRunner();
+//            asyncTaskRunner.execute(newSensorConfig);
+        }
     }
 
     private void populateAutoComplete() {

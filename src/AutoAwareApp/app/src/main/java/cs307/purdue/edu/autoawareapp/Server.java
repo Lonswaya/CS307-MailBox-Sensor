@@ -38,6 +38,7 @@ public class Server implements Runnable, MessageProcessor, Serializable {
     boolean looperPrepared = false;
     public int sleep = 5000;
     public ServerCallback UI;
+    public UIInfo user;
 
     public Server(String ip, Context UI) {
         this.server_ip = ip;
@@ -46,6 +47,10 @@ public class Server implements Runnable, MessageProcessor, Serializable {
         my_ip = Server.getMyIP();
         this.UI = (ServerCallback) UI;
 
+    }
+
+    public void setUser(UIInfo user) {
+        this.user = user;
     }
 
     /*

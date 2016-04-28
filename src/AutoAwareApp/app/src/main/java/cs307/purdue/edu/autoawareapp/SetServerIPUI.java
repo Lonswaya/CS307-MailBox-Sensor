@@ -14,10 +14,15 @@ public class SetServerIPUI extends AppCompatActivity implements View.OnClickList
     EditText ip_text;
     Button set_ip_button;
 
+    String username, password;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_setip);
+
+        username = getIntent().getStringExtra("Username");
+        password = getIntent().getStringExtra("Password");
 
         ip_text = (EditText) findViewById(R.id.server_ip_text);
         set_ip_button = (Button) findViewById(R.id.set_ip_button);
@@ -36,6 +41,8 @@ public class SetServerIPUI extends AppCompatActivity implements View.OnClickList
                 String ip = ip_text.getText().toString();
                 Intent mIntent = new Intent(this, SensorClientUI.class);
                 mIntent.putExtra("Server IP", ip);
+                mIntent.putExtra("Username", username);
+                mIntent.putExtra("Password", password);
                 startActivity(mIntent);
                 break;
             default:

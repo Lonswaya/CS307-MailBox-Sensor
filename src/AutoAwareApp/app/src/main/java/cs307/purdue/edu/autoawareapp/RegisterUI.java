@@ -1,5 +1,6 @@
 package cs307.purdue.edu.autoawareapp;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
@@ -10,14 +11,12 @@ import android.widget.EditText;
 /**
  * Created by Dhairya on 4/24/2016.
  */
-public class RegisterUI extends AppCompatActivity {
+public class RegisterUI extends AppCompatActivity implements View.OnClickListener {
     EditText nameTextView;
     EditText emailidTextView;
     EditText usernameTextView;
     EditText passwordTextView, repasswordTextView;
     EditText phoneNoTextView;
-
-    CheckBox emailBox, textBox, desktopBox, appBox;
 
     Button signUpButton;
 
@@ -32,17 +31,41 @@ public class RegisterUI extends AppCompatActivity {
         repasswordTextView = (EditText) findViewById(R.id.re_password_text);
         phoneNoTextView = (EditText) findViewById(R.id.phone_text);
 
-        desktopBox = (CheckBox) findViewById(R.id.desktop_box);
-        emailBox = (CheckBox) findViewById(R.id.email_box);
-        textBox = (CheckBox) findViewById(R.id.text_box);
-        appBox = (CheckBox) findViewById(R.id.app_box);
-
         signUpButton = (Button) findViewById(R.id.sign_up_button);
-        signUpButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                //TODO: Implement this listener
-            }
-        });
+        signUpButton.setOnClickListener(this);
+
+    }
+
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.sign_up_button:
+                getInfofromForm();
+                System.out.println("Debug Message: Did not finish");
+                break;
+            default:
+                break;
+        }
+    }
+
+    //TODO: Change return type to USER
+    public void getInfofromForm() {
+        String name, emailid, username, password, repassword, phoneNo;
+
+        name = nameTextView.getText().toString();
+        emailid = emailidTextView.getText().toString();
+        username = usernameTextView.getText().toString();
+        password = passwordTextView.getText().toString();
+        repassword = repasswordTextView.getText().toString();
+        phoneNo = phoneNoTextView.getText().toString();
+
+        //TODO: Create New User
+        if (password.equals(repassword)) {
+            Intent mIntent = new Intent(this, SensorClientUI.class);
+            mIntent.putExtra("Username", username);
+            mIntent.putExtra("Password", password);
+            setResult(RESULT_OK, mIntent);
+            finish();
+        }
     }
 }
+

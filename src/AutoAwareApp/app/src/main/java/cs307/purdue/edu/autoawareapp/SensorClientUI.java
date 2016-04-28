@@ -34,8 +34,10 @@ public class SensorClientUI extends AppCompatActivity implements View.OnClickLis
     static Server server;
     String ip;
     Button addSensorButton, exitButton;
+    String username, password;
 
     Sensor newSensor;
+    UIInfo user;
 
     Context thisContext;
 
@@ -78,6 +80,9 @@ public class SensorClientUI extends AppCompatActivity implements View.OnClickLis
         System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>TEST MESSAGE<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
 
         ip  = (String) getIntent().getStringExtra("Server IP");
+        username = getIntent().getStringExtra("Username");
+        password = getIntent().getStringExtra("Password");
+
         System.out.println("*********************" + ip);
 
         recyclerView = (RecyclerView) findViewById(R.id.sensorRCView);
@@ -102,7 +107,6 @@ public class SensorClientUI extends AppCompatActivity implements View.OnClickLis
 
         long currTime = System.currentTimeMillis();
 
-        //TODO: Comment these lines out
         //int ret = createSensors();
         //sensors.add(new Sensor("Sensor 1", 0, "LIGHT", "100.0.0.1"));
         //sensorInfoList.add(new ClientConfig("100.0.0.1", "0:00", "0:00", false, false, SensorType.LIGHT, 90, "Sensor 1", 0, 0, 0, false, false, false, false, "123456789", "abcd@email.com", 10));
@@ -132,6 +136,8 @@ public class SensorClientUI extends AppCompatActivity implements View.OnClickLis
             server = new Server(ip, this);
             //server.serverInit();
             //server.setUpConnector();
+            user = new UIInfo(server.centralServer, username, password);
+            server.setUser(user);
             System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
             Thread t = new Thread(server);
             System.out.println("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
@@ -257,7 +263,7 @@ public class SensorClientUI extends AppCompatActivity implements View.OnClickLis
         super.onActivityResult(requestCode, resultCode, data);
         System.out.println("In onActivityResult");
         if(resultCode == RESULT_OK){
-                System.out.println("Getting newSensor Config from " + data + "looking for new sensor = " + data.hasExtra("New Sensor"));
+                System.out.println("Getting new user from " + data + "looking for new sensor = " + data.hasExtra("New Sensor"));
                 //System.out.println("Sensor = " + data.getSerializableExtra("New Sensor"));
                 ClientConfig newSensorConfig = (ClientConfig) data.getSerializableExtra("New Sensor");
                 System.out.println(newSensorConfig);
@@ -300,20 +306,4 @@ public class SensorClientUI extends AppCompatActivity implements View.OnClickLis
             }
         }
     }
-//
-//    private void sendMessage() {
-//
-//        String[] incoming = {"Hey, How's it going?",
-//                "Super! Let's do lunch tomorrow",
-//                "How about Mexican?",
-//                "Great, I found this new place around the corner",
-//                "Ok, see you at 12 then!"};
-//
-//        if (in_index < incoming.length) {
-//            Message message = new Message("John", incoming[in_index], false,  new Date());
-//            messages.add(message);
-//            in_index++;
-//            messageList.scrollToPosition(messages.size()-1);
-//            mAdapter.notifyDataSetChanged();
-//        }
 }
