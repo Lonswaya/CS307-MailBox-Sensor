@@ -10,7 +10,7 @@ import cs307.purdue.edu.autoawareapp.ClientConfig;
 
 public class IO {
 
-	static void writeObjectToFile(String path, Object obj) {
+	public static void writeObjectToFile(String path, Object obj) {
 		try {
 			FileOutputStream fout = new FileOutputStream(path);
 			ObjectOutputStream oos = new ObjectOutputStream(fout);
@@ -21,7 +21,7 @@ public class IO {
 		}
 	}
 	
-	static <T> T readObjectFromFile(String path) {
+	public static <T> T readObjectFromFile(String path) {
 		T obj = null;
 		try {
 			FileInputStream fin = new FileInputStream(path);

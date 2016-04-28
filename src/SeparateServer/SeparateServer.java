@@ -1,8 +1,11 @@
 package SeparateServer;
 import java.awt.Color;
+import java.io.File;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Hashtable;
@@ -14,6 +17,7 @@ import javax.net.SocketFactory;
 import com.twilio.sdk.TwilioRestException;
 
 import Utilities.Connections;
+import Utilities.IO;
 import Utilities.SensorInfo;
 import Utilities.ServerListener;
 import Utilities.SocketWrapper;
@@ -28,6 +32,10 @@ public class SeparateServer {
 	static Hashtable<String, SensorInfo> sensorList = new Hashtable<String, SensorInfo>();
 	//SensorInfo contains a SocketWrapper for communicating with that Sensor.
 	
+	static String path = System.getProperty("user.home");
+	static String path1 = (path + File.separator + "sensors.bin");
+	
+	
 	static ServerSocket serverSock = null;
 	
 	public static void main(String[] args) {
@@ -41,12 +49,31 @@ public class SeparateServer {
 		sensorList.put("1234", randSensor);*/
 		
 		
+		ArrayList<ClientConfig> sensorConfigs = IO.<ArrayList<ClientConfig>>readObjectFromFile(path1);
+		if (sensorConfigs != null) {
+			
+			for (ClientConfig config : sensorConfigs) {
+				Socket sock = Connections.getSocket(config.ip, StaticPorts.piPort);
+				if (sock == null)
+					continue;
+				SocketWrapper wrap = new SocketWrapper(sock);
+				
+				SensorInfo info = new SensorInfo(config, wrap);
+				sensorList.put(config.ip, info);
+			}
+			//check if sensors.bin exists, delete it
+			try {
+				new File(path1).delete();
+			} catch (Exception e) { }
+		}
+		
 		serverSock = Connections.getServerSocket(StaticPorts.serverPort);
 		new Thread(new Runnable() {
 			public void run() {
 				System.out.println("Server started");
 				while (true) {
 					try {
+						
 						GetHandler(new SocketWrapper(serverSock.accept())).start();
 						System.out.println("New connection");
 					} catch (Exception e) {
@@ -56,6 +83,7 @@ public class SeparateServer {
 			}
 			
 		}).start();
+		
 	}
 	
 	//COMMIT ALL OF THESE
@@ -75,6 +103,14 @@ public class SeparateServer {
 		}
 	}
 	
+	public static void saveConfigs() {
+		ArrayList<ClientConfig> configs = new ArrayList<ClientConfig>();
+		for (String key : sensorList.keySet()) {
+			configs.add(sensorList.get(key).sensorInfo);
+		}
+		IO.writeObjectToFile(path1, configs);
+	}
+	
 	public static void sendAllConfigs(String ip) {
 		SocketWrapper ui = uiList.get(ip).sock;
 		if (ui != null) {
@@ -92,6 +128,7 @@ public class SeparateServer {
 			SensorsMessage sm = new SensorsMessage("Here is your configs!", configs);
 			Connections.send(ui.out, sm);
 			System.out.println("Sent message " + sm.message + " to " + ui.sock);
+			
 		}
 	}
 	
@@ -102,6 +139,8 @@ public class SeparateServer {
 	}
 	
 	public static void sendAllConfigs(SocketWrapper wrapper) {
+		
+		
 		ArrayList<ClientConfig> configs = new ArrayList<ClientConfig>();
 		for (String key : sensorList.keySet()) {
 			SensorInfo info = sensorList.get(key);
@@ -229,6 +268,7 @@ public class SeparateServer {
 			}
 			SeparateServer.sendAllConfigsToAllUis();
 			System.out.println("Updated all users with the lack of sensor");
+			saveConfigs();
 			return;
 		}
 		
@@ -300,6 +340,7 @@ public class SeparateServer {
 		}
 		
 		SeparateServer.sendAllConfigsToAllUis();
+		saveConfigs();
 	}
 	
 	//wrote this part COMMIT
