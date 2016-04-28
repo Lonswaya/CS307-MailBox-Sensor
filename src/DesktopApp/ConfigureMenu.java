@@ -35,7 +35,7 @@ public class ConfigureMenu extends JFrame {
 	public JSlider currentThreshold;
 	private JCheckBox desktop, magicMirror, text, email;
 	private JTextField phoneNum, emailAddress;
-	private JSpinner intervalSpinner;
+	private JSpinner intervalSpinner, sensorSpinner;
 	
 
 	
@@ -102,11 +102,29 @@ public class ConfigureMenu extends JFrame {
 	        colorChooser.addActionListener(new ButtonListener());
 	       
 	        usesScheduledTimes = !(input.force_off || input.force_on); 
+	        
+	        JPanel sensorStuff = new JPanel(new GridLayout(2,1));
 
 	        scheduledTimes = new JCheckBox();
 	        scheduledTimes.setText("Scheduled Times");
 	        scheduledTimes.setSelected(usesScheduledTimes);
 	        scheduledTimes.addActionListener(new ScheduledSwitch());
+	        
+	        sensorStuff.add(scheduledTimes);
+
+	        
+	        JPanel spinnerHolder = new JPanel();
+	        spinnerHolder.add(new JLabel("Sense Interval (S)"));
+	        
+	        int sensorInterval = (debug?5000/1000:parent.configs.get(inputNum).sensorInterval/1000); //it comes in miliseconds, we want seconds
+		    sensorSpinner = new JSpinner();
+		    sensorSpinner.setModel(new SpinnerNumberModel(sensorInterval, 1, 300, 1));
+		    spinnerHolder.add(sensorSpinner);
+	        
+	        sensorStuff.add(spinnerHolder);
+	        
+	        
+	        
 	        
 	        JPanel timeTextH = new JPanel(new GridLayout(2, 1, 5, 5));
 	        JPanel timeFieldsH = new JPanel(new GridLayout(2,3,5,5));
@@ -167,7 +185,7 @@ public class ConfigureMenu extends JFrame {
 	        nameAndSchedule.add(new JPanel(), gbc);
 	        nameAndSchedule.add(colorChooser, gbc);
 	        nameAndSchedule.add(new JPanel(), gbc);
-	        nameAndSchedule.add(scheduledTimes, gbc);
+	        nameAndSchedule.add(sensorStuff, gbc);
 	        nameAndSchedule.add(timeTextH, gbc);
 	        nameAndSchedule.add(timeFieldsH, gbc);
 	        //nameAndSchedule.add(timeTextM);
@@ -300,7 +318,7 @@ public class ConfigureMenu extends JFrame {
 		    intervalSpinner = new JSpinner();
 		    intervalSpinner.setModel(new SpinnerNumberModel(currentInterval, 1, 300, 1));
 		    intervalHolder.add(intervalSpinner);
-		    intervalHolder.add(new JLabel("Interval (Seconds)"));
+		    intervalHolder.add(new JLabel("Notification Interval (S)"));
 		    
 		   /* magicMirror = new JCheckBox("Magic Mirror");
 		    magicMirror.addActionListener(new CheckboxListener());
@@ -529,8 +547,8 @@ public class ConfigureMenu extends JFrame {
 				textBool,
 				emailBool, 
 				phoneNum.getText(), emailAddress.getText(),
-				(int)this.intervalSpinner.getModel().getValue() * 1000,
-				1000
+				(int)intervalSpinner.getModel().getValue() * 1000, //notification interval
+				(int)sensorSpinner.getModel().getValue() * 1000 //sense interval
 		);
 		//System.out.println((int)this.intervalSpinner.getModel().getValue());
 		//System.out.println(toSubmit);
