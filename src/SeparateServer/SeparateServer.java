@@ -215,10 +215,18 @@ public class SeparateServer {
 		if (msg.delete) {
 			System.out.println("Deleting sensor " + msg.config.name);
 			SensorInfo info = sensorList.get(msg.config.ip);
-			if (info != null)
-				sensorList.remove(msg.config.ip);	
-			Connections.send(info.sock.out, msg); //tell the sensor to shut the fuck up
-			Connections.closeSocket(info.sock.sock);
+			if (info != null) {
+				info.sensorInfo = msg.config;
+				//info.sensorInfo.users.remove(username);			
+				if (info.sensorInfo.users.size() == 0) {
+					System.out.println("All users are not using it, deleting from list");
+					sensorList.remove(msg.config.ip);	
+					msg.config.force_off = true;
+		    		msg.config.force_on = false;
+					Connections.send(info.sock.out, msg); //tell the sensor to shut the fuck up
+					Connections.closeSocket(info.sock.sock);
+				}
+			}
 			SeparateServer.sendAllConfigsToAllUis();
 			System.out.println("Updated all users with the lack of sensor");
 			return;

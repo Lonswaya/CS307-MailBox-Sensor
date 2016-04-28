@@ -510,12 +510,12 @@ public class AutoAwareControlPanel extends JFrame implements MessageProcessor {/
     	if (confirm == 0) {
     		controlIndex--;
     		String name = cfg.name; 
-    		cfg.force_off = true;
-    		cfg.force_on = false;
+    		
     		//remove my name from the list
     		cfg.users.remove(username);
     		//delete if there are no more users using the sensor
-    		UserBackend.SendConfig(cfg, (cfg.users.size() == 0), serverConnection);
+    		System.out.println("User count on that sensor: " + cfg.users.size());
+    		UserBackend.SendConfig(cfg, true, serverConnection);
     		
     		if (removeFromList) configs.remove(index);
     		System.out.println("Deleted sensor " + name);

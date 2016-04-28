@@ -13,11 +13,13 @@ public class SensorMain {
 		
 		pi = new RaspberryPi();
 		
-		
+		int sensorInterval;
 		// main loop, this loop only connects to the server and notifies if the threshold is above.
 		while (true) {
 			//System.out.println("from sense thread");
-			pi.sleepAmt = pi.sensor.config.sensorInterval * 1000;
+			if (pi.sensor == null || pi.sensor.config == null)  pi.sleepAmt = 10000;
+			else
+				pi.sleepAmt = pi.sensor.config.sensorInterval * 1000;
 			if (pi.sensor == null) { // if pi doesnt have a sensor
 				System.out.println("no sensor found");
 				pi.sleepAmt = 10000;
