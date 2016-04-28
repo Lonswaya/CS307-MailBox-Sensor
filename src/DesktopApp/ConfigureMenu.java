@@ -296,7 +296,7 @@ public class ConfigureMenu extends JFrame {
 		    desktop.setActionCommand("desktop");
 		    desktop.setSelected(input.desktopNotification);
 		    JPanel intervalHolder = new JPanel();
-		    int currentInterval = (debug?5000/1000:parent.configs.get(inputNum).interval/1000); //it comes in miliseconds, we want seconds
+		    int currentInterval = (debug?5000/1000:parent.configs.get(inputNum).notificationInterval/1000); //it comes in miliseconds, we want seconds
 		    intervalSpinner = new JSpinner();
 		    intervalSpinner.setModel(new SpinnerNumberModel(currentInterval, 1, 300, 1));
 		    intervalHolder.add(intervalSpinner);
@@ -529,7 +529,8 @@ public class ConfigureMenu extends JFrame {
 				textBool,
 				emailBool, 
 				phoneNum.getText(), emailAddress.getText(),
-				(int)this.intervalSpinner.getModel().getValue() * 1000
+				(int)this.intervalSpinner.getModel().getValue() * 1000,
+				1000
 		);
 		//System.out.println((int)this.intervalSpinner.getModel().getValue());
 		//System.out.println(toSubmit);

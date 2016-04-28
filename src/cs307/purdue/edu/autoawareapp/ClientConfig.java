@@ -12,12 +12,11 @@ public class ClientConfig extends BaseConfig implements Serializable {
 	public float r,g,b;
 	public boolean desktopNotification, magicMirrorNotification, textNotification, emailNotification;
 	public String phoneNumber, emailAddress, ip;
-	public int interval;
-	public int sensorInterval;
+	public int notificationInterval;
 	public ArrayList<String> users; //for all the users that are able to view this sensor
 	
 	
-	public ClientConfig(String ip, String start, String stop, boolean force_on, boolean force_off, SensorType type, float threshold, String name, float r, float g, float b, boolean desktopNotification, boolean magicMirrorNotification, boolean textNotification, boolean emailNotification, String phoneNumber, String emailAddress, int interval, int sensorInterval) {
+	public ClientConfig(String ip, String start, String stop, boolean force_on, boolean force_off, SensorType type, float threshold, String name, float r, float g, float b, boolean desktopNotification, boolean magicMirrorNotification, boolean textNotification, boolean emailNotification, String phoneNumber, String emailAddress, int notificationInterval, int sensorInterval) {
 		super(start, stop, force_on, force_off , type, threshold, sensorInterval);
 		this.ip = ip;
 		//this.color = color;
@@ -31,7 +30,8 @@ public class ClientConfig extends BaseConfig implements Serializable {
 		this.emailNotification = emailNotification;
 		this.phoneNumber = phoneNumber;
 		this.emailAddress = emailAddress;
-		this.interval = interval;
+		this.notificationInterval = notificationInterval;
+		this.sensorInterval = sensorInterval;
 	}
 	public ClientConfig() {
 		super();
@@ -40,7 +40,8 @@ public class ClientConfig extends BaseConfig implements Serializable {
 		this.phoneNumber = "";
 		this.emailAddress = "";
 		this.desktopNotification = magicMirrorNotification = textNotification = emailNotification = false;
-		this.interval = 1000;
+		this.sensorInterval = 1000;
+		this.notificationInterval = 1000;
 	}
 	@Override 
 	public String toString() {
@@ -59,7 +60,8 @@ public class ClientConfig extends BaseConfig implements Serializable {
 				+   "MAGIC MIRROR NOTIFICATION=" + magicMirrorNotification + "\n"
 				+   "TEXT NOTIFICATION=" + textNotification + ", NUMBER=" + phoneNumber + "\n"
 				+   "EMAIL NOTIFICATION=" + emailNotification + ", EMAIL ADDRESS=" + emailAddress + "\n"
-				+	"INTERVAL=" + interval + " minutes\n";
+				+	"NOTIFICATION NTERVAL=" + notificationInterval + " ms\n"
+				+   "SENSOR INTERVAL=" + sensorInterval + " ms\n";
 	}
 	public void SetIP(String s) {
 		ip = s;

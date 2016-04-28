@@ -195,7 +195,7 @@ public class SeparateServer {
 				}
 			}
 			try {
-				TimeUnit.MILLISECONDS.sleep(cc.interval);
+				TimeUnit.MILLISECONDS.sleep(cc.notificationInterval);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}

@@ -19,6 +19,7 @@ public class BaseConfig implements Serializable {
 	public boolean force_on;
 	public boolean force_off;
 	public int sensorInterval;
+	public int notificationInterval;
 	
 	public SensorType sensor_type;
 	public float sensing_threshold; //percentage?
