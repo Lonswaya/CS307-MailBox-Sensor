@@ -36,7 +36,7 @@ public class Server implements Runnable, MessageProcessor, Serializable {
     public boolean suspended = false;
     public boolean updatedList = false;
     boolean looperPrepared = false;
-    public int sleep = 5000;
+    public int sleepTime = 5000;
     public ServerCallback UI;
     public UIInfo user;
 
@@ -49,7 +49,7 @@ public class Server implements Runnable, MessageProcessor, Serializable {
 
     }
 
-    public void setUser(UIInfo user) {
+    public void setUser(UIInfo user){
         this.user = user;
     }
 
@@ -89,6 +89,10 @@ public class Server implements Runnable, MessageProcessor, Serializable {
         return -1;
     }
 
+    /*Checks if sever needs to update the sensor list
+    Param: new list, old list
+    Return: true if yes false if no
+     */
     public boolean needUpdateSensors(ArrayList<ClientConfig> list, ArrayList<ClientConfig> oldSensorList) {
        if(list == null) return true;
         if(list.size() != oldSensorList.size()) return true;
@@ -111,7 +115,11 @@ public class Server implements Runnable, MessageProcessor, Serializable {
         return false;
     }
 
-
+    /*
+    Checks if s contains C
+    Param: S list and config c
+    Return index if contains
+     */
     public int containSensor(ArrayList<ClientConfig> s, ClientConfig c){
         int idx = -1;
         for(int i = 0; i < s.size(); i++){
@@ -126,23 +134,23 @@ public class Server implements Runnable, MessageProcessor, Serializable {
      */
     public boolean compareClientConfig(ClientConfig s1, ClientConfig s2) {
         if(s1 == null || s2 == null) return false;
-        if(s1.start_hours != s2.start_hours) return false;
-        if(s1.start_minutes != s2.start_minutes) return false;
-        if(s1.stop_hours != s2.stop_hours) return false;
-        if(s1.stop_minutes != s2.stop_minutes) return false;
-        if(s1.force_off != s2.force_off) return false;
-        if(s1.force_on != s2.force_on) return false;
-        if(s1.sensor_type != s2.sensor_type) return false;
-        if(s1.sensing_threshold != s2.sensing_threshold) return false;
-        if(s1.name.compareTo(s2.name) == 0) return false;
-        if(s1.desktopNotification != s2.desktopNotification) return false;
-        if(s1.emailNotification != s2.emailNotification) return false;
-        if(s1.magicMirrorNotification != s2.magicMirrorNotification) return false;
-        if(s1.textNotification != s2.textNotification) return false;
-        if(s1.phoneNumber.compareTo(s2.phoneNumber) == 0) return false;
-        if(s1.emailAddress.compareTo(s2.emailAddress) == 0) return false;
-        if(s1.interval != s2.interval) return false;
-        if(s1.ip.compareTo(s2.ip) == 0) return false;
+        if(s1.start_hours != s2.start_hours ||
+                s1.start_minutes != s2.start_minutes ||
+                s1.stop_hours != s2.stop_hours ||
+                s1.stop_minutes != s2.stop_minutes ||
+                s1.force_off != s2.force_off ||
+                s1.force_on != s2.force_on ||
+                s1.sensor_type != s2.sensor_type ||
+                s1.sensing_threshold != s2.sensing_threshold ||
+                s1.name.compareTo(s2.name) == 0 ||
+                s1.desktopNotification != s2.desktopNotification ||
+                s1.emailNotification != s2.emailNotification ||
+                s1.magicMirrorNotification != s2.magicMirrorNotification ||
+                s1.textNotification != s2.textNotification ||
+                s1.phoneNumber.compareTo(s2.phoneNumber) == 0 ||
+                s1.emailAddress.compareTo(s2.emailAddress) == 0 ||
+                s1.interval != s2.interval ||
+                s1.ip.compareTo(s2.ip) == 0) return false;
         return true;
     }
 
@@ -221,9 +229,11 @@ public class Server implements Runnable, MessageProcessor, Serializable {
         System.out.println("Debug Message: Going into running");
         while(running) {
             if(!suspended) {
-                ArrayList<ClientConfig> temp = new ArrayList<ClientConfig>(); //setting up temp list to compare
+                ArrayList<ClientConfig> temp = new ArrayList<ClientConfig>();
                 if(this.sensorList != null) temp = (ArrayList<ClientConfig>) this.sensorList.clone();
-                // use this just to make sure we don't have a new sensorlist while processing
+                // setting up temp list to compare
+                // use this just to make sure we don't get a new sensorlist while processing
+
                 getSensorsFromServer();
                 if (oldSensorList == null) oldSensorList = new ArrayList<ClientConfig>();
                 boolean updateUI = needUpdateSensors(temp, oldSensorList);
@@ -236,14 +246,13 @@ public class Server implements Runnable, MessageProcessor, Serializable {
                             Looper.prepare();
                             looperPrepared = true;
                         }
-                        ArrayList<Sensor> sensors;
-                        sensors = generateUISensorsList(temp);
+                        ArrayList<Sensor> sensors = generateUISensorsList(temp);
                         UI.handleMessage(sensors, temp);
                     }
                 }
                 oldSensorList = (ArrayList<ClientConfig>) temp.clone();
                 try {
-                    Thread.sleep(sleep);
+                    Thread.sleep(sleepTime);
                 }catch(Exception e){
                     e.printStackTrace();
                 }
@@ -299,7 +308,10 @@ public class Server implements Runnable, MessageProcessor, Serializable {
     */
     public boolean updateSensor(ClientConfig config) {
         int pos = getSensorPosition(config);
-        if(pos < 0) return false;
+        if(pos == -1){
+            System.out.println("    BACKEND SREVER DEBUG: Sensor doesn't exist");
+            return false;
+        }
         UserBackend.SendConfig(config, false, centralServer);
         sensorList.set(pos, config);
         return true;
@@ -312,7 +324,10 @@ public class Server implements Runnable, MessageProcessor, Serializable {
      */
     public boolean deleteSensor(ClientConfig config){
         int pos = getSensorPosition(config);
-        if(pos < 0) return false;
+        if(pos == -1){
+            System.out.println("    BACKEND SREVER DEBUG: Sensor doesn't exist");
+            return false;
+        }
         UserBackend.SendConfig(config, true, centralServer);
         sensorList.remove(pos);
         return true;
@@ -325,8 +340,15 @@ public class Server implements Runnable, MessageProcessor, Serializable {
      */
     public boolean addSensor(ClientConfig config) {
         System.out.println("In Add sensor");
-        if(UserBackend.AddSensor(config, this.centralServer)) return true;
-        else return false;
+        if(containSensor(this.sensorList, config) != -1){
+            System.out.println("    BACKEND SREVER DEBUG: Sensor Already exist");
+            return false;
+        }
+        if(!UserBackend.AddSensor(config, this.centralServer)){
+            System.out.println("    BACKEND SREVER DEBUG: Conenction issue!");
+            return false;
+        }
+        else return true;
     }
 
     /*
