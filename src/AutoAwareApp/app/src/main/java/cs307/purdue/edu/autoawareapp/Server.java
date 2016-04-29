@@ -242,14 +242,19 @@ public class Server implements Runnable, MessageProcessor, Serializable {
                             ArrayList<ClientConfig> currentSensors = (ArrayList<ClientConfig>) this.sensorList.clone();
                             Calendar c = Calendar.getInstance();
                             String time = c.get(Calendar.HOUR) +  ":" + c.get(Calendar.SECOND);
-                            SensorType tempType = null;
+                            String name = null;
+                            ClientConfig s = null;
                             for(int i = 0; i < currentSensors.size(); i++) {
                                 if (currentSensors.get(i).ip.compareTo(msg.from) == 0) {
-                                    tempType = currentSensors.get(i).sensor_type;
+                                    name = currentSensors.get(i).name;
+                                    s = currentSensors.get(i);
                                     break;
                                 }
                             }
-                            if(tempType != null) UI.notifyUser(tempType, time);
+                            if(name != null && s != null){
+                                String str = "Alert: " + name + "(" +s.sensor_type +  ")" + "above threshold! at " + time;
+                                UI.notifyUser(name, time);
+                            }
                         }
                         msgCooldown = 5000;
                     }
@@ -352,6 +357,7 @@ public class Server implements Runnable, MessageProcessor, Serializable {
         int pos = getSensorPosition(config);
         if(pos == -1){
             System.out.println("    BACKEND SREVER DEBUG: Sensor doesn't exist");
+            UI.notifyUser("Sensor doesn't exist!", "");
             return false;
         }
         UserBackend.SendConfig(config, false, centralServer);
@@ -368,6 +374,7 @@ public class Server implements Runnable, MessageProcessor, Serializable {
         int pos = getSensorPosition(config);
         if(pos == -1){
             System.out.println("    BACKEND SREVER DEBUG: Sensor doesn't exist");
+            UI.notifyUser("Sensor doesn't exist!", "");
             return false;
         }
         UserBackend.SendConfig(config, true, centralServer);
@@ -384,6 +391,7 @@ public class Server implements Runnable, MessageProcessor, Serializable {
         System.out.println("In Add sensor");
         if(containSensor(this.sensorList, config) != -1){
             System.out.println("    BACKEND SREVER DEBUG: Sensor Already exist");
+            UI.notifyUser("Sensor already exist!", "");
             return false;
         }
         if(!UserBackend.AddSensor(config, this.centralServer)){
@@ -443,6 +451,6 @@ public class Server implements Runnable, MessageProcessor, Serializable {
 
     public interface ServerCallback{
         void handleMessage(ArrayList<Sensor> newSensorList, ArrayList<ClientConfig> newSensorInfoList);
-        void notifyUser(SensorType type, String time);
+        void notifyUser(String message, String time);
     }
 }
