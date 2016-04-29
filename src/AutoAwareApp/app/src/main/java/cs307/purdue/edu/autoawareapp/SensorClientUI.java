@@ -167,6 +167,9 @@ public class SensorClientUI extends AppCompatActivity implements View.OnClickLis
         }
     }
 
+    public void notifyUser(SensorType type, String message){
+
+    }
     public void handleMessage(final ArrayList<Sensor> newSensorList, final ArrayList<ClientConfig> newSensorInfoList){
         runOnUiThread(new Runnable() {
             @Override

@@ -16,7 +16,10 @@ import java.io.Serializable;
 import java.lang.reflect.Array;
 import java.net.*;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Enumeration;
+import java.util.LinkedList;
+import java.util.Queue;
 
 import javax.net.ssl.SSLServerSocketFactory;
 import javax.net.ssl.SSLSocketFactory;
@@ -26,6 +29,7 @@ import javax.net.ssl.SSLSocketFactory;
 public class Server implements Runnable, MessageProcessor, Serializable {
 
     public volatile ArrayList<ClientConfig> sensorList;
+    public Queue<Message> notificationQueue = new LinkedList<Message>();
     public ArrayList<ClientConfig> oldSensorList = new ArrayList<ClientConfig>();
 
     public String server_ip;
@@ -36,9 +40,11 @@ public class Server implements Runnable, MessageProcessor, Serializable {
     public boolean suspended = false;
     public boolean updatedList = false;
     boolean looperPrepared = false;
-    public int sleepTime = 5000;
+    public int sleepTime = 2000;
     public ServerCallback UI;
     public UIInfo user;
+    public int msgCooldown = 0;
+    public boolean dialogBoxClosed = true;
 
     public Server(String ip, Context UI) {
         this.server_ip = ip;
@@ -142,14 +148,14 @@ public class Server implements Runnable, MessageProcessor, Serializable {
                 s1.force_on != s2.force_on ||
                 s1.sensor_type != s2.sensor_type ||
                 s1.sensing_threshold != s2.sensing_threshold ||
-                s1.name.compareTo(s2.name) == 0 ||
+                s1.name.compareTo(s2.name) != 0 ||
                 s1.desktopNotification != s2.desktopNotification ||
                 s1.emailNotification != s2.emailNotification ||
                 s1.magicMirrorNotification != s2.magicMirrorNotification ||
                 s1.textNotification != s2.textNotification ||
-                s1.phoneNumber.compareTo(s2.phoneNumber) == 0 ||
-                s1.emailAddress.compareTo(s2.emailAddress) == 0 ||
-                s1.interval != s2.interval ||
+                s1.phoneNumber.compareTo(s2.phoneNumber) != 0 ||
+                s1.emailAddress.compareTo(s2.emailAddress) != 0 ||
+                s1.sensorInterval != s2.sensorInterval ||
                 s1.ip.compareTo(s2.ip) == 0) return false;
         return true;
     }
@@ -229,6 +235,29 @@ public class Server implements Runnable, MessageProcessor, Serializable {
         System.out.println("Debug Message: Going into running");
         while(running) {
             if(!suspended) {
+                if(msgCooldown <= 0){
+                    if(dialogBoxClosed) {
+                        ReadingMessage msg = (ReadingMessage) notificationQueue.poll();
+                        if(msg != null){
+                            ArrayList<ClientConfig> currentSensors = (ArrayList<ClientConfig>) this.sensorList.clone();
+                            Calendar c = Calendar.getInstance();
+                            String time = c.get(Calendar.HOUR) +  ":" + c.get(Calendar.SECOND);
+                            SensorType tempType = null;
+                            for(int i = 0; i < currentSensors.size(); i++) {
+                                if (currentSensors.get(i).ip.compareTo(msg.from) == 0) {
+                                    tempType = currentSensors.get(i).sensor_type;
+                                    break;
+                                }
+                            }
+                            if(tempType != null) UI.notifyUser(tempType, time);
+                        }
+                        msgCooldown = 5000;
+                    }
+                }else{
+                    msgCooldown -= sleepTime;
+                }
+
+
                 ArrayList<ClientConfig> temp = new ArrayList<ClientConfig>();
                 if(this.sensorList != null) temp = (ArrayList<ClientConfig>) this.sensorList.clone();
                 // setting up temp list to compare
@@ -273,11 +302,24 @@ public class Server implements Runnable, MessageProcessor, Serializable {
             public void run() {
                 try{
                     switch(msg.type){
+                        case AUDIO:
+                            AudioMessage aMsg = (AudioMessage) msg;
+                            if(aMsg.getCurrentThreshold() >= 0){
+                                ArrayList<ClientConfig> currentSensors = (ArrayList<ClientConfig>) ref.sensorList.clone();
+                                for(int i = 0; i < currentSensors.size(); i++) {
+                                    if (currentSensors.get(i).ip.compareTo(msg.from) == 0) {
+                                        if(currentSensors.get(i).sensing_threshold < aMsg.getCurrentThreshold()){
+                                            ref.notificationQueue.add(aMsg);
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+
                         case READING:
                             ReadingMessage rMsg = (ReadingMessage) msg;
-                            float reading = rMsg.getCurrentThreshold();
-
-                            //How do you want to handle messags sent to android? Notify UI or store and wait until UI request?
+                            //float reading = rMsg.getCurrentThreshold();
+                            notificationQueue.add(rMsg);
 
                         case GET_SENSORS:
                             SensorsMessage sMsg = (SensorsMessage) msg;
@@ -400,6 +442,7 @@ public class Server implements Runnable, MessageProcessor, Serializable {
     }
 
     public interface ServerCallback{
-        void  handleMessage(ArrayList<Sensor> newSensorList, ArrayList<ClientConfig> newSensorInfoList);
+        void handleMessage(ArrayList<Sensor> newSensorList, ArrayList<ClientConfig> newSensorInfoList);
+        void notifyUser(SensorType type, String time);
     }
 }
