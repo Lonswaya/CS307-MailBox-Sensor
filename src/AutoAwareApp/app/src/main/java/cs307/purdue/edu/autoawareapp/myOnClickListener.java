@@ -15,19 +15,23 @@ import java.util.ArrayList;
  */
 public class myOnClickListener extends AppCompatActivity implements View.OnClickListener {
     MyAdapter.ViewHolder viewHolder;
-    private final Context context;
+    Context context;
     int id;
     ClientConfig sensorInfo;
     Server server;
+    ClientConfig newSensorConfig;
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        context = this;
+
         System.out.println("Debug Message: In On Create");
 
         Intent myIntent = new Intent(context, SettingsActivityUI.class);
-        myIntent.putExtra("ClientConfig", sensorInfo);
+        //myIntent.putExtra("ClientConfig", sensorInfo);
+        myIntent.putExtra("ClientConfig", new ClientConfig("100.0.0.1", "0:00", "0:00", false, false, SensorType.LIGHT, 90, "Sensor 1", 0, 0, 0, false, false, false, false, "123456789", "abcd@email.com", 10, 10));
         startActivityForResult(myIntent, 1);
     }
 
@@ -54,11 +58,15 @@ public class myOnClickListener extends AppCompatActivity implements View.OnClick
         switch(view.getId()) {
             case R.id.button1:
                 System.out.println("*****************************BUTTON 1. Context = " + this + "    " + SettingsActivityUI.class);
-                Intent n = new Intent(this, myOnClickListener.class);
-                startActivity(n);
+                Intent n = new Intent(context, myOnClickListener.class);
+                //Intent n = new Intent(this, SettingsActivityUI.class);
+                //n.putExtra("ClientConfig", sensorInfo);
+                System.out.println("Debug Message: Intent = " + n + "  " + context);
+                //startActivity(n);
                 //myIntent.putExtra("Server", server);
                 System.out.println("Added server in. Context = " + context);
                 System.out.println("sdjsadkshdsakdhaskjdhasjkdhasjdhasjdhasjdhasdasjdhaskjdhasdhasjkdhaskdha");
+                context.startActivity(n);
                 break;
             case R.id.button2:
                 System.out.println("*****************************BUTTON 2");
@@ -88,7 +96,7 @@ public class myOnClickListener extends AppCompatActivity implements View.OnClick
         if(resultCode == RESULT_OK){
             System.out.println("Getting newSensor Config from " + data + "looking for new sensor = " + data.hasExtra("New Sensor"));
             //System.out.println("Sensor = " + data.getSerializableExtra("New Sensor"));
-            ClientConfig newSensorConfig = (ClientConfig) data.getSerializableExtra("New Sensor");
+            newSensorConfig = (ClientConfig) data.getSerializableExtra("New Sensor");
             System.out.println(newSensorConfig);
             //TODO: Send new SensorCOnfig to the background Thread or AsyncTask and add it to the sensor
             AsyncTaskRunnerUpdate asyncTaskRunnerUpdate = new AsyncTaskRunnerUpdate();
@@ -180,7 +188,7 @@ public class myOnClickListener extends AppCompatActivity implements View.OnClick
         @Override
         protected Integer doInBackground(ClientConfig... params) {
             System.out.println("In Remove Do in background");
-            boolean check = server.updateSensor(params[0]);
+            boolean check = server.updateSensor(newSensorConfig);
             if (check == true)
                 return 1;
             return 0;

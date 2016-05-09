@@ -161,6 +161,13 @@ public class AddSensorUI extends AppCompatActivity implements View.OnClickListen
     public ClientConfig getInfofromForm() {
         String name = sensorName.getText().toString();
         String ipString = ip.getText().toString();
+//        for (int i = 0; i < ipString.length(); i++) {
+//            char c = ipString.charAt(i);
+//            if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z')) {
+//                ip.setText("");
+//                return null;
+//            }
+//        }
         String strtHour, strtMinute, edHour, edMinute;
         String endTime = null;
         String startTime = null;
@@ -214,9 +221,18 @@ public class AddSensorUI extends AppCompatActivity implements View.OnClickListen
             magicMirror = true;
 
         String phoneString = phoneNumber.getText().toString();
+//        for (int i = 0; i < phoneString.length(); i++) {
+//            char c = phoneString.charAt(i);
+//            if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z')) {
+//                phoneNumber.setText("");
+//                return null;
+//            }
+//        }
         String emailString = emailId.getText().toString();
+//        if (emailString.contains("@") == false)
+//            return null;
 
-        return new ClientConfig(ipString, startTime, endTime, force_on, force_off, sensorType, threshold, name, 0, 0, 0, desktop, magicMirror, phone, email, phoneString, emailString, 10);
+        return new ClientConfig(ipString, startTime, endTime, force_on, force_off, sensorType, threshold, name, 0, 0, 0, desktop, magicMirror, phone, email, phoneString, emailString, 20, 10);
 
     }
 }

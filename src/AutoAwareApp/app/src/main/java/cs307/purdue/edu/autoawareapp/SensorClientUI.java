@@ -1,6 +1,10 @@
 package cs307.purdue.edu.autoawareapp;
 
+import android.app.AlertDialog;
+import android.app.Dialog;
+import android.app.DialogFragment;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -108,28 +112,28 @@ public class SensorClientUI extends AppCompatActivity implements View.OnClickLis
         long currTime = System.currentTimeMillis();
 
         //int ret = createSensors();
-        //sensors.add(new Sensor("Sensor 1", 0, "LIGHT", "100.0.0.1"));
-        //sensorInfoList.add(new ClientConfig("100.0.0.1", "0:00", "0:00", false, false, SensorType.LIGHT, 90, "Sensor 1", 0, 0, 0, false, false, false, false, "123456789", "abcd@email.com", 10));
+        sensors.add(new Sensor("Sensor 1", 0, "LIGHT", "100.0.0.1"));
+        sensorInfoList.add(new ClientConfig("100.0.0.1", "0:00", "0:00", false, false, SensorType.LIGHT, 90, "Sensor 1", 0, 0, 0, false, false, false, false, "123456789", "abcd@email.com", 10, 15));
         //server.addClientConfigObject(sensorInfoList.get(0));
         //recyclerView.scrollToPosition(sensors.size() - 1);
-        //mAdapter.notifyItemInserted(sensors.size() - 1);
-        //mAdapter.notifyDataSetChanged();
+        mAdapter.notifyItemInserted(sensors.size() - 1);
+        mAdapter.notifyDataSetChanged();
 
 
-        /*sensors.add(new Sensor("Sensor 5", 0, "AUDIO", "10.182.1.29"));
-        sensorInfoList.add(new ClientConfig("10.182.1.29", "6:00", "18:00", true, false, SensorType.AUDIO, 40, "Sensor 5", false, false, true, true, "123456789", "abcd@email.com", 10));
+        sensors.add(new Sensor("Sensor 5", 0, "AUDIO", "10.182.1.29"));
+        sensorInfoList.add(new ClientConfig("10.182.1.29", "6:00", "18:00", true, false, SensorType.AUDIO, 40, "Sensor 5", 0, 0, 0, false, false, true, true, "123456789", "abcd@email.com", 10, 19));
         //server.addClientConfigObject(sensorInfoList.get(0));
         recyclerView.scrollToPosition(sensors.size() - 1);
         //mAdapter.notifyItemInserted(sensors.size() - 1);
         mAdapter.notifyDataSetChanged();
 
         sensors.add(new Sensor("Spying on ma boy", 0, "VIDEO", "10.182.1.0"));
-        sensorInfoList.add(new ClientConfig("10.182.1.0", "6:00", "18:00", true, false, SensorType.VIDEO, 40, "Spying on ma boy", true, false, false, true, "123456789", "abcd@email.com", 10));
+        sensorInfoList.add(new ClientConfig("10.182.1.0", "6:00", "18:00", true, false, SensorType.VIDEO, 40, "Spying on ma boy", 0, 0, 0, true, false, false, true, "123456789", "abcd@email.com", 10, 5));
         //server.addClientConfigObject(sensorInfoList.get(0));
         recyclerView.scrollToPosition(sensors.size() - 1);
         //mAdapter.notifyItemInserted(sensors.size() - 1);
         mAdapter.notifyDataSetChanged();
-        */
+
 
         try {
             System.out.println("In try catch");
@@ -168,8 +172,11 @@ public class SensorClientUI extends AppCompatActivity implements View.OnClickLis
     }
 
     public void notifyUser(SensorType type, String message){
+        NotificationFragmentDialog dialog = new NotificationFragmentDialog();
+        dialog.show(getSupportFragmentManager(), "Notification");
 
     }
+
     public void handleMessage(final ArrayList<Sensor> newSensorList, final ArrayList<ClientConfig> newSensorInfoList){
         runOnUiThread(new Runnable() {
             @Override
@@ -187,6 +194,11 @@ public class SensorClientUI extends AppCompatActivity implements View.OnClickLis
             }
         });
     }
+
+    /*@Override
+    public void notifyUser(String message, String time) {
+        super();
+    }*/
 
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.

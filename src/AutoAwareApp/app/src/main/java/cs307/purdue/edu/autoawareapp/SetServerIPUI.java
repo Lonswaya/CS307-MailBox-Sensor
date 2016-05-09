@@ -39,6 +39,17 @@ public class SetServerIPUI extends AppCompatActivity implements View.OnClickList
         switch(v.getId()) {
             case R.id.set_ip_button:
                 String ip = ip_text.getText().toString();
+                if (ip == null || ip.length() == 0) {
+                    ip_text.setText("");
+                    break;
+                }
+                for (int i = 0; i < ip.length(); i++) {
+                    char c = ip.charAt(i);
+                    if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z')) {
+                        ip_text.setText("");
+                        break;
+                    }
+                }
                 Intent mIntent = new Intent(this, SensorClientUI.class);
                 mIntent.putExtra("Server IP", ip);
                 mIntent.putExtra("Username", username);

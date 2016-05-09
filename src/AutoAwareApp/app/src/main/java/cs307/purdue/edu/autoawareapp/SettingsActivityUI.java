@@ -249,7 +249,7 @@ public class SettingsActivityUI extends AppCompatActivity implements View.OnClic
         String phoneString = phoneNumber.getText().toString();
         String emailString = emailId.getText().toString();
 
-        return new ClientConfig(ip, startTime, endTime, force_on, force_off, sensorType, threshold, name, 0, 0, 0, desktop, magicMirror, phone, email, phoneString, emailString, 10);
+        return new ClientConfig(ip, "0:00", "0:00", force_on, force_off, sensorType, threshold, name, 0, 0, 0, desktop, magicMirror, phone, email, phoneString, emailString, 20, 10);
 
     }
 

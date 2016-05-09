@@ -26,4 +26,7 @@
     <string name="email_hint">abc@email.com</string>
     <string name="default_string">Default</string>
     <string name="apply_string">Apply</string>
+
+<!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

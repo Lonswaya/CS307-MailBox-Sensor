@@ -1,4 +1,6 @@
 package cs307.purdue.edu.autoawareapp;
+import android.graphics.Path;
+
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
@@ -90,7 +92,7 @@ public class BaseConfig implements Serializable {
 		
 	}
 	
-	//loads the config file from a specified path
+	/*//loads the config file from a specified path
 	public BaseConfig(Path to_load) throws IOException {
 		Load(to_load);
 	}
@@ -138,7 +140,7 @@ public class BaseConfig implements Serializable {
 			handle_line(line);
 		
 		return true;
-	}
+	}*/
 	
 	//parses the line to populate protected fields
 	private void handle_line(String line) {
